@@ -1,0 +1,23 @@
+<div *ngIf='this.wsService.connectionEstablished && isOpen'>
+  Send a message to a peer
+  <form>
+    <div class="form-group">
+      <label for="receiver">Receiver</label>
+      <input type="text" class="form-control" id="receiver" required  [(ngModel)]="receiver" name="receiver" [disabled]="!this.wsService.connectionEstablished">
+    </div>
+
+    <div class="form-group">
+      <label for="message">Message</label>
+      <input type="text" class="form-control" id="message" [(ngModel)]="message" name="message" [disabled]="!this.wsService.connectionEstablished">
+    </div>
+
+    <button type="submit" class="btn btn-success" (click)="sendMessage()" [disabled]="!this.wsService.connectionEstablished">Send</button>
+  </form>
+</div>
+<div>
+  <li *ngFor="let msg of messageList">{{msg.user}}: {{msg.message}}</li>
+</div> 
+
+<div *ngIf='this.wsService.connectionEstablished && !isOpen'>
+  <button (click)="startMessenger()">Open Messenger</button>
+</div>

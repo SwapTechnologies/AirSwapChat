@@ -1,0 +1,45 @@
+<div *ngIf='this.wsService.connectionEstablished'>
+  <button 
+    (click)="findIntentsClicked()" 
+    [disabled]="!this.wsService.connectionEstablished"
+  >
+    Find Intents
+  </button>
+  <div *ngIf="isClicked">
+    Which token intents do you want to see?
+    <div>
+      <select name="select_token" [(ngModel)]='selectedToken'>
+        <option *ngFor="let token of tokenList" [value]='token.name'>
+          {{token.name}} ({{token.address.slice(0,8)}}...)
+        </option> 
+      </select>
+      <select name="role" [(ngModel)]='selectedRole'>
+        <option value="maker">as Maker Token</option>
+        <option value="taker">as Taker Token</option>
+      </select>
+      <!-- <button (click)="addToken()">Add token</button> -->
+    </div>
+    <!-- <div *ngIf="makerTokens.length>0 || takerTokens.length>0">
+      <button (click)="showIntents()">Show me the intents</button>
+    </div> -->
+    <button (click)="showIntents()">Show me the intents</button>
+    <div *ngIf="foundIntents.length>0">
+      <div>
+        MakerToken <-> TakerToken MakerAddress
+      </div>
+      <div *ngFor="let intent of foundIntents" class="row">
+        <div *ngIf="callGetTokenByAddress(intent.makerToken) && callGetTokenByAddress(intent.takerToken)">
+          {{callGetTokenByAddress(intent.makerToken)}} <-> {{callGetTokenByAddress(intent.takerToken)}} {{intent.address}}
+        </div>
+      </div>
+    </div>
+    <!-- <div *ngIf="makerTokens.length>0">
+      Maker Tokens: <span *ngFor='let token of makerTokens'>{{callGetTokenByAddress(token)}} </span>
+    </div>
+    <div *ngIf="takerTokens.length>0">
+      Taker Tokens: <span *ngFor='let token of takerTokens'>{{callGetTokenByAddress(token)}} </span>
+    </div> -->
+
+  </div>
+
+</div>

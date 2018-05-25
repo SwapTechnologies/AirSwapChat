@@ -1,0 +1,8 @@
+<div>
+  <button 
+    (click)="connectWebsocket()" 
+    [disabled]="this.wsService.connectionEstablished"
+  >
+    Connect to websocket
+  </button>
+</div>
