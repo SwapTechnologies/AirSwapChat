@@ -1,7 +1,6 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ConnectWeb3Service } from './services/connectWeb3.service';
-import { TimerObservable } from 'rxjs/observable/TimerObservable';
-
+import { WebsocketService } from './services/websocket.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -9,8 +8,8 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
 })
 export class AppComponent implements OnInit {
 
-  constructor(private web3service: ConnectWeb3Service,
-              private zone: NgZone) { }
+  constructor(public web3service: ConnectWeb3Service,
+              public wsService: WebsocketService) { }
 
   ngOnInit() {
    

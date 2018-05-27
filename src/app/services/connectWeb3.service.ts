@@ -13,6 +13,7 @@ window.web3 = window.web3 || undefined;
 export class ConnectWeb3Service {
 
   private _web3: any;
+  private desiredNetwork: string = 'Rinkeby';
   public connected_to: string;
   public connected_to_network: string;
   public connectedAccount: string;
@@ -26,11 +27,13 @@ export class ConnectWeb3Service {
     return this._web3;
   }
 
-
   set web3(web3: any) {
     this._web3 = web3;
   }
- 
+  
+  get connectionIsEstablished(): boolean {
+    return (this.connectedAccount && this.connected_to_network === this.desiredNetwork)
+  }
 
   connectToNode(): void {
       let connectMetamask: () => void = () => {

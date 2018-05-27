@@ -5,7 +5,13 @@
 </div>
 
 <app-account></app-account>
-<app-websocket-connection></app-websocket-connection>
-<app-set-intents></app-set-intents>
-<app-find-intents></app-find-intents>
-<app-message-system></app-message-system>
+<div *ngIf="web3service.connectionIsEstablished">
+  <app-websocket-connection></app-websocket-connection>
+  <div *ngIf="wsService.connectionEstablished">
+    <app-set-intents></app-set-intents>
+    <app-find-intents></app-find-intents>
+    <app-get-order></app-get-order>
+    <app-answer-orders></app-answer-orders>
+    <app-message-system></app-message-system>
+  </div>
+</div>

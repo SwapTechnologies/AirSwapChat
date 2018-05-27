@@ -11,8 +11,8 @@ export class WebsocketService {
   public websocketSubject: Subject<string>;
 
 
-  // private url: string = 'wss://sandbox.airswap-api.com/websocket'; //rinkeby
-  private url: string = 'wss://connect.airswap-api.com/websocket'; //mainnet
+  private url: string = 'wss://sandbox.airswap-api.com/websocket'; //rinkeby
+  // private url: string = 'wss://connect.airswap-api.com/websocket'; //mainnet
   private indexerAddress: string = '0x0000000000000000000000000000000000000000';
   public connectionEstablished: boolean = false;
   
@@ -41,7 +41,7 @@ export class WebsocketService {
       'message': JSON.stringify(jsonrpc)
     }
     let request: string = JSON.stringify(envelope)
-    console.log('sent request:\n' + request +'\n')
+    // console.log('sent request:\n' + request +'\n')
     this.send(request)
   }
 
@@ -94,6 +94,7 @@ export class WebsocketService {
         },
     }
     this.sendRPC(jsonrpc, makerAddress)
+    return callId
   }
 
   findIntents(makerTokens, takerTokens): string {
@@ -113,18 +114,43 @@ export class WebsocketService {
     return callId;
   }
 
-  sendMessage(receiver, message): void {
+  sendMessage(receiver, message, time): void {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
     let jsonrpc = {
       'id': callId,
       'jsonrpc': '2.0',
       'method': 'message',
       'params': {
-        "message": message
+        "message": message,
+        "timestamp": time
       },
     }
     this.sendRPC(jsonrpc, receiver)
     return callId;
+  }
+
+  sendMessageAnswer(receiver, uuid): void {
+    let jsonrpc = {
+      'id': uuid,
+      'jsonrpc': '2.0',
+      'method': 'messageAnswer',
+      'params': {
+        "message": 'received'
+      },
+    }
+    this.sendRPC(jsonrpc, receiver)
+    return uuid;
+  }
+
+  sendOrder(receiver, order, uuid): void {
+    let jsonrpc = {
+      'id': uuid,
+      'jsonrpc': '2.0',
+      'method': 'orderResponse',
+      'result': order,
+    }
+    this.sendRPC(jsonrpc, receiver)
+    return uuid;
   }
 
   // getMyIntents(): void {

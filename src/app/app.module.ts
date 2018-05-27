@@ -14,6 +14,11 @@ import { RoundPipe } from './pipes/round';
 import { FindIntentsComponent } from './find-intents/find-intents.component';
 import { MessageSystemComponent } from './message-system/message-system.component';
 
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabase } from 'angularfire2/database'
+import { environment } from '../environments/environment';
+import { GetOrderComponent } from './get-order/get-order.component';
+import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
 
 @NgModule({
   declarations: [
@@ -23,15 +28,19 @@ import { MessageSystemComponent } from './message-system/message-system.componen
     SetIntentsComponent,
     RoundPipe,
     FindIntentsComponent,
-    MessageSystemComponent
+    MessageSystemComponent,
+    GetOrderComponent,
+    AnswerOrdersComponent
   ],
   imports: [
     BrowserModule,
-    FormsModule
+    FormsModule,
+    AngularFireModule.initializeApp(environment.firebase)
   ],
   providers: [
-    ConnectWeb3Service, 
-    WebsocketService
+    ConnectWeb3Service,
+    WebsocketService,
+    AngularFireDatabase
   ],
   bootstrap: [AppComponent]
 })
