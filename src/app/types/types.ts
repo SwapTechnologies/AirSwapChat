@@ -17,6 +17,11 @@ export type Token = {
   decimals: number;
 }
 
+export type LoggedInUser = {
+  address: string;
+  alias: string;
+}
+
 // export type Order = {
 //   makerAddress: string, 
 //   makerAmount: string,

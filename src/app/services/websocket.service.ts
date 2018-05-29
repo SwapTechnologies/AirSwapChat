@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { ConnectWeb3Service } from './connectWeb3.service'
 
+import { LoggedInUser } from '../types/types';
+
 declare var require: any;
 const uuidv4 = require('uuid/v4');
 
@@ -10,6 +12,7 @@ export class WebsocketService {
   public ws: WebSocket;
   public websocketSubject: Subject<string>;
 
+  public loggedInUser: LoggedInUser;
 
   private url: string = 'wss://sandbox.airswap-api.com/websocket'; //rinkeby
   // private url: string = 'wss://connect.airswap-api.com/websocket'; //mainnet

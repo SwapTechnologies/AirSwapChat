@@ -2,9 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 
 //services
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
+import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
 import { OrderRequestsService } from '../services/order-requests.service';
 import { WebsocketService } from '../services/websocket.service';
+import { WhosOnlineService } from '../services/whos-online.service';
 
 //components
 import { AccountComponent } from '../account/account.component';
@@ -30,19 +32,29 @@ export class MainframeComponent implements OnInit {
 
   public showAnswerBadge: boolean = false;
   public numUnreadAnswers: number = 0;
+
+  public showWhosOnlineBadge: boolean = false;
+  public numWhosOnline: number = 0;
   
   public timer: any;
+  public rareTimer: any;
 
   constructor(
-  public orderService: OrderRequestsService,
-  public web3service: ConnectWeb3Service,
-  public wsService: WebsocketService,
-  private messageService: MessagingService) {}
+    private firebaseService: FirebaseService,
+    private messageService: MessagingService,
+    public orderService: OrderRequestsService,
+    public web3service: ConnectWeb3Service,
+    public wsService: WebsocketService,
+    public whoOnlineService: WhosOnlineService,
+  ) {}
 
 
   ngOnInit() {
     this.timer = TimerObservable.create(0, 2000)
     .subscribe( () => this.updateNumbers());
+    this.rareTimer = TimerObservable.create(0, 10000)
+    .subscribe( () => this.updateRareNumbers());
+    
   }
 
   ngOnDestroy() {
@@ -61,4 +73,15 @@ export class MainframeComponent implements OnInit {
     this.numUnreadAnswers = this.orderService.openRequests;
     this.showAnswerBadge = this.numUnreadAnswers>0;
   }
+
+  updateRareNumbers(): void {
+    this.whoOnlineService.numOnline
+    .then((numWhosOnline) => {
+      this.numWhosOnline = numWhosOnline;
+      this.showWhosOnlineBadge = this.numWhosOnline>0;
+    })
+    
+    if(this.wsService.connectionEstablished)
+      this.firebaseService.pingUser(this.wsService.loggedInUser);
+    }
 }

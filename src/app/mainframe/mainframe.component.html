@@ -54,6 +54,22 @@
         </button>
       </a>
 
+      <a routerLink="./whosOnline">
+        <button 
+        mat-raised-button 
+        [disabled]="!showWhosOnlineBadge"
+        class="menu_button">
+          <mat-icon 
+          class='menu_icon' 
+          [matBadge]="numWhosOnline"
+          [matBadgeHidden]="!showWhosOnlineBadge" 
+          matBadgePosition="above after">
+            people
+          </mat-icon>
+          ONLINE
+        </button>
+      </a>
+
       <a href="https://swapwatch.io" target="_blank">
         <button mat-raised-button class="menu_button">
           <mat-icon class='menu_icon'>

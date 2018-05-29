@@ -1,8 +1,19 @@
-<div *ngIf="web3service.connectionEstablished && !wsService.connectionEstablished">
+<div 
+*ngIf="web3service.connectionEstablished && !wsService.connectionEstablished"
+class="container">
+  <mat-form-field class="alias_input">
+    <input 
+    matInput
+    [focus]="true"
+    placeholder="Your Alias" 
+    (keydown.enter)="connectWebsocket()"
+    [(ngModel)]="alias"
+    [disabled]="performingHandshake">
+  </mat-form-field>
+  <p>{{infoMessage}}</p>
   <button mat-raised-button
     (click)="connectWebsocket()" 
-    [disabled]="wsService.connectionEstablished"
-  >
+    *ngIf="!performingHandshake && !wsService.connectionEstablished">
     Click to Connect with AirSwap
   </button>
 </div>
