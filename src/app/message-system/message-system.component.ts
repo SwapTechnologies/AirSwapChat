@@ -1,15 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ConnectWeb3Service } from '../services/connectWeb3.service';
-import { WebsocketService } from '../services/websocket.service';
-
+import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { Subject, Subscription, Observable } from 'rxjs/Rx';
 import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 
-type Message = {
-  user: string;
-  message: string;
-  timestamp: number;
-}
+//services
+import { ConnectWeb3Service } from '../services/connectWeb3.service';
+import { FirebaseService } from '../services/firebase.service';
+import { MessagingService } from '../services/messaging.service';
+import { WebsocketService } from '../services/websocket.service';
+
+import { MatDialog } from '@angular/material';
+import { DialogAddPeerComponent } from './dialog-add-peer/dialog-add-peer.component';
+
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
+
+import { Message, Peer } from '../types/types';
 
 @Component({
   selector: 'app-message-system',
@@ -18,119 +22,54 @@ type Message = {
 })
 export class MessageSystemComponent implements OnInit, OnDestroy {
 
-  private websocketSubscription: any;
-  private websocketAnswerSubscription: any;
-  public isOpen: boolean = true;
+  public message: string = ''; // text entered in message box
 
-  private myConnectedAccount: string;
-  public receiver: string = '';
-  public message: string = '';
-
-  public messageList: Message[] = [];
+  public timer: any;
 
   constructor(
     private web3service: ConnectWeb3Service,
+    public messageService: MessagingService,
+    private firebaseService: FirebaseService,
     public wsService: WebsocketService,
-    private db: AngularFireDatabase) { }
+    private zone: NgZone,
+    private db: AngularFireDatabase,
+    public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.myConnectedAccount = this.web3service.connectedAccount.toLowerCase();
-    let observableMyUnreceivedMessages =
-      this.db.object(this.myConnectedAccount)
-      .valueChanges()
-      .subscribe(entries => {
-        if(entries){
-          if(entries['unreceivedMessage']) {
-            for(let msg in entries['unreceivedMessage']) {
-              this.displayMessageOnScreen(
-                'From ' + entries['unreceivedMessage'][msg]['sender'],
-                entries['unreceivedMessage'][msg]['message'],
-                msg)
-            }
-            this.db.object(this.myConnectedAccount+'/unreceivedMessage').remove();
-          }
-        }
-        observableMyUnreceivedMessages.unsubscribe();
-      })
-    this.startMessenger();
+    this.timer = TimerObservable.create(0, 3000)
+    .subscribe( () => this.setVisibleMessagesSeen());
   }
 
   ngOnDestroy() {
-    if(this.websocketSubscription) this.websocketSubscription.unsubscribe;
-    if(this.websocketAnswerSubscription) this.websocketAnswerSubscription.unsubscribe;
+    if(this.timer)
+      this.timer.unsubscribe();
   }
 
-  startMessenger(): void {
-    // start a listener that looks for messages
-    this.websocketSubscription = this.wsService.websocketSubject
-    .subscribe(message => {
-      let receivedMessage = JSON.parse(message);
-      let content = JSON.parse(receivedMessage['message'])
-      let method = content['method']
-      if (method === 'message'){
-        //message received!
-        //answer the reception
-        this.wsService.sendMessageAnswer(receivedMessage['sender'], content['id'])
-        
-        this.displayMessageOnScreen(
-          receivedMessage['sender'],
-          content['params']['message'],
-          content['params']['timestamp']
-        )
-      }
-    })
-    this.isOpen = true;
+  setVisibleMessagesSeen(): void {
+    if(this.messageService.selectedPeer)
+      this.messageService.selectedPeer.hasUnreadMessages = false;
   }
-  
-  displayMessageOnScreen(user, message, timestamp): void {
-    this.messageList.unshift({
-      user: user,
-      message: message,
-      timestamp: timestamp
-    })
+
+  openDialogAddPeer() {
+    let dialogRef = this.dialog.open(DialogAddPeerComponent, {
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(this.web3service.web3.utils.isAddress(result))
+        this.messageService.addPeer(result);      
+      else
+        console.log('Entered invalid address.');
+    });
   }
   
   sendMessage(): void {
-    //check receiver address
-    if (this.receiver.length === 42 || this.message.length > 0) {
-      let messageReceiver = this.receiver.toLowerCase();
-      let messageText = this.message;
-      let currentTime = Date.now();
-      let messageId = this.wsService.sendMessage(
-        messageReceiver, messageText, currentTime
-      )
-      let gotReponse: boolean = false;
-
-      this.websocketAnswerSubscription = this.wsService.websocketSubject
-      .subscribe(message => {
-        let receivedMessage = JSON.parse(message);
-        let content = JSON.parse(receivedMessage['message'])
-        let method = content['method']
-        let answerId = content['id']
-        if (method === 'messageAnswer' && answerId === messageId){
-          gotReponse = true;
-          this.displayMessageOnScreen(
-            'You to '+messageReceiver.slice(0,6),
-            messageText,
-            currentTime)
-        }
-      })
-
-      // what if nobody answers? :-( put it to firebase!
-      setTimeout(()=> {
-        if(!gotReponse) {
-          // connect to firebase and check my account
-          this.askToStore()
-          .then(response => {
-            if(response) 
-              this.storeMessageInFireBase(this.myConnectedAccount,
-                messageReceiver, messageText, currentTime)
-          })
-        }
-        this.websocketAnswerSubscription.unsubscribe();
-      }, 3000)
+    if (this.message.length > 0) {
+      this.messageService.sendMessage(this.message);
+      this.message = '';
     }
   }
+
   askToStore(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       if (confirm(
@@ -144,57 +83,66 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     })
   }
 
+  displayMessageOnScreen(user, message, timestamp): void {
+    // this.selectedPeer.messageHistory.unshift({
+    //   user: user,
+    //   message: message,
+    //   timestamp: timestamp,
+    //   seen: true
+    // })
+  }
+
   storeMessageInFireBase(messageSender, messageReceiver, 
     message, currentTime): void {
     
-    let dbMyAccount: AngularFireObject<any>; 
-    let obsNumberOfSendMessages: Subscription;
+    // let dbMyAccount: AngularFireObject<any>; 
+    // let obsNumberOfSendMessages: Subscription;
     
-    dbMyAccount = this.db.object(messageSender);
-    obsNumberOfSendMessages = dbMyAccount.valueChanges()
-    .subscribe(entries => {
-      let sendMessages = 0;
-      let lastSentMessageTime = currentTime;
-      let allowedToPost = true;
+    // dbMyAccount = this.db.object(messageSender);
+    // obsNumberOfSendMessages = dbMyAccount.valueChanges()
+    // .subscribe(entries => {
+    //   let sendMessages = 0;
+    //   let lastSentMessageTime = currentTime;
+    //   let allowedToPost = true;
 
-      if(entries) {// do I have sent messages to firebase before?
-        if (entries['sendMessages'])
-          sendMessages = entries['sendMessages']
+    //   if(entries) {// do I have sent messages to firebase before?
+    //     if (entries['sendMessages'])
+    //       sendMessages = entries['sendMessages']
 
-        if (entries['lastSentMessageTime']) {
-          if (currentTime - entries['lastSentMessageTime'] < 60000) {
-            // I am spamming mailboxes
-            this.displayMessageOnScreen(
-              '',
-              'He is offline. Can only send message every 60 seconds.',
-              currentTime
-            )
-            allowedToPost = false;
-          }
-        }
-      }
-      if(allowedToPost) {
-        dbMyAccount.update({
-          'sendMessages': sendMessages+1,
-          'lastSentMessageTime': currentTime
-        })
-        let receiverRef: AngularFireObject<any> = 
-          this.db.object(messageReceiver+'/unreceivedMessage');
-        receiverRef.update({
-          [currentTime]: {
-            sender: messageSender,
-            message: message
-          }
-        });
-        this.displayMessageOnScreen(
-          'You to '+messageReceiver.slice(0,6),
-          message+'\n('+messageReceiver.slice(0,6)+' is offline.'+
-            'He will get the message when he signs in.)',
-          currentTime
-        )
+    //     if (entries['lastSentMessageTime']) {
+    //       if (currentTime - entries['lastSentMessageTime'] < 60000) {
+    //         // I am spamming mailboxes
+    //         this.displayMessageOnScreen(
+    //           '',
+    //           'He is offline. Can only send message every 60 seconds.',
+    //           currentTime
+    //         )
+    //         allowedToPost = false;
+    //       }
+    //     }
+    //   }
+    //   if(allowedToPost) {
+    //     dbMyAccount.update({
+    //       'sendMessages': sendMessages+1,
+    //       'lastSentMessageTime': currentTime
+    //     })
+    //     let receiverRef: AngularFireObject<any> = 
+    //       this.db.object(messageReceiver+'/unreceivedMessage');
+    //     receiverRef.update({
+    //       [currentTime]: {
+    //         sender: messageSender,
+    //         message: message
+    //       }
+    //     });
+    //     this.displayMessageOnScreen(
+    //       'You to '+messageReceiver.slice(0,6),
+    //       message+'\n('+messageReceiver.slice(0,6)+' is offline.'+
+    //         'He will get the message when he signs in.)',
+    //       currentTime
+    //     )
 
-      }
-      obsNumberOfSendMessages.unsubscribe();
-    })
+    //   }
+    //   obsNumberOfSendMessages.unsubscribe();
+    // })
   }
 }

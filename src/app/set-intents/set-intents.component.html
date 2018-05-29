@@ -1,32 +1,23 @@
-<div *ngIf='this.wsService.connectionEstablished'>
-  <button 
-    (click)="setIntentsClicked()" 
-    [disabled]="!this.wsService.connectionEstablished"
-  >
-    Set Intents
-  </button>
+<div>
+  Which token pairs do you intend to trade?
+  <div>
+    <select name="select_token" [(ngModel)]='makerToken'>
+      <option *ngFor="let token of tokenList" [value]='token.address'>
+        {{token.name}} ({{token.address.slice(0,8)}}...)
+      </option> 
+    </select>
+    <select name="select_token" [(ngModel)]='takerToken'>
+      <option *ngFor="let token of tokenList" [value]='token.address'>
+        {{token.name}} ({{token.address.slice(0,8)}}...)
+      </option> 
+    </select>
+    <button (click)="addTokenPair()">Add Pair</button>
+  </div>
+  <div *ngIf="intents.length>0">
+    <li *ngFor='let intent of intents'>{{callGetTokenByAddress(intent.makerToken)}} <-> {{callGetTokenByAddress(intent.takerToken)}} </li>
+  </div>
 
-  <div *ngIf="isClicked">
-    Which token pairs do you intend to trade?
-    <div>
-      <select name="select_token" [(ngModel)]='makerToken'>
-        <option *ngFor="let token of tokenList" [value]='token.address'>
-          {{token.name}} ({{token.address.slice(0,8)}}...)
-        </option> 
-      </select>
-      <select name="select_token" [(ngModel)]='takerToken'>
-        <option *ngFor="let token of tokenList" [value]='token.address'>
-          {{token.name}} ({{token.address.slice(0,8)}}...)
-        </option> 
-      </select>
-      <button (click)="addTokenPair()">Add Pair</button>
-    </div>
-    <div *ngIf="intents.length>0">
-      <li *ngFor='let intent of intents'>{{callGetTokenByAddress(intent.makerToken)}} <-> {{callGetTokenByAddress(intent.takerToken)}} </li>
-    </div>
-
-    <div *ngIf="intents.length>0">
-      <button (click)="callSetIntents()">Set them!</button>
-    </div>
-  </div>  
+  <div *ngIf="intents.length>0">
+    <button (click)="callSetIntents()">Set them!</button>
+  </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
@@ -7,53 +7,47 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.css']
 })
-export class AccountComponent implements OnInit {
+export class AccountComponent implements OnInit, OnDestroy {
 
-  public connectionInfo: string = '';
   public connected: boolean = false;
   public correctNetwork: boolean = false;
-  public connectedNetwork: string = '';
-  public connectedAccount: string = '';
-  public accountBalance: number;
+  public accountConnected: boolean = false;
+
   public timer: any;
 
   constructor(private web3service: ConnectWeb3Service,
               private zone: NgZone) { }
 
-  ngOnInit() {
-    this.connectionInfo = 'Connecting...'
-    
-    this.timer = TimerObservable.create(0, 20000)
-    .subscribe( () => this.checkConnection())
+  ngOnInit() {   
+    this.timer = TimerObservable.create(0, 3000);
+    this.timer.subscribe( () => this.checkConnection());
+  }
+  
+  ngOnDestroy() {
+    if(this.timer)
+      this.timer.unsubscribe();
   }
 
   checkConnection(): void {
+    //check if connection to web3 is available via web3
     this.web3service.isConnected()
-    .then(connected => {
-      this.connected = connected;
-      if(connected) {
-        this.zone.run(() => {
-          this.connectionInfo = 'Connected to ' + this.web3service.connected_to;
-        })
-        this.web3service.getNetworkId().then(network => {
-          this.zone.run(() => {
-            this.connectedNetwork = network;
-            if(network == 'Mainnet') this.correctNetwork = true;
-          })
-        })
-        return this.getAccountInformation()
+    .then(connected => { 
+      this.zone.run( () => this.connected = connected);
+      if(connected) { // generally a connection available?
+        return this.web3service.getNetworkId()
+      } else {
+        return null;
       }
     })
+    .then(network => {
+      // is it connected to the correct network?
+      this.zone.run(() => 
+        this.correctNetwork = (network === this.web3service.desiredNetwork)
+      );
+      return this.web3service.getAccount()
+    }).then(account => {
+      // is an account connected?
+      this.zone.run(() => this.accountConnected = account !== undefined);
+    }).catch((error) => {console.log('Error while checking connection.')})
   }
-  getAccountInformation(): Promise<any> {
-    return this.web3service.getAccount()
-    .then(account => {
-      this.zone.run(() => this.connectedAccount = account)
-      return this.web3service.getBalance(account);
-    }).then((balance) => {
-      this.zone.run(() => this.accountBalance = balance)
-      return
-    }).catch(() => {})
-  }
-
 }

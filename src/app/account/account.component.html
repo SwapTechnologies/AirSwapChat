@@ -1,9 +1,6 @@
-{{connectionInfo}}
-<div *ngIf="connected">
-  <div *ngIf="connectedNetwork">Network: {{connectedNetwork}}</div>
-  <div class='errorMsg' *ngIf="!correctNetwork">Please connect to Mainnet.</div>
-  <div *ngIf="connectedAccount">Account: {{connectedAccount.slice(0,10)}}...</div>
-  <div class='errorMsg' *ngIf="!connectedAccount">To login you need to be logged in with Metamask.</div>
-  <div *ngIf="accountBalance">Balance: {{accountBalance | round:4}} Ξ</div>
-  <div *ngIf="approvedBalance">Approved Balance: {{approvedBalance}} Ξ</div>
-</div>
+<span *ngIf="connected && correctNetwork && accountConnected">
+  <mat-icon>check</mat-icon> Account: {{this.web3service.connectedAccount}}
+</span>
+<span *ngIf="!(connected && correctNetwork && accountConnected)">
+  Login with Metamask <span *ngIf="!correctNetwork">to {{this.web3service.desiredNetwork}}</span>
+</span>

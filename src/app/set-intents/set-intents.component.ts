@@ -12,8 +12,6 @@ import { EthereumTokensSN, getTokenByName, getTokenByAddress } from '../services
 })
 export class SetIntentsComponent implements OnInit, OnDestroy {
 
-  public isClicked: boolean = false;
-
   public makerToken: string;
   public takerToken: string;
   public intents: any[] = [];
@@ -37,10 +35,6 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     if(this.websocketSubscription) this.websocketSubscription.unsubscribe;
   }
   
-  setIntentsClicked():void {
-    this.isClicked = !this.isClicked;
-  }
-
   addTokenPair(): void {
     if(this.makerToken && this.takerToken) {
       let intent = {

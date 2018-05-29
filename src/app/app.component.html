@@ -1,17 +1,1 @@
-<div>
-  <h1>
-    Chat Swap
-  </h1>
-</div>
-
-<app-account></app-account>
-<div *ngIf="web3service.connectionIsEstablished">
-  <app-websocket-connection></app-websocket-connection>
-  <div *ngIf="wsService.connectionEstablished">
-    <app-set-intents></app-set-intents>
-    <app-find-intents></app-find-intents>
-    <app-get-order></app-get-order>
-    <app-answer-orders></app-answer-orders>
-    <app-message-system></app-message-system>
-  </div>
-</div>
+<app-mainframe></app-mainframe>

@@ -1,8 +1,8 @@
-<div>
-  <button 
+<div *ngIf="web3service.connectionEstablished && !wsService.connectionEstablished">
+  <button mat-raised-button
     (click)="connectWebsocket()" 
-    [disabled]="this.wsService.connectionEstablished"
+    [disabled]="wsService.connectionEstablished"
   >
-    Connect to websocket
+    Click to Connect with AirSwap
   </button>
 </div>

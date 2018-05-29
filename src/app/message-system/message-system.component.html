@@ -1,4 +1,67 @@
-<div *ngIf='this.wsService.connectionEstablished && isOpen'>
+<div class="message_system_container">
+  
+  <!-- Select the peer you are communicating with -->
+  <div class="connect_card">
+    <mat-card>
+      <mat-card-actions>
+        <mat-form-field *ngIf="this.messageService.connectedPeers.length > 0"
+            style="width: 80%;">
+          <mat-select placeholder="Select Peer" [(value)]="this.messageService.selectedPeer">
+            <mat-option *ngFor="let peer of this.messageService.connectedPeers"
+            [value]="peer"
+            style="width: 67%;">
+              {{peer.address}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <span *ngIf="this.messageService.connectedPeers.length === 0">Add Peer</span>
+        <button 
+          mat-icon-button 
+          color="primary"
+          (click)="openDialogAddPeer()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Display & Send Messages to peer -->
+  <ng-container *ngIf="this.messageService.connectedPeers.length > 0">
+    <div class="chat_card">
+      <mat-card>
+        <mat-card-content>
+          <li *ngFor="let msg of this.messageService.selectedPeer.messageHistory">
+            {{msg.user.slice(0,8)}}: {{msg.message}}
+          </li>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    
+    <div class="message_card">
+      <mat-card>
+        <mat-form-field style="width:100%;">
+          <textarea 
+            matInput 
+            placeholder="Send message"
+            [(ngModel)]="message">
+          </textarea>
+          
+        </mat-form-field>
+        <button 
+          mat-icon-button 
+          color="primary"
+          (click)="sendMessage()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-card>
+    </div>
+  </ng-container>
+</div>
+
+
+
+<!-- 
+<div>
   Send a message to a peer
   <form>
     <div class="form-group">
@@ -10,14 +73,7 @@
       <label for="message">Message</label>
       <input type="text" class="form-control" id="message" [(ngModel)]="message" name="message" [disabled]="!this.wsService.connectionEstablished">
     </div>
-
+    
     <button type="submit" class="btn btn-success" (click)="sendMessage()" [disabled]="!this.wsService.connectionEstablished">Send</button>
   </form>
-</div>
-<div>
-  <li *ngFor="let msg of messageList">{{msg.user}}: {{msg.message}}</li>
-</div> 
-
-<div *ngIf='this.wsService.connectionEstablished && !isOpen'>
-  <button (click)="startMessenger()">Open Messenger</button>
-</div>
+</div> -->

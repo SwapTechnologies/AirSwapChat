@@ -1,0 +1,70 @@
+$top-color: rgb(0, 117, 195);
+$bottom-color: rgb(255, 255, 255);
+$text-color: black;
+
+.main-container {
+  position: absolute;
+  top: 60px;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  background: white;
+}
+// ;
+.main-header {
+  display: flex;
+  justify-content: flex-start;
+  color: $text-color;
+  background: $top-color;
+}
+
+.main-sidenav {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 150px;
+  padding-top: 42px;
+  color: $text-color;
+  background: linear-gradient(to bottom, $top-color, $bottom-color);
+}
+
+.main-footer {
+  display: flex;
+  justify-content: space-between;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  color: $text-color;
+  background: $bottom-color;
+}
+
+.nav-item {
+  color: $text-color;
+}
+
+.menu_button { 
+  width: 90%;
+  text-align: right;
+  border-radius: 0px;
+}
+
+.menu_icon {
+  float: left;
+}
+
+.content {
+  text-align: center;
+  font-size: 12;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.chat-side {
+  width: 33%;
+  height:100%;
+  padding-bottom: 10px;
+  color: black;
+  background: linear-gradient(to bottom, rgba(0, 117, 195, 1), rgb(255,255,255));
+  overflow-x: hidden;
+}

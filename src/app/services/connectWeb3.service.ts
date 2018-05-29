@@ -13,7 +13,7 @@ window.web3 = window.web3 || undefined;
 export class ConnectWeb3Service {
 
   private _web3: any;
-  private desiredNetwork: string = 'Rinkeby';
+  public desiredNetwork: string = 'Rinkeby';
   public connected_to: string;
   public connected_to_network: string;
   public connectedAccount: string;
@@ -31,7 +31,7 @@ export class ConnectWeb3Service {
     this._web3 = web3;
   }
   
-  get connectionIsEstablished(): boolean {
+  get connectionEstablished(): boolean {
     return (this.connectedAccount && this.connected_to_network === this.desiredNetwork)
   }
 

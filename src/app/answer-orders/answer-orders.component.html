@@ -1,0 +1,33 @@
+<div *ngIf='this.orderService.orderRequests.length > 0'>
+  <h1> You have Requests for an Offer </h1>
+  <div *ngFor='let order of this.orderService.orderRequests'>
+      <mat-card>
+        <mat-card-title>
+          {{order.takerAddress}}
+        </mat-card-title>
+        <mat-card-subtitle>
+            Wants to <b>trade your {{getTokenSymbol(order.makerToken)}} for his {{getTokenSymbol(order.takerToken)}}</b>
+        </mat-card-subtitle>
+        <mat-card-content>
+          <p>
+            <i>He asks what do you want to trade:</i> 
+          </p>
+          <p>
+            {{order.makerAmount / getTokenDecimals(order.makerToken)}} 
+            {{getTokenSymbol(order.makerToken)}} ({{order.makerToken.slice(0,8)}}) 
+            for {{getTokenSymbol(order.takerToken)}} ({{order.takerToken.slice(0,8)}})
+          </p>
+          <mat-form-field style="width: 100%;">
+            <input matInput number placeholder="Offer the deal for {{getTokenSymbol(order.takerToken)}}" [(ngModel)]="order['takerAmount']">
+          </mat-form-field>
+          <div *ngIf="order['takerAmount'] && order['takerAmount'] >= 0">
+            <button mat-raised-button (click)="answerOrder(order)">OFFER DEAL</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+  </div>
+</div> 
+
+<div *ngIf='this.orderService.orderRequests.length === 0'>
+  <p>There are currently no offer requests for you.</p>
+</div>

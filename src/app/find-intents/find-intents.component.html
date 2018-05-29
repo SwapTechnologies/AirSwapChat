@@ -1,45 +1,96 @@
-<div *ngIf='this.wsService.connectionEstablished'>
-  <button 
-    (click)="findIntentsClicked()" 
-    [disabled]="!this.wsService.connectionEstablished"
-  >
-    Find Intents
-  </button>
-  <div *ngIf="isClicked">
-    Which token intents do you want to see?
-    <div>
-      <select name="select_token" [(ngModel)]='selectedToken'>
-        <option *ngFor="let token of tokenList" [value]='token.name'>
+<div>
+  <h1>
+    Search the Indexer for Peers
+  </h1>
+  <div>
+    <mat-form-field>
+      <mat-select 
+      placeholder="Search Token" 
+      [(value)]="selectedToken"
+      (selectionChange)="showIntents()">
+        <mat-option 
+        *ngFor="let token of tokenList" 
+        [value]='token'>
           {{token.name}} ({{token.address.slice(0,8)}}...)
-        </option> 
-      </select>
-      <select name="role" [(ngModel)]='selectedRole'>
-        <option value="maker">as Maker Token</option>
-        <option value="taker">as Taker Token</option>
-      </select>
-      <!-- <button (click)="addToken()">Add token</button> -->
-    </div>
-    <!-- <div *ngIf="makerTokens.length>0 || takerTokens.length>0">
-      <button (click)="showIntents()">Show me the intents</button>
-    </div> -->
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select 
+      placeholder="What is your role" 
+      [(value)]="selectedRole"
+      (selectionChange)="showIntents()">
+        <mat-option value="maker">I want to buy it</mat-option>
+        <mat-option value="taker">I want to sell it</mat-option>
+      </mat-select> 
+    </mat-form-field>
+  </div>
+  <!-- <div *ngIf="makerTokens.length>0 || takerTokens.length>0">
     <button (click)="showIntents()">Show me the intents</button>
-    <div *ngIf="foundIntents.length>0">
-      <div>
-        MakerToken <-> TakerToken MakerAddress
-      </div>
+  </div> -->
+
+  <div *ngIf="foundIntents.length>0">
+    <div *ngIf="selectedRole==='maker'">
+      <p>
+        <i>Peers selling <b>{{selectedToken.name}}</b></i>
+      </p>
       <div *ngFor="let intent of foundIntents" class="row">
-        <div *ngIf="callGetTokenByAddress(intent.makerToken) && callGetTokenByAddress(intent.takerToken)">
-          {{callGetTokenByAddress(intent.makerToken)}} <-> {{callGetTokenByAddress(intent.takerToken)}} {{intent.address}}
+        <div *ngIf="callGetTokenByAddress(intent.makerToken)" class="peerCard">
+          <mat-card>
+            <mat-card-title>
+              {{intent.address}}
+            </mat-card-title>
+            <mat-card-subtitle>
+                Wants to <b>buy {{callGetTokenNameByAddress(intent.takerToken)}}</b>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <i>Owns:</i> 
+              {{intent.peerBalanceMyToken / callGetTokenDecimalsByAddress(intent.makerToken)}}
+              {{callGetTokenSymbolByAddress(intent.makerToken)}},
+              {{intent.peerBalanceHisToken / callGetTokenDecimalsByAddress(intent.takerToken)}}
+              {{callGetTokenSymbolByAddress(intent.takerToken)}}
+            </mat-card-content>
+          </mat-card>
         </div>
       </div>
     </div>
-    <!-- <div *ngIf="makerTokens.length>0">
-      Maker Tokens: <span *ngFor='let token of makerTokens'>{{callGetTokenByAddress(token)}} </span>
-    </div>
-    <div *ngIf="takerTokens.length>0">
-      Taker Tokens: <span *ngFor='let token of takerTokens'>{{callGetTokenByAddress(token)}} </span>
-    </div> -->
-
+    <div *ngIf="selectedRole==='taker'">
+      <p>
+        <i>Peers buying <b>{{selectedToken.name}}</b></i>
+      </p>
+      <div *ngFor="let intent of foundIntents" class="row">
+        <div *ngIf="callGetTokenByAddress(intent.takerToken)" class="peerCard">
+          <mat-card>
+            <mat-card-title>
+              {{intent.address}}
+            </mat-card-title>
+            <mat-card-subtitle>
+                Wants to <b>sell {{callGetTokenNameByAddress(intent.makerToken)}}</b>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <i>Owns:</i> 
+              {{intent.peerBalanceMyToken / callGetTokenDecimalsByAddress(intent.takerToken)}}
+              {{callGetTokenSymbolByAddress(intent.takerToken)}},
+              {{intent.peerBalanceHisToken / callGetTokenDecimalsByAddress(intent.makerToken)}}
+              {{callGetTokenSymbolByAddress(intent.makerToken)}}
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>        
   </div>
-
+  <div *ngIf="selectedToken && foundIntents.length === 0">
+    <p *ngIf="selectedRole==='maker'">
+      Sorry, nobody has signaled his intent to sell {{selectedToken.name}} in the indexer at the moment.
+    </p>
+    <p *ngIf="selectedRole==='taker'">
+      Sorry, nobody has signaled his intent to buy {{selectedToken.name}} in the indexer at the moment.
+    </p>
+  </div>
+  <!-- <div *ngIf="makerTokens.length>0">
+    Maker Tokens: <span *ngFor='let token of makerTokens'>{{callGetTokenByAddress(token)}} </span>
+  </div>
+  <div *ngIf="takerTokens.length>0">
+    Taker Tokens: <span *ngFor='let token of takerTokens'>{{callGetTokenByAddress(token)}} </span>
+  </div> -->
 </div>

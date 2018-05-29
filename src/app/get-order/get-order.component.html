@@ -1,0 +1,61 @@
+<div>
+  <h1>
+    Ask a Peer for a Signed Offer for a Trade
+  </h1>
+  <div>
+    <mat-form-field style="width: 100%;">
+      <input matInput placeholder="Peer Address" [(ngModel)]="receiver">
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field>
+      <mat-select 
+      placeholder="Give me" 
+      [(value)]="makerToken">
+        <mat-option 
+        *ngFor="let token of tokenList" 
+        [value]='token'>
+          {{token.name}} ({{token.address.slice(0,8)}}...)
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select 
+      placeholder="I will give you" 
+      [(value)]="takerToken">
+        <mat-option 
+        *ngFor="let token of tokenList" 
+        [value]='token'>
+          {{token.name}} ({{token.address.slice(0,8)}}...)
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="makerToken" style="width: 100%;">
+      <input matInput number placeholder="Sell me {{makerToken.symbol}}" [(ngModel)]="makerAmount">
+    </mat-form-field>
+  </div>  
+  <div *ngIf="receiver && makerToken && takerToken && stringIsValidNumber(makerAmount)">
+    <button mat-raised-button (click)="getOrder()">ASK FOR OFFER</button>
+  </div>
+
+  <div *ngIf='orderResponses.length > 0'>
+    <div *ngFor='let order of orderResponses'>
+      <mat-card>
+        <mat-card-title>
+          You got an response from {{order.makerAddress}}
+        </mat-card-title>
+        <!-- <mat-card-subtitle>
+            Wants to <b>buy {{callGetTokenNameByAddress(intent.takerToken)}}</b>
+        </mat-card-subtitle> -->
+        <mat-card-content>
+          He signed the deal to give you 
+          {{order.makerAmount / getTokenDecimals(order.makerToken)}}
+          {{getTokenSymbol(order.makerToken)}} ({{order.makerToken.slice(0,8)}}) 
+          for {{order.takerAmount / getTokenDecimals(order.takerToken)}} 
+          {{getTokenSymbol(order.takerToken)}} ({{order.takerToken.slice(0,8)}})
+        </mat-card-content>
+        <button mat-raised-button (click)="sealDeal(order)">SEAL THE DEAL</button>
+      </mat-card>     
+    </div>
+  </div> 
+</div>
