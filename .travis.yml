@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+- "8.9.1"
+cache: pip
+before_install:
+- npm i -g npm@latest
+install:
+- npm i
+script:
+- npm run build
+before_deploy:
+- pip install awscli --user
+deploy:
+  provider: s3
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: swapchat
+  region: $AWS_DEFAULT_REGION
+  acl: public_read
+  skip_cleanup: true
+  local-dir: build
+  on:
+    branch: master
