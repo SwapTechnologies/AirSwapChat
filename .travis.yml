@@ -16,8 +16,8 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: swapchat
   region: $AWS_DEFAULT_REGION
-  acl: public_read
   skip_cleanup: true
-  local-dir: build
+  acl: public_read
+  local-dir: dist
   on:
     branch: master
