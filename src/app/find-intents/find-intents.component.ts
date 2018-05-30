@@ -230,7 +230,8 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   message(intent: any): void {
-    let peer = this.messageService.getPeerAndAdd(intent.address);
+    let peer = this.messageService.getPeerAndAdd(
+      intent.address);
     this.messageService.selectedPeer = peer;
     this.messageService.showMessenger = true;
   }

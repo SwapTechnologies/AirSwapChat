@@ -601,7 +601,7 @@
 
 export const EthereumTokens: any[] = [
   {
-    "address": "0xDE4591a79571Bc092621d31F0b313382A59A99f6",
+    "address": "0xcc1cbd4f67cceb7c001bd4adf98451237a193ff8",
     "name": "AirSwap",
     "symbol": "AST",
     "decimals": "4",

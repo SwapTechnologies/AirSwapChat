@@ -43,7 +43,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     this.erc20service.balance(astContract, this.web3service.connectedAccount)
     .then(balance => {
       this.astBalance = balance/1e4;
-      this.balanceTooLow = false;//this.astBalance < 250;
+      this.balanceTooLow = this.astBalance < 250;
     })
 
     this.getMyIntents();
