@@ -52,21 +52,21 @@ export class Erc20Service {
     .then(approvedAmount => {return approvedAmount})
   }
 
-  approve(contract: any, spender: string): void {
-    this.decimals(contract)
+  approve(contract: any, spender: string): Promise<any> {
+    let approveMethod;
+    
+    return this.decimals(contract)
     .then(decimals => {
       let largeApproval = this.toFixed(1e21 * 10**decimals);
-      let approveMethod = contract.methods
+      approveMethod = contract.methods
       .approve(spender, largeApproval);
-      
-      approveMethod.estimateGas({from: this.web3service.connectedAccount})
-      .then(estimatedGas => {
-        approveMethod.send({
-          from: this.web3service.connectedAccount,
-          gas: Math.round(estimatedGas*1.1),
-          gasPrice: 10e9
-        })
-      });
+      return approveMethod.estimateGas({from: this.web3service.connectedAccount})
+    }).then(estimatedGas => {
+      return approveMethod.send({
+        from: this.web3service.connectedAccount,
+        gas: Math.round(estimatedGas*1.1),
+        gasPrice: 10e9
+      })
     });
   }
 }

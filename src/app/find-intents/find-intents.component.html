@@ -64,8 +64,11 @@
               <mat-card-content>
                 <button mat-raised-button
                 (click)="message(intent)">MESSAGE</button>
-                <button mat-raised-button
-                (click)="openDialogGetOrder(intent)">GET ORDER</button>              
+                <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
+                (click)="openDialogGetOrder(intent)">GET ORDER</button>           
+                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                [disabled]="clickedApprove[intent.takerToken]"
+                (click)="approveTaker(intent)">APPROVE {{intent.takerProps.symbol}}</button>              
               </mat-card-content>
               <mat-card-content *ngIf="intent.sentRequest">
                 <i>Sent request for an offer of 
@@ -105,8 +108,11 @@
               <mat-card-content>
                 <button mat-raised-button
                 (click)="message(intent)">MESSAGE</button>
-                <button mat-raised-button
-                (click)="openDialogGetOrder(intent)">GET ORDER</button>              
+                <button mat-raised-button *ngIf="(intent.approvedTakerToken > 0)"
+                (click)="openDialogGetOrder(intent)">GET ORDER</button>           
+                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                [disabled]="clickedApprove[intent.takerToken]"
+                (click)="approveTaker(intent)">APPROVE {{intent.takerProps.symbol}}</button>        
               </mat-card-content>
             </mat-card>
           </div>

@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AccountComponent } from './account/account.component';
 import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
 import { AppComponent } from './app.component';
+import { ErrorComponent } from './error/error.component';
 import { FindIntentsComponent } from './find-intents/find-intents.component';
 import { GetOrderComponent } from './get-order/get-order.component';
 import { InitialPageComponent } from './initial-page/initial-page.component';
@@ -53,6 +54,7 @@ const appRoutes: Routes = [
   { path: 'order', component: GetOrderComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'whosOnline', component: WhosOnlineComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'answer', component: AnswerOrdersComponent, canActivate:[RouterWebsocketActivatedService] },
+  { path: 'error', component: ErrorComponent},
   { path: '**', component: InitialPageComponent }
 ];
 // { path: '', redirectTo: '/connect',  pathMatch: 'full' },
@@ -77,6 +79,7 @@ const appRoutes: Routes = [
     FocusDirective,
     DialogGetOrderComponent,
     DialogSendOfflineComponent,
+    ErrorComponent,
   ],
   imports: [
     BrowserModule,

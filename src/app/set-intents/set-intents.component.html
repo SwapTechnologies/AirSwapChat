@@ -50,6 +50,26 @@
     <div *ngIf="markedIntents">
       <button mat-raised-button (click)="callSetIntents()">UPDATE INTENTS TO INDEXER</button>
     </div>
+
+    <div *ngIf="unapprovedTokens.length > 0">
+      <strong>
+        You want to trade unapproved tokens. 
+      </strong>
+      <p>
+        Approve them or the AirSwap smart contract can not swap the tokens for you.
+      </p>
+      <div class="row">
+        <mat-list>
+          <mat-list-item *ngFor="let token of unapprovedTokens"> 
+            <button mat-raised-button
+            [disabled]="clickedApprove[token]"
+            (click)="approveMaker(intent)">
+              APPROVE {{callGetTokenByAddress(token)}} 
+            </button>        
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
     <!-- <div *ngIf="intents.length>0" class="row">
       <p><i>Set intents to</i></p>
       <mat-list>

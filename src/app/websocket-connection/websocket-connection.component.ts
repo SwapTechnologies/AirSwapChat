@@ -136,6 +136,7 @@ export class WebsocketConnectionComponent implements OnInit, OnDestroy {
     this.wsService.websocketSubject
     .subscribe(message => {
       let receivedMessage = JSON.parse(message);
+      console.log('got message', receivedMessage);
       let content = JSON.parse(receivedMessage['message'])
       let method = content['method']
       if (method === 'ping') {

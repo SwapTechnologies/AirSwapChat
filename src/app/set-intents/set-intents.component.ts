@@ -21,19 +21,18 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   public markedIntents: boolean = false;
   public intentsMarkedForRemoval: any;
 
-  public selectedRole: string = 'taker';
-  public inputToken: string = '';
-  public displayCustomInput: boolean = false;
-
   public tokenList: any[] = EthereumTokensSN;
-  public foundIntents: any[] = []
+  public unapprovedTokens: any[] = [];
   public websocketSubscription: Subscription;
 
   public astBalance: number = 0;
   public balanceTooLow: boolean = true;
+
+  public clickedApprove: any = {};
+
   constructor(
     private erc20service: Erc20Service,
-    private airswapService: AirswapdexService,
+    private airswapDexService: AirswapdexService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
     private ref: ChangeDetectorRef) { }
@@ -43,7 +42,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     this.erc20service.balance(astContract, this.web3service.connectedAccount)
     .then(balance => {
       this.astBalance = balance/1e4;
-      this.balanceTooLow = this.astBalance < 250;
+      this.balanceTooLow = false;//this.astBalance < 250;
     })
 
     this.getMyIntents();
@@ -56,10 +55,10 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       let parsedMessage = JSON.parse(message);
       let parsedContent = JSON.parse(parsedMessage['message']);
       let id = parsedContent['id'];
-      
       if(id === uuid){
         this.myIntents = parsedContent['result'];
         this.intentsMarkedForRemoval = [];
+        this.checkApproval();
         answerSubscription.unsubscribe();
       }
     })
@@ -79,34 +78,6 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     })
   }
 
-  arraysEqual(_arr1, _arr2): boolean {
-    if (!Array.isArray(_arr1) 
-    || ! Array.isArray(_arr2) 
-    || _arr1.length !== _arr2.length)
-      return false;
-
-    var arr1 = _arr1.concat().sort((x, y) => {
-      if(x.makerToken > y.makerToken) return -1;
-      if(x.makerToken < y.makerToken) return 1;
-      if(x.takerToken > y.takerToken) return -1;
-      if(x.takerToken < y.takerToken) return 1;
-      return 0;
-    });
-    var arr2 = _arr2.concat().sort((x, y) => {
-      if(x.makerToken > y.makerToken) return -1;
-      if(x.makerToken < y.makerToken) return 1;
-      if(x.takerToken > y.takerToken) return -1;
-      if(x.takerToken < y.takerToken) return 1;
-      return 0;
-    });
-
-    for (var i = 0; i < arr1.length; i++) {
-      if (arr1[i] !== arr2[i])
-          return false;
-    }
-    return true;
-  }
-
   changedList(event): void {
     this.markedIntents = event.length>0
   }
@@ -121,9 +92,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     && this.makerToken 
     !== this.takerToken) {
       let intent = {
-        "address": this.web3service.connectedAccount.toLowerCase(),
-        "makerToken": this.makerToken,
-        "takerToken": this.takerToken,
+        "makerToken": this.makerToken.toLowerCase(),
+        "takerToken": this.takerToken.toLowerCase(),
         "role": "maker"
       }
       if(!this.isIntentInList(intent)) {
@@ -142,13 +112,24 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
 
   callSetIntents(): void {
     let newIntentList = JSON.parse(JSON.stringify(this.myIntents));
+    // removed marked intents
     for(let intent of this.intentsMarkedForRemoval) {
       let idx = this.findIdxOfIntent(intent, newIntentList)
       if(idx >= 0)
       newIntentList.splice( idx, 1 );
     }
     this.markedIntents = false;
-    let uuid = this.wsService.setIntents(newIntentList)
+
+    let sendIntents = [];
+    for(let intent of newIntentList) {
+      sendIntents.push({
+        makerToken: intent.makerToken,
+        takerToken: intent.takerToken,
+        role: intent.role,
+      })
+    }
+
+    let uuid = this.wsService.setIntents(sendIntents)
 
     this.websocketSubscription = this.wsService.websocketSubject
     .subscribe(message => {
@@ -159,9 +140,45 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
         let response = parsedContent['result'];
         if(response === 'ok') {
           this.getMyIntents();
+        } else {
+          console.log('Error at setting intent.')
+          if(parsedContent['error'])
+            console.log(parsedContent['error']);
+
+          this.checkApproval();
         }
         this.websocketSubscription.unsubscribe();
       }
     })
   }
+
+  checkApproval(): void {
+    let promiseList = [];
+    console.log('checking approval of ', this.myIntents);
+    for(let intent of this.myIntents) {
+      let contract = this.erc20service.getContract(intent.makerToken);
+      this.clickedApprove[intent.makerToken] = false;
+      promiseList.push(
+        this.erc20service.approvedAmount(contract,  this.airswapDexService.airswapDexAddress)
+        .then(approvedAmount => {
+          if(!(approvedAmount > 0) && !this.unapprovedTokens.find(x => {return x===intent.makerToken}) )
+            this.unapprovedTokens.push(intent.makerToken)
+        })
+      )
+    }
+  }
+  approveTaker(makerToken: string): void {
+    this.clickedApprove[makerToken] = true;
+    let contract = this.erc20service.getContract(makerToken);
+    this.erc20service.approve(contract, this.airswapDexService.airswapDexAddress)
+    .then(result => {
+      console.log('approve')
+    })
+    .catch(error => {
+      console.log("Approve failed.");
+      this.clickedApprove[makerToken] = false;
+    })
+  }
+
+
 }
