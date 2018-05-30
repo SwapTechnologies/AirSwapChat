@@ -50,6 +50,9 @@
     <div *ngIf="markedIntents">
       <button mat-raised-button (click)="callSetIntents()">UPDATE INTENTS TO INDEXER</button>
     </div>
+    <p style='color:red;'>
+      <strong>{{this.errorMessage}}</strong>
+    </p>
 
     <div *ngIf="unapprovedTokens.length > 0">
       <strong>
@@ -70,15 +73,5 @@
         </mat-list>
       </div>
     </div>
-    <!-- <div *ngIf="intents.length>0" class="row">
-      <p><i>Set intents to</i></p>
-      <mat-list>
-        <mat-list-item *ngFor="let intent of intents">
-          You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
-        </mat-list-item>
-      </mat-list>
-    </div>
-  
-     -->
   </div>  
 </div>

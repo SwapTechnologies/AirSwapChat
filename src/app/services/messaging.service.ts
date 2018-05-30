@@ -119,6 +119,7 @@ export class MessagingService {
   }
 
   sendMessage(message: string) {
+
     let messageReceiver = this.selectedPeer.address.toLowerCase();
     let currentTime = Math.round(Date.now()/1000);
     let messageId = this.wsService.sendMessage(
@@ -146,17 +147,23 @@ export class MessagingService {
     // what if nobody answers? :-( put it to firebase!
     setTimeout(()=> {
       if(!gotReponse) {
-        this.addMessage(this.selectedPeer, 'System', 'Peer is offline.', currentTime);
-        // connect to firebase and check my account
-        this.askToStore(message)
-        .then(response => {
-          if(response) {
-            this.firebaseService.storeMessageInFireBase(this.web3service.connectedAccount.toLowerCase(), messageReceiver, message, currentTime)
-            .then(fbResponse => {
-              this.addMessage(this.selectedPeer, fbResponse.user, fbResponse.message, fbResponse.timestamp);
-            })
-          }
-        })
+        if(this.web3service.connectionEstablished && this.wsService.connectionEstablished) {
+          this.addMessage(this.selectedPeer, 'System', 'Peer is offline.', currentTime);
+          // connect to firebase and check my account
+          this.askToStore(message)
+          .then(response => {
+            if(response) {
+              if(this.web3service.connectionEstablished && this.wsService.connectionEstablished) {
+                this.firebaseService.storeMessageInFireBase(this.web3service.connectedAccount.toLowerCase(), messageReceiver, message, currentTime)
+                .then(fbResponse => {
+                  this.addMessage(this.selectedPeer, fbResponse.user, fbResponse.message, fbResponse.timestamp);
+                })
+              }
+            }
+          })
+        } else {
+          console.log("You are offline.")
+        }
       }
       this.websocketAnswerSubscription.unsubscribe();
     }, 3000)
@@ -177,13 +184,14 @@ export class MessagingService {
   }
 
   addPeer(address: string): void {
-    if(!this.isAddressInPeerList(address)) {
+    let addressLC = address.toLowerCase();
+    if(!this.isAddressInPeerList(addressLC)) {
       this.connectedPeers.push({
-        address: address.toLowerCase(),
+        address: addressLC,
         messageHistory: [],
         hasUnreadMessages: false,
         isOnline: false,
-        alias: address.toLowerCase().slice(2,6),
+        alias: addressLC.slice(2,6),
       })
       if(this.connectedPeers.length === 1) {
         this.selectedPeer = this.connectedPeers[0]
@@ -200,9 +208,8 @@ export class MessagingService {
   }
 
   getPeerAndAdd(address: string): Peer {
-    if(!this.isAddressInPeerList(address))
-      this.addPeer(address);
-    return this.getPeerFromAddress(address);
+    this.addPeer(address);
+    return this.getPeerFromAddress(address.toLowerCase());
   }
 
   isAddressInPeerList(address: string): boolean {

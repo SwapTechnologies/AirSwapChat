@@ -6,7 +6,11 @@
       <br/>
       <!-- <strong>{{data}}</strong> -->
       <mat-form-field style="width: 100%;">
-        <input matInput placeholder="Address of Peer" [(ngModel)]="peerAddress">
+        <input 
+        matInput 
+        (keydown.enter)="onCloseConfirm()"
+        placeholder="Address of Peer" 
+        [(ngModel)]="peerAddress">
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions>

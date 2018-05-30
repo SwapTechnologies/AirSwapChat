@@ -29,6 +29,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   public balanceTooLow: boolean = true;
 
   public clickedApprove: any = {};
+  public errorMessage: string = '';
 
   constructor(
     private erc20service: Erc20Service,
@@ -142,9 +143,12 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
           this.getMyIntents();
         } else {
           console.log('Error at setting intent.')
-          if(parsedContent['error'])
+          if(parsedContent['error']){
             console.log(parsedContent['error']);
+            this.myIntents.splice(-1,1);
+            this.errorMessage = parsedContent['error']['message'];
 
+          }
           this.checkApproval();
         }
         this.websocketSubscription.unsubscribe();
