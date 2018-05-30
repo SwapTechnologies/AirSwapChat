@@ -25,100 +25,107 @@
       </mat-select> 
     </mat-form-field>
   </div>
-  <!-- <div *ngIf="makerTokens.length>0 || takerTokens.length>0">
-    <button (click)="showIntents()">Show me the intents</button>
-  </div> -->
 
-  <div *ngIf="foundIntents.length>0">
-    <div *ngIf="selectedRole==='maker'">
-      <p>
-        <i>Peers selling <b>{{selectedToken.name}}</b></i>
-      </p>
-      <div *ngFor="let intent of foundIntents" class="row">
-        <div *ngIf="callGetTokenByAddress(intent.makerToken)" class="peerCard">
-          <mat-card>
-            <mat-card-title>
-              {{intent.alias}}
-              <span *ngIf="intent.isOnline" class="onlineDot"></span>
-              <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
-            </mat-card-title>
-            <mat-card-subtitle>
-                Address {{intent.address}}
-            </mat-card-subtitle>
-            <mat-card-subtitle>
-                In turn Peer wants to <b>buy {{callGetTokenNameByAddress(intent.takerToken)}}</b>
-            </mat-card-subtitle>
-            <mat-card-content>
-              <i>Owns:</i> 
-              {{intent.peerBalanceMyToken / callGetTokenDecimalsByAddress(intent.makerToken)}}
-              {{callGetTokenSymbolByAddress(intent.makerToken)}},
-              {{intent.peerBalanceHisToken / callGetTokenDecimalsByAddress(intent.takerToken)}}
-              {{callGetTokenSymbolByAddress(intent.takerToken)}}
-            </mat-card-content>
-            <mat-card-content>
-              <button mat-raised-button
-              (click)="message(intent)">MESSAGE</button>
-              <button mat-raised-button
-              (click)="openDialogGetOrder(intent)">GET ORDER</button>              
-            </mat-card-content>
-            <mat-card-content *ngIf="intent.sentRequest">
-              <i>Sent request for an offer of 
-              {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
-              {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
-            </mat-card-content>
-            
-          </mat-card>
+  <div *ngIf="stillLoading" class="row">
+    <mat-progress-spinner
+    class="progress_spinner"
+    color="primary"
+    mode="indeterminate">
+    </mat-progress-spinner>
+    <p>Standby. Fetching peers, their balances and checking who's online</p>
+  </div>
+  <div *ngIf="!stillLoading">
+    <div *ngIf="foundIntents.length>0">
+      <div *ngIf="selectedRole === 'maker'">
+        <p>
+          <i>Peers selling <b>{{selectedToken.name}}</b></i>
+        </p>
+        <div *ngFor="let intent of foundIntents" class="row">
+          <div *ngIf="intent.makerToken" class="peerCard">
+            <mat-card>
+              <mat-card-title>
+                {{intent.alias}}
+                <span *ngIf="intent.isOnline" class="onlineDot"></span>
+                <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
+              </mat-card-title>
+              <mat-card-subtitle>
+                  Address {{intent.address}}
+              </mat-card-subtitle>
+              <mat-card-subtitle>
+                  In turn the peer wants to <b>buy {{intent.takerProps.name}}</b> from you
+              </mat-card-subtitle>
+              <mat-card-content>
+                <i>In his wallet are:</i> 
+                {{intent.peerBalanceMakerToken / getExponential(intent.makerProps.decimals)}}
+                {{intent.makerProps.symbol}},
+                {{intent.peerBalanceTakerToken / getExponential(intent.takerProps.decimals)}}
+                {{intent.takerProps.symbol}}
+              </mat-card-content>
+              <mat-card-content>
+                <button mat-raised-button
+                (click)="message(intent)">MESSAGE</button>
+                <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
+                (click)="openDialogGetOrder(intent)">GET ORDER</button>           
+                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                [disabled]="clickedApprove[intent.takerToken]"
+                (click)="approveTaker(intent)">APPROVE {{intent.takerProps.symbol}}</button>              
+              </mat-card-content>
+              <mat-card-content *ngIf="intent.sentRequest">
+                <i>Sent request for an offer of 
+                {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
+                {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
+              </mat-card-content>
+              
+            </mat-card>
+          </div>
         </div>
       </div>
+      <div *ngIf="selectedRole==='taker'">
+        <p>
+          <i>Peers buying <b>{{selectedToken.name}}</b></i>
+        </p>
+        <div *ngFor="let intent of foundIntents" class="row">
+          <div *ngIf="callGetTokenByAddress(intent.takerToken)" class="peerCard">
+            <mat-card>
+              <mat-card-title>
+                {{intent.alias}} 
+                <span *ngIf="intent.isOnline" class="onlineDot"></span>
+                <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
+              </mat-card-title>
+              <mat-card-subtitle>
+                  Address {{intent.address}}
+              </mat-card-subtitle>
+              <mat-card-subtitle>
+                  In turn Peer wants to <b>sell {{intent.takerProps.name}}</b> from you
+              </mat-card-subtitle>
+              <mat-card-content>
+                <i>Owns:</i> 
+                {{intent.peerBalanceMakerToken / getExponential(intent.makerProps.decimals)}}
+                {{intent.makerProps.symbol}},
+                {{intent.peerBalanceTakerToken / getExponential(intent.takerProps.decimals)}}
+                {{intent.takerProps.symbol}}
+              </mat-card-content>
+              <mat-card-content>
+                <button mat-raised-button
+                (click)="message(intent)">MESSAGE</button>
+                <button mat-raised-button *ngIf="(intent.approvedTakerToken > 0)"
+                (click)="openDialogGetOrder(intent)">GET ORDER</button>           
+                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                [disabled]="clickedApprove[intent.takerToken]"
+                (click)="approveTaker(intent)">APPROVE {{intent.takerProps.symbol}}</button>        
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </div>        
     </div>
-    <div *ngIf="selectedRole==='taker'">
-      <p>
-        <i>Peers buying <b>{{selectedToken.name}}</b></i>
+    <div *ngIf="selectedToken && foundIntents.length === 0">
+      <p *ngIf="selectedRole==='maker'">
+        Sorry, nobody has signaled his intent to sell {{selectedToken.name}} in the indexer at the moment.
       </p>
-      <div *ngFor="let intent of foundIntents" class="row">
-        <div *ngIf="callGetTokenByAddress(intent.takerToken)" class="peerCard">
-          <mat-card>
-            <mat-card-title>
-              {{intent.alias}} 
-              <span *ngIf="intent.isOnline" class="onlineDot"></span>
-              <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
-            </mat-card-title>
-            <mat-card-subtitle>
-                Address {{intent.address}}
-            </mat-card-subtitle>
-            <mat-card-subtitle>
-                In turn Peer wants to <b>sell {{callGetTokenNameByAddress(intent.makerToken)}}</b>
-            </mat-card-subtitle>
-            <mat-card-content>
-              <i>Owns:</i> 
-              {{intent.peerBalanceMyToken / callGetTokenDecimalsByAddress(intent.takerToken)}}
-              {{callGetTokenSymbolByAddress(intent.takerToken)}},
-              {{intent.peerBalanceHisToken / callGetTokenDecimalsByAddress(intent.makerToken)}}
-              {{callGetTokenSymbolByAddress(intent.makerToken)}}
-            </mat-card-content>
-            <mat-card-content>
-              <button mat-raised-button
-              (click)="message(intent)">MESSAGE</button>
-              <button mat-raised-button
-              (click)="openDialogGetOrder(intent)">GET ORDER</button>              
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </div>
-    </div>        
+      <p *ngIf="selectedRole==='taker'">
+        Sorry, nobody has signaled his intent to buy {{selectedToken.name}} in the indexer at the moment.
+      </p>
+    </div>
   </div>
-  <div *ngIf="selectedToken && foundIntents.length === 0">
-    <p *ngIf="selectedRole==='maker'">
-      Sorry, nobody has signaled his intent to sell {{selectedToken.name}} in the indexer at the moment.
-    </p>
-    <p *ngIf="selectedRole==='taker'">
-      Sorry, nobody has signaled his intent to buy {{selectedToken.name}} in the indexer at the moment.
-    </p>
-  </div>
-  <!-- <div *ngIf="makerTokens.length>0">
-    Maker Tokens: <span *ngFor='let token of makerTokens'>{{callGetTokenByAddress(token)}} </span>
-  </div>
-  <div *ngIf="takerTokens.length>0">
-    Taker Tokens: <span *ngFor='let token of takerTokens'>{{callGetTokenByAddress(token)}} </span>
-  </div> -->
 </div>

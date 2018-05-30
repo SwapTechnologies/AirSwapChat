@@ -43,14 +43,13 @@ export class WebsocketService {
       'receiver': receiver.toLowerCase(),
       'message': JSON.stringify(jsonrpc)
     }
+    console.log('sending', envelope);
     let request: string = JSON.stringify(envelope)
-    // console.log('sent request:\n' + request +'\n')
     this.send(request)
   }
 
   getIntents(address: string): string {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
-    console.log(address);
     // Construct the `getOrder` query
     let jsonrpc = {
         'id': callId,
@@ -65,7 +64,6 @@ export class WebsocketService {
   }
 
   setIntents(intents: any[]): string {
-    // this.openSetIntents = true;
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
     let jsonrpc = {
         'id': callId,

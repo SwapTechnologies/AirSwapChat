@@ -47,8 +47,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
 
   updateStatus(): void {
     if(this.messageService.selectedPeer)
-      this.messageService.selectedPeer.hasUnreadMessages = false;
-    
+      this.messageService.setMessageRead();
     this.messageService.checkOnlineStatus();
   }
 
@@ -70,82 +69,5 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
       this.messageService.sendMessage(this.message);
       this.message = '';
     }
-  }
-
-  askToStore(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (confirm(
-        'Receiver seems to be offline.'+
-        'Shall the message be (currently unencrypted) stored '+
-        'and be send when he logs in?')) {
-        resolve(true)
-      } else {
-        resolve(false)
-      }
-    })
-  }
-
-
-  displayMessageOnScreen(user, message, timestamp): void {
-    // this.selectedPeer.messageHistory.unshift({
-    //   user: user,
-    //   message: message,
-    //   timestamp: timestamp,
-    //   seen: true
-    // })
-  }
-
-  storeMessageInFireBase(messageSender, messageReceiver, 
-    message, currentTime): void {
-    
-    // let dbMyAccount: AngularFireObject<any>; 
-    // let obsNumberOfSendMessages: Subscription;
-    
-    // dbMyAccount = this.db.object(messageSender);
-    // obsNumberOfSendMessages = dbMyAccount.valueChanges()
-    // .subscribe(entries => {
-    //   let sendMessages = 0;
-    //   let lastSentMessageTime = currentTime;
-    //   let allowedToPost = true;
-
-    //   if(entries) {// do I have sent messages to firebase before?
-    //     if (entries['sendMessages'])
-    //       sendMessages = entries['sendMessages']
-
-    //     if (entries['lastSentMessageTime']) {
-    //       if (currentTime - entries['lastSentMessageTime'] < 60000) {
-    //         // I am spamming mailboxes
-    //         this.displayMessageOnScreen(
-    //           '',
-    //           'He is offline. Can only send message every 60 seconds.',
-    //           currentTime
-    //         )
-    //         allowedToPost = false;
-    //       }
-    //     }
-    //   }
-    //   if(allowedToPost) {
-    //     dbMyAccount.update({
-    //       'sendMessages': sendMessages+1,
-    //       'lastSentMessageTime': currentTime
-    //     })
-    //     let receiverRef: AngularFireObject<any> = 
-    //       this.db.object(messageReceiver+'/unreceivedMessage');
-    //     receiverRef.update({
-    //       [currentTime]: {
-    //         sender: messageSender,
-    //         message: message
-    //       }
-    //     });
-    //     this.displayMessageOnScreen(
-    //       'You to '+messageReceiver.slice(0,6),
-    //       message+'\n('+messageReceiver.slice(0,6)+' is offline.'+
-    //         'He will get the message when he signs in.)',
-    //       currentTime
-    //     )
-
-    //   }
-    //   obsNumberOfSendMessages.unsubscribe();
-    // })
   }
 }

@@ -34,9 +34,6 @@ export class GetOrderService {
       let parsedContent = JSON.parse(parsedMessage['message']);
       let id = parsedContent['id'];
       
-      console.log(parsedContent);
-      console.log(parsedContent['method'] === 'getOrder')
-        
       if(id === uuid 
         && parsedContent['method'] 
         && parsedContent['method'] === 'orderResponse') {

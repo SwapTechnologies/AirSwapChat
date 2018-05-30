@@ -1,55 +1,84 @@
 <div>
   <h2>Signal Your Intents to Trade on the Indexer</h2>
-  <div>
-    <mat-form-field>
-      <mat-select 
-      placeholder="Signal you sell" 
-      [(value)]="makerToken">
-        <mat-option 
-        *ngFor="let token of tokenList" 
-        [value]='token.address'>
-          {{token.name}} ({{token.address.slice(0,8)}}...)
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-select 
-      placeholder="When people give you" 
-      [(value)]="takerToken">
-        <mat-option 
-        *ngFor="let token of tokenList" 
-        [value]='token.address'>
-          {{token.name}} ({{token.address.slice(0,8)}}...)
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <button 
-      mat-icon-button 
-      color="primary"
-      (click)="addTokenPair()">
-      <mat-icon>add</mat-icon>
-    </button>
+  <div *ngIf="balanceTooLow">
+    <p>Your AST balance too low! You need 250 AST to interact with the Indexer.</p>
   </div>
+  <div *ngIf="!balanceTooLow">
+    <div>
+      <mat-form-field>
+        <mat-select 
+        placeholder="Add signal you sell" 
+        [(value)]="makerToken">
+          <mat-option 
+          *ngFor="let token of tokenList" 
+          [value]='token.address'>
+            {{token.name}} ({{token.address.slice(0,8)}}...)
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select 
+        placeholder="when others give you" 
+        [(value)]="takerToken">
+          <mat-option 
+          *ngFor="let token of tokenList" 
+          [value]='token.address'>
+            {{token.name}} ({{token.address.slice(0,8)}}...)
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button 
+        mat-icon-button 
+        color="primary"
+        (click)="addTokenPair()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+    
+    <div *ngIf="myIntents.length > 0" class="row">
+      <p><i>Your intents are</i></p>
+      <mat-selection-list 
+      [(ngModel)]="intentsMarkedForRemoval"
+      (ngModelChange)="changedList($event)">
+        <mat-list-option *ngFor="let intent of myIntents" 
+        [value]="intent">
+          You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}} 
+        </mat-list-option>
+      </mat-selection-list>
+    </div>
   
-  <div *ngIf="intents.length>0" class="row">
-    <p><i>Set intents to</i></p>
-    <mat-list>
-      <mat-list-item *ngFor="let intent of intents">
-        You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
-      </mat-list-item>
-    </mat-list>
-  </div>
+    <div *ngIf="markedIntents">
+      <button mat-raised-button (click)="callSetIntents()">UPDATE INTENTS TO INDEXER</button>
+    </div>
 
-  <div *ngIf="intents.length>0">
-    <button mat-raised-button (click)="callSetIntents()">SET NEW INTENTS</button>
-  </div>
+    <div *ngIf="unapprovedTokens.length > 0">
+      <strong>
+        You want to trade unapproved tokens. 
+      </strong>
+      <p>
+        Approve them or the AirSwap smart contract can not swap the tokens for you.
+      </p>
+      <div class="row">
+        <mat-list>
+          <mat-list-item *ngFor="let token of unapprovedTokens"> 
+            <button mat-raised-button
+            [disabled]="clickedApprove[token]"
+            (click)="approveMaker(intent)">
+              APPROVE {{callGetTokenByAddress(token)}} 
+            </button>        
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+    <!-- <div *ngIf="intents.length>0" class="row">
+      <p><i>Set intents to</i></p>
+      <mat-list>
+        <mat-list-item *ngFor="let intent of intents">
+          You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
+        </mat-list-item>
+      </mat-list>
+    </div>
   
-  <div *ngIf="myIntents.length > 0" class="row">
-    <p><i>Your current intents in the Indexer are</i></p>
-    <mat-list>
-      <mat-list-item *ngFor="let intent of myIntents">
-        You sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
-      </mat-list-item>
-    </mat-list>
-  </div>
+     -->
+  </div>  
 </div>

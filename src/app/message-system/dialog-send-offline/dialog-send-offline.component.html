@@ -1,0 +1,18 @@
+<div>
+  <h2 mat-dialog-title>Peer is offline</h2>
+  <mat-dialog-content>
+    Do you want to send following message to the database? 
+  </mat-dialog-content>   
+  <mat-dialog-content>
+    <strong>{{data}}</strong>
+  </mat-dialog-content>   
+  <mat-dialog-content>
+    The peer will be able to read it the next time he logs in. Note: The message is stored unencrypted at the moment. Don't write any secret information.
+    <br/>
+    <br/>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-raised-button (click)="onCloseCancel()">CANCEL</button>
+    <button mat-raised-button (click)="onCloseConfirm()">SEND</button>&nbsp;
+  </mat-dialog-actions>
+</div>

@@ -7,15 +7,17 @@ import { NgMaterialModule } from './ng-material/ng-material.module';
 import { RouterModule, Routes } from '@angular/router';
 
 // app components
-import { AppComponent } from './app.component';
-import { MainframeComponent } from './mainframe/mainframe.component';
 import { AccountComponent } from './account/account.component';
-import { WebsocketConnectionComponent } from './websocket-connection/websocket-connection.component';
-import { SetIntentsComponent } from './set-intents/set-intents.component';
+import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
+import { AppComponent } from './app.component';
+import { ErrorComponent } from './error/error.component';
 import { FindIntentsComponent } from './find-intents/find-intents.component';
 import { GetOrderComponent } from './get-order/get-order.component';
-import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
+import { InitialPageComponent } from './initial-page/initial-page.component';
+import { MainframeComponent } from './mainframe/mainframe.component';
 import { MessageSystemComponent } from './message-system/message-system.component';
+import { SetIntentsComponent } from './set-intents/set-intents.component';
+import { WebsocketConnectionComponent } from './websocket-connection/websocket-connection.component';
 import { WhosOnlineComponent } from './whos-online/whos-online.component';
 
 //services
@@ -33,12 +35,16 @@ import { WhosOnlineService } from './services/whos-online.service';
 //pipes
 import { RoundPipe } from './pipes/round';
 
-import { environment } from '../environments/environment';
-import { InitialPageComponent } from './initial-page/initial-page.component';
+// dialogs
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
+import { DialogGetOrderComponent } from './find-intents/dialog-get-order/dialog-get-order.component';
+import { DialogSendOfflineComponent } from './message-system/dialog-send-offline/dialog-send-offline.component';
+
+import { environment } from '../environments/environment';
+
+//directives
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
-import { DialogGetOrderComponent } from './find-intents/dialog-get-order/dialog-get-order.component';
 
 const appRoutes: Routes = [
   { path: '', component: InitialPageComponent },
@@ -48,6 +54,7 @@ const appRoutes: Routes = [
   { path: 'order', component: GetOrderComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'whosOnline', component: WhosOnlineComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'answer', component: AnswerOrdersComponent, canActivate:[RouterWebsocketActivatedService] },
+  { path: 'error', component: ErrorComponent},
   { path: '**', component: InitialPageComponent }
 ];
 // { path: '', redirectTo: '/connect',  pathMatch: 'full' },
@@ -71,6 +78,8 @@ const appRoutes: Routes = [
     AutofocusDirective,
     FocusDirective,
     DialogGetOrderComponent,
+    DialogSendOfflineComponent,
+    ErrorComponent,
   ],
   imports: [
     BrowserModule,
@@ -96,7 +105,8 @@ const appRoutes: Routes = [
   ],
   entryComponents: [
     DialogAddPeerComponent,
-    DialogGetOrderComponent
+    DialogGetOrderComponent,
+    DialogSendOfflineComponent,
   ],
   bootstrap: [AppComponent]
 })

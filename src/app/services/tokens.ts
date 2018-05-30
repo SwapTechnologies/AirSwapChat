@@ -619,6 +619,14 @@ export const EthereumTokens: any[] = [
     "symbol": "ZRX",
     "decimals": "18",
   },
+  
+  {
+    "address": "0xf2a8C910676dB689BfD8a3735126B608BDc0D454",
+    "name": "Kyber",
+    "symbol": "KNC",
+    "decimals": "18",
+  },
+  
 ]
 
 export let EthereumTokensSN = EthereumTokens.slice(0);

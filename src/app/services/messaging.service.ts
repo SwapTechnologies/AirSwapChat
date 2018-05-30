@@ -7,6 +7,9 @@ import { FirebaseService } from './firebase.service';
 
 import { Message, Peer } from '../types/types';
 
+import { MatDialog } from '@angular/material';
+import { DialogSendOfflineComponent } from '../message-system/dialog-send-offline/dialog-send-offline.component';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,12 +22,15 @@ export class MessagingService {
   private websocketAnswerSubscription: any;
 
   public showMessenger: boolean = false;
+  public gotMessagesFromDatabase: boolean = false;
+
   
   constructor(    
     private web3service: ConnectWeb3Service,
     private wsService: WebsocketService,
     private whosOnlineService: WhosOnlineService,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    public dialog: MatDialog,
   ) { }
 
   get unreadMessages(): number {
@@ -35,9 +41,20 @@ export class MessagingService {
     return nUnread;
   }
 
+  setMessageRead(): void {
+    this.selectedPeer.hasUnreadMessages = false;
+    if(this.gotMessagesFromDatabase) {
+      this.firebaseService.removeUnreceivedMessages(this.web3service.connectedAccount, this.selectedPeer.address)
+      .then(remainingMessages => {
+        if(remainingMessages === 0) {
+          this.gotMessagesFromDatabase = false;
+        }
+      })
+    }
+
+  }
   startMessenger(): void {
     console.log('Starting the messenger.');
-    
     //check firebase for unread messages
     this.firebaseService.getUnreceivedMessages(this.web3service.connectedAccount)
     .then(unreceivedMessages => {
@@ -45,10 +62,12 @@ export class MessagingService {
         let peer = this.getPeerAndAdd(message.user);
         this.addMessage(
           peer,
-          message.user,
+          peer.alias,
           message.message,
           message.timestamp
         )
+        peer.hasUnreadMessages = true;
+        this.gotMessagesFromDatabase = true;
       }
     })
 
@@ -101,7 +120,7 @@ export class MessagingService {
 
   sendMessage(message: string) {
     let messageReceiver = this.selectedPeer.address.toLowerCase();
-    let currentTime = Date.now();
+    let currentTime = Math.round(Date.now()/1000);
     let messageId = this.wsService.sendMessage(
       messageReceiver, message, currentTime)
     
@@ -127,24 +146,36 @@ export class MessagingService {
     // what if nobody answers? :-( put it to firebase!
     setTimeout(()=> {
       if(!gotReponse) {
-        console.log('Peer is offline.')
+        this.addMessage(this.selectedPeer, 'System', 'Peer is offline.', currentTime);
         // connect to firebase and check my account
-        // this.askToStore()
-        // .then(response => {
-        //   if(response) 
-        //     let response = this.storeMessageInFireBase(this.web3service.connectedAccount.toLowerCase(),
-        //       messageReceiver, messageText, currentTime)
-                // let peer = this.messageService.getPeerAndAdd(messageReceiver)
-                // this.messageService.addMessage(
-                //   peer,
-                  
-                // )
-        // })
+        this.askToStore(message)
+        .then(response => {
+          if(response) {
+            this.firebaseService.storeMessageInFireBase(this.web3service.connectedAccount.toLowerCase(), messageReceiver, message, currentTime)
+            .then(fbResponse => {
+              this.addMessage(this.selectedPeer, fbResponse.user, fbResponse.message, fbResponse.timestamp);
+            })
+          }
+        })
       }
       this.websocketAnswerSubscription.unsubscribe();
     }, 3000)
   }
-  
+
+  askToStore(message: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      let dialogRef = this.dialog.open(DialogSendOfflineComponent, {
+        width: '400px',
+        data: message
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if(result) resolve(result)
+        else resolve(false);
+      });
+    });
+  }
+
   addPeer(address: string): void {
     if(!this.isAddressInPeerList(address)) {
       this.connectedPeers.push({
