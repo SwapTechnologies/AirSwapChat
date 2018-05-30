@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
 import { WebsocketService } from './websocket.service';
+import { WhosOnlineService } from './whos-online.service';
 import { FirebaseService } from './firebase.service';
 
 import { Message, Peer } from '../types/types';
@@ -17,9 +18,12 @@ export class MessagingService {
   private websocketSubscription: any;
   private websocketAnswerSubscription: any;
 
+  public showMessenger: boolean = false;
+  
   constructor(    
     private web3service: ConnectWeb3Service,
     private wsService: WebsocketService,
+    private whosOnlineService: WhosOnlineService,
     private firebaseService: FirebaseService
   ) { }
 
@@ -63,13 +67,28 @@ export class MessagingService {
         let peer = this.getPeerAndAdd(sender);
         this.addMessage(
           peer,
-          sender,
+          peer.alias,
           content['params']['message'],
           parseInt(content['params']['timestamp'])
         )
         peer.hasUnreadMessages = true;
       }
     })
+  }
+
+  checkOnlineStatus(): void {
+    for(let peer of this.connectedPeers) {
+      let onlinePeer = this.whosOnlineService.whosOnlineList.find(x =>
+        x.address === peer.address
+      )
+      if(onlinePeer){
+        peer['isOnline'] = true;
+        peer['alias'] = onlinePeer['alias'];
+      } else {
+        peer['isOnline'] = false;
+        peer['alias'] = peer.address.slice(2,6);
+      }
+    }
   }
 
   addMessage(peer: Peer, user: string, message: string, timestamp:number) {
@@ -131,7 +150,9 @@ export class MessagingService {
       this.connectedPeers.push({
         address: address.toLowerCase(),
         messageHistory: [],
-        hasUnreadMessages: false
+        hasUnreadMessages: false,
+        isOnline: false,
+        alias: address.toLowerCase().slice(2,6),
       })
       if(this.connectedPeers.length === 1) {
         this.selectedPeer = this.connectedPeers[0]

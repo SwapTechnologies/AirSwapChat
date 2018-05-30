@@ -3,7 +3,7 @@ import { Subject, Subscription, Observable } from 'rxjs/Rx';
 
 import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 
-import { Message, Peer } from '../types/types';
+import { Message, Peer, LoggedInUser } from '../types/types';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,56 @@ export class FirebaseService {
   constructor(
     private db: AngularFireDatabase
   ) { }
+
+  addUserOnline(user: LoggedInUser): void {
+    let dbUserObject: AngularFireObject<any>; 
+    dbUserObject = this.db.object('loggedInAccounts/'+user.address.toLowerCase());
+    dbUserObject.update({
+      'alias': user.alias,
+      'loggedIn': Math.round(Date.now()/1000)
+    })
+  }
+
+  pingUser(user: LoggedInUser): void {
+    let dbUserObject: AngularFireObject<any>; 
+    dbUserObject = this.db.object('loggedInAccounts/'+user.address.toLowerCase());
+    dbUserObject.update({
+      'alias': user.alias,
+      'loggedIn': Math.round(Date.now()/1000)
+    })
+  }
+
+  logOffUser(user: LoggedInUser): void {
+    this.db.object('loggedInAccounts/'+user.address.toLowerCase()).remove();
+  }
+
+  readWhoIsOnline(): Promise<LoggedInUser[]> {
+    let whosOnlineList: LoggedInUser[] = [];
+    let currentTime = Math.round(Date.now()/1000);
+
+    return new Promise((resolve, reject) => {
+      let observableWhosOnline =
+      this.db.object('loggedInAccounts')
+      .valueChanges()
+      .subscribe(entries => {
+        if(entries) {
+          for(let entry in entries) {
+            let user: LoggedInUser = {
+              address: entry,
+              alias: entries[entry].alias,
+            } 
+            if(currentTime - entries[entry].loggedIn < 60) {
+              whosOnlineList.push(user);
+            } else {
+              this.logOffUser(user)
+            }
+          }
+          observableWhosOnline.unsubscribe();
+          resolve(whosOnlineList)
+        }
+      })
+    })
+  }
 
   getUnreceivedMessages(account: string): Promise<Message[]> {
     let accountLC: string = account.toLowerCase()
@@ -32,8 +82,8 @@ export class FirebaseService {
             })
           } 
         }
-        resolve(unreceivedMessages);
         observableMyUnreceivedMessages.unsubscribe();
+        resolve(unreceivedMessages);
       })
     })
   }

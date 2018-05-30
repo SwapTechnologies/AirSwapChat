@@ -3,9 +3,15 @@ import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Subject, Subscription } from 'rxjs/Rx';
 
 import { Erc20Service } from '../services/erc20.service';
+import { MessagingService } from '../services/messaging.service';
+import { GetOrderService } from '../services/get-order.service';
+import { WhosOnlineService } from '../services/whos-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
 import { EthereumTokensSN, getTokenByName, getTokenByAddress } from '../services/tokens';
+
+import { MatDialog } from '@angular/material';
+import { DialogGetOrderComponent } from './dialog-get-order/dialog-get-order.component';
 
 @Component({
   selector: 'app-find-intents',
@@ -27,8 +33,12 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   
   constructor(
     private erc20services: Erc20Service,
+    private messageService: MessagingService,
+    public getOrderService: GetOrderService,
     private web3service: ConnectWeb3Service,
-    public wsService: WebsocketService  ) { }
+    private whosOnlineService: WhosOnlineService,
+    public wsService: WebsocketService,
+    public dialog: MatDialog  ) { }
 
   ngOnInit() {
   }
@@ -93,6 +103,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           this.websocketSubscription.unsubscribe();
 
           this.fetchBalances();
+          this.checkOnlineStatus();
         }
       })
     }
@@ -134,7 +145,60 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
         })
       );
     }
-    Promise.all(promiseList)
-    .then(() => console.log(this.foundIntents));
+    // Promise.all(promiseList)
+    // .then(() => console.log(this.foundIntents));
   }
+
+  checkOnlineStatus(): void {
+    let subscriptions = [];
+    for(let intent of this.foundIntents) {
+      intent['isOnline'] = false;
+      intent['alias'] = intent.address.slice(2,6);
+      let peerAddress = intent['address'];
+      let uuid = this.wsService.pingPeer(peerAddress);
+
+      subscriptions.push(
+        this.wsService.websocketSubject
+        .subscribe(message => {
+          let parsedMessage = JSON.parse(message);
+          let parsedContent = JSON.parse(parsedMessage['message']);
+          let id = parsedContent['id'];
+          if(id === uuid){
+            let method = parsedContent['method']
+            if(method === 'pong')
+            intent['isOnline'] = true;
+
+            let loggedInPeer = this.whosOnlineService.whosOnlineList
+            .find(x => x.address === intent.address);
+            if(loggedInPeer) {
+              intent['alias'] = loggedInPeer.alias;
+            }
+          }
+        })
+      );
+    }
+    setTimeout(()=> {
+      for (let subscription of subscriptions)
+        subscription.unsubscribe();
+    }, 3000);
+  }
+
+  message(intent: any): void {
+    let peer = this.messageService.getPeerAndAdd(intent.address);
+    this.messageService.selectedPeer = peer;
+    this.messageService.showMessenger = true;
+  }
+
+  openDialogGetOrder(intent: any): void {
+    let dialogRef = this.dialog.open(DialogGetOrderComponent, {
+      width: '500px',
+      data: intent
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result)
+        intent['sentRequest'] = result;
+    })
+  }
+
 }

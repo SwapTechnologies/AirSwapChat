@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Rx';
 import { ConnectWeb3Service } from './connectWeb3.service'
 
+import { LoggedInUser } from '../types/types';
+
 declare var require: any;
 const uuidv4 = require('uuid/v4');
 
@@ -10,6 +12,7 @@ export class WebsocketService {
   public ws: WebSocket;
   public websocketSubject: Subject<string>;
 
+  public loggedInUser: LoggedInUser;
 
   private url: string = 'wss://sandbox.airswap-api.com/websocket'; //rinkeby
   // private url: string = 'wss://connect.airswap-api.com/websocket'; //mainnet
@@ -45,16 +48,16 @@ export class WebsocketService {
     this.send(request)
   }
 
-  getIntents(address): string {
+  getIntents(address: string): string {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
-
+    console.log(address);
     // Construct the `getOrder` query
     let jsonrpc = {
         'id': callId,
         'jsonrpc': '2.0',
         'method': 'getIntents',
         'params': {
-          "address": address.toLocaleLowerCase()
+          "address": address.toLowerCase()
         },
     }
     this.sendRPC(jsonrpc, this.indexerAddress);
@@ -69,7 +72,7 @@ export class WebsocketService {
         'jsonrpc': '2.0',
         'method': 'setIntents',
         'params': {
-            "address": this.web3service.connectedAccount.toLocaleLowerCase(),
+            "address": this.web3service.connectedAccount.toLowerCase(),
             "intents": intents
         },
     }
@@ -80,7 +83,7 @@ export class WebsocketService {
 
 
   getOrder(makerAddress: string, makerAmount: string, makerToken: string,
-           takerToken: string, takerAddress: string): void {
+           takerToken: string, takerAddress: string): string {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
     let jsonrpc = {
         'id': callId,
@@ -114,7 +117,7 @@ export class WebsocketService {
     return callId;
   }
 
-  sendMessage(receiver, message, time): void {
+  sendMessage(receiver, message, time): string {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
     let jsonrpc = {
       'id': callId,
@@ -129,7 +132,7 @@ export class WebsocketService {
     return callId;
   }
 
-  sendMessageAnswer(receiver, uuid): void {
+  sendMessageAnswer(receiver, uuid): string {
     let jsonrpc = {
       'id': uuid,
       'jsonrpc': '2.0',
@@ -142,12 +145,33 @@ export class WebsocketService {
     return uuid;
   }
 
-  sendOrder(receiver, order, uuid): void {
+  sendOrder(receiver, order, uuid): string {
     let jsonrpc = {
       'id': uuid,
       'jsonrpc': '2.0',
       'method': 'orderResponse',
       'result': order,
+    }
+    this.sendRPC(jsonrpc, receiver)
+    return uuid;
+  }
+  
+  pingPeer(receiver): string {
+    let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
+    let jsonrpc = {
+      'id': callId,
+      'jsonrpc': '2.0',
+      'method': 'ping'
+    }
+    this.sendRPC(jsonrpc, receiver)
+    return callId;
+  }
+  
+  pongPeer(receiver, uuid): string {
+    let jsonrpc = {
+      'id': uuid,
+      'jsonrpc': '2.0',
+      'method': 'pong'
     }
     this.sendRPC(jsonrpc, receiver)
     return uuid;

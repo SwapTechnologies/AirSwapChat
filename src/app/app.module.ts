@@ -16,16 +16,19 @@ import { FindIntentsComponent } from './find-intents/find-intents.component';
 import { GetOrderComponent } from './get-order/get-order.component';
 import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
 import { MessageSystemComponent } from './message-system/message-system.component';
+import { WhosOnlineComponent } from './whos-online/whos-online.component';
 
 //services
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { ConnectWeb3Service } from './services/connectWeb3.service';
 import { FirebaseService } from './services/firebase.service';
+import { GetOrderService } from './services/get-order.service';
 import { MessagingService } from './services/messaging.service';
 import { OrderRequestsService } from './services/order-requests.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
 import { WebsocketService } from './services/websocket.service';
+import { WhosOnlineService } from './services/whos-online.service';
 
 //pipes
 import { RoundPipe } from './pipes/round';
@@ -33,6 +36,9 @@ import { RoundPipe } from './pipes/round';
 import { environment } from '../environments/environment';
 import { InitialPageComponent } from './initial-page/initial-page.component';
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
+import { AutofocusDirective } from './directives/autofocus.directive';
+import { FocusDirective } from './directives/focus.directive';
+import { DialogGetOrderComponent } from './find-intents/dialog-get-order/dialog-get-order.component';
 
 const appRoutes: Routes = [
   { path: '', component: InitialPageComponent },
@@ -40,9 +46,9 @@ const appRoutes: Routes = [
   { path: 'findPeers', component: FindIntentsComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'message', component: MessageSystemComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'order', component: GetOrderComponent, canActivate:[RouterWebsocketActivatedService] },
+  { path: 'whosOnline', component: WhosOnlineComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: 'answer', component: AnswerOrdersComponent, canActivate:[RouterWebsocketActivatedService] },
   { path: '**', component: InitialPageComponent }
-  // { path: 'mailbox', component:  },
 ];
 // { path: '', redirectTo: '/connect',  pathMatch: 'full' },
 
@@ -61,6 +67,10 @@ const appRoutes: Routes = [
     RoundPipe,
     InitialPageComponent,
     DialogAddPeerComponent,
+    WhosOnlineComponent,
+    AutofocusDirective,
+    FocusDirective,
+    DialogGetOrderComponent,
   ],
   imports: [
     BrowserModule,
@@ -78,12 +88,15 @@ const appRoutes: Routes = [
     ConnectWeb3Service,
     FirebaseService,
     MessagingService,
+    GetOrderService,
     OrderRequestsService,
     RouterWebsocketActivatedService,
+    WhosOnlineService,
     WebsocketService,
   ],
   entryComponents: [
-    DialogAddPeerComponent
+    DialogAddPeerComponent,
+    DialogGetOrderComponent
   ],
   bootstrap: [AppComponent]
 })

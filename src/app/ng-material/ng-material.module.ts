@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatBadgeModule, MatBottomSheetModule, MatButtonModule, 
   MatCardModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule, 
   MatIconModule, MatInputModule, MatListModule, MatPaginatorModule, MatSelectModule,
-  MatSidenavModule, MatSnackBarModule, MatTabsModule, MatToolbarModule, 
+  MatSidenavModule, MatSnackBarModule, MatTableModule, MatTabsModule, MatToolbarModule, 
   } from '@angular/material'
 @NgModule({
   imports: [
@@ -23,6 +23,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
     MatSelectModule,
     MatSidenavModule,
     MatSnackBarModule,
+    MatTableModule,
     MatTabsModule,
     MatToolbarModule
   ],
@@ -41,6 +42,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
     MatSelectModule,
     MatSidenavModule,
     MatSnackBarModule,
+    MatTableModule,
     MatTabsModule,
     MatToolbarModule,
   ],

@@ -8,6 +8,8 @@ export type Peer = {
   address: string;
   messageHistory: Message[];
   hasUnreadMessages: boolean;
+  isOnline: boolean;
+  alias: string;
 }
 
 export type Token = {
@@ -15,6 +17,11 @@ export type Token = {
   name: string;
   symbol: string;
   decimals: number;
+}
+
+export type LoggedInUser = {
+  address: string;
+  alias: string;
 }
 
 // export type Order = {
