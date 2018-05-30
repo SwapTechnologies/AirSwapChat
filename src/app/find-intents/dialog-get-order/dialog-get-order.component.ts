@@ -85,18 +85,21 @@ export class DialogGetOrderComponent implements OnInit {
       let makerProps = getTokenByAddress(this.data.makerToken);
       let takerProps = getTokenByAddress(this.data.takerToken);
       
-      let makerDecimals = 10**makerProps.decimals
-      let uuid = this.getOrderService.sendGetOrder({
-        makerAddress: this.receiver,
-        takerAddress: this.web3service.connectedAccount.toLowerCase(),
-        makerAmount: (Math.floor(Number(this.makerAmount)*makerDecimals)).toString(),
-        makerToken: this.data.makerToken,
-        takerToken: this.data.takerToken,
-        makerProps: makerProps,
-        takerProps: takerProps,
-        makerDecimals: makerDecimals,
-      })
-      this.onCloseConfirm(uuid);
+      let makerDecimals = 10**makerProps.decimals;
+      let makerAmount = Math.floor(Number(this.makerAmount)*makerDecimals);
+      if(makerAmount < this.data.peerBalanceMakerToken) {
+        let uuid = this.getOrderService.sendGetOrder({
+          makerAddress: this.receiver,
+          takerAddress: this.web3service.connectedAccount.toLowerCase(),
+          makerAmount: makerAmount.toString(),
+          makerToken: this.data.makerToken,
+          takerToken: this.data.takerToken,
+          makerProps: makerProps,
+          takerProps: takerProps,
+          makerDecimals: makerDecimals,
+        })
+        this.onCloseConfirm(uuid);
+      }
     }
   }
 }
