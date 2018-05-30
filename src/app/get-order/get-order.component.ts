@@ -30,7 +30,8 @@ export class GetOrderComponent implements OnInit, OnDestroy {
   constructor(
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
-    private airswapDexService: AirswapdexService) { }
+    private airswapDexService: AirswapdexService
+  ) { }
 
   ngOnInit() {
   }

@@ -9,12 +9,17 @@
           <mat-select placeholder="Select Peer" [(value)]="this.messageService.selectedPeer">
             <mat-option *ngFor="let peer of this.messageService.connectedPeers"
             [value]="peer"
-            style="width: 67%;">
-              {{peer.address}}
+            style="width: 100%;">
+              {{peer.alias}}
+              <span *ngIf="peer.hasUnreadMessages" class="unreadMessagesDot"></span>
+              <span *ngIf="peer.isOnline" class="onlineDot"></span>
+              <span *ngIf="!(peer.isOnline)" class="offlineDot"></span>  
             </mat-option>
           </mat-select>
         </mat-form-field>
         <span *ngIf="this.messageService.connectedPeers.length === 0">Add Peer</span>
+        <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot"></span>
+        <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot"></span>  
         <button 
           mat-icon-button 
           color="primary"
@@ -42,6 +47,7 @@
         <mat-form-field style="width:100%;">
           <textarea 
             matInput 
+            (keydown.enter)="sendMessage()"
             placeholder="Send message"
             [(ngModel)]="message">
           </textarea>

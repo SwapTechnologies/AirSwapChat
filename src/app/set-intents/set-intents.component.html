@@ -1,23 +1,55 @@
 <div>
-  Which token pairs do you intend to trade?
+  <h2>Signal Your Intents to Trade on the Indexer</h2>
   <div>
-    <select name="select_token" [(ngModel)]='makerToken'>
-      <option *ngFor="let token of tokenList" [value]='token.address'>
-        {{token.name}} ({{token.address.slice(0,8)}}...)
-      </option> 
-    </select>
-    <select name="select_token" [(ngModel)]='takerToken'>
-      <option *ngFor="let token of tokenList" [value]='token.address'>
-        {{token.name}} ({{token.address.slice(0,8)}}...)
-      </option> 
-    </select>
-    <button (click)="addTokenPair()">Add Pair</button>
+    <mat-form-field>
+      <mat-select 
+      placeholder="Signal you sell" 
+      [(value)]="makerToken">
+        <mat-option 
+        *ngFor="let token of tokenList" 
+        [value]='token.address'>
+          {{token.name}} ({{token.address.slice(0,8)}}...)
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select 
+      placeholder="When people give you" 
+      [(value)]="takerToken">
+        <mat-option 
+        *ngFor="let token of tokenList" 
+        [value]='token.address'>
+          {{token.name}} ({{token.address.slice(0,8)}}...)
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button 
+      mat-icon-button 
+      color="primary"
+      (click)="addTokenPair()">
+      <mat-icon>add</mat-icon>
+    </button>
   </div>
-  <div *ngIf="intents.length>0">
-    <li *ngFor='let intent of intents'>{{callGetTokenByAddress(intent.makerToken)}} <-> {{callGetTokenByAddress(intent.takerToken)}} </li>
+  
+  <div *ngIf="intents.length>0" class="row">
+    <p><i>Set intents to</i></p>
+    <mat-list>
+      <mat-list-item *ngFor="let intent of intents">
+        You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
+      </mat-list-item>
+    </mat-list>
   </div>
 
   <div *ngIf="intents.length>0">
-    <button (click)="callSetIntents()">Set them!</button>
+    <button mat-raised-button (click)="callSetIntents()">SET NEW INTENTS</button>
+  </div>
+  
+  <div *ngIf="myIntents.length > 0" class="row">
+    <p><i>Your current intents in the Indexer are</i></p>
+    <mat-list>
+      <mat-list-item *ngFor="let intent of myIntents">
+        You sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
+      </mat-list-item>
+    </mat-list>
   </div>
 </div>

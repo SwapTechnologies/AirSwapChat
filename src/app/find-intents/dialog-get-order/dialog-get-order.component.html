@@ -1,0 +1,29 @@
+<div>
+  <h1>
+    Get Order
+  </h1>
+  <div>
+    <mat-form-field style="width: 100%;">
+      <input 
+      matInput 
+      placeholder="Peer Address" 
+      [(ngModel)]="receiver" 
+      readonly='true'>
+    </mat-form-field>
+  </div>
+  <div>
+    Give me {{getTokenName(data.makerToken)}} for 
+    {{getTokenName(data.takerToken)}}
+    
+    <mat-form-field style="width: 100%;">
+      <input 
+      matInput 
+      type="number"
+      placeholder="I want the following amount of {{getTokenSymbol(data.makerToken)}}" 
+      [(ngModel)]="makerAmount">
+    </mat-form-field>
+  </div>  
+  <div *ngIf="receiver && stringIsValidNumber(makerAmount)">
+    <button mat-raised-button (click)="getOrder()">ASK FOR OFFER</button>
+  </div>
+</div>

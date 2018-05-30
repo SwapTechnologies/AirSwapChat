@@ -23,6 +23,7 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { ConnectWeb3Service } from './services/connectWeb3.service';
 import { FirebaseService } from './services/firebase.service';
+import { GetOrderService } from './services/get-order.service';
 import { MessagingService } from './services/messaging.service';
 import { OrderRequestsService } from './services/order-requests.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
@@ -37,6 +38,7 @@ import { InitialPageComponent } from './initial-page/initial-page.component';
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
+import { DialogGetOrderComponent } from './find-intents/dialog-get-order/dialog-get-order.component';
 
 const appRoutes: Routes = [
   { path: '', component: InitialPageComponent },
@@ -68,6 +70,7 @@ const appRoutes: Routes = [
     WhosOnlineComponent,
     AutofocusDirective,
     FocusDirective,
+    DialogGetOrderComponent,
   ],
   imports: [
     BrowserModule,
@@ -85,13 +88,15 @@ const appRoutes: Routes = [
     ConnectWeb3Service,
     FirebaseService,
     MessagingService,
+    GetOrderService,
     OrderRequestsService,
     RouterWebsocketActivatedService,
     WhosOnlineService,
     WebsocketService,
   ],
   entryComponents: [
-    DialogAddPeerComponent
+    DialogAddPeerComponent,
+    DialogGetOrderComponent
   ],
   bootstrap: [AppComponent]
 })

@@ -19,17 +19,17 @@
         <mat-icon 
         class='menu_icon' 
         [matBadge]="numUnreadMessages"
-        [matBadgeHidden]="!showMessageBadge" 
+        [matBadgeHidden]="!this.showMessageBadge" 
         matBadgePosition="above after">chat</mat-icon>
         MESSAGE
       </button>
         
-      <a routerLink="./order">
+      <!-- <a routerLink="./order">
         <button mat-raised-button class="menu_button">
           <mat-icon class='menu_icon'>send</mat-icon>
           ORDER
         </button>
-      </a>
+      </a> -->
 
       <a routerLink="./intents">
         <button mat-raised-button class="menu_button">
@@ -93,11 +93,11 @@
     </div>
   </mat-sidenav-content>
   <!-- <mat-sidenav #sidechat mode="side" opened="true"  -->
-  <mat-sidenav #sidechat mode="side" [opened]="this.showMessenger" 
+  <mat-sidenav #sidechat mode="side" [opened]="this.messageService.showMessenger" 
                class="chat-side" position="end"
                disableClose="true">
                <!-- <app-message-system></app-message-system> -->
-    <app-message-system *ngIf="this.showMessenger"></app-message-system>
+    <app-message-system *ngIf="this.messageService.showMessenger"></app-message-system>
   </mat-sidenav>
 </mat-sidenav-container>
 

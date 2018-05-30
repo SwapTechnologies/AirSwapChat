@@ -18,7 +18,7 @@ import { Message, Peer } from '../types/types';
 @Component({
   selector: 'app-message-system',
   templateUrl: './message-system.component.html',
-  styleUrls: ['./message-system.component.css']
+  styleUrls: ['./message-system.component.scss']
 })
 export class MessageSystemComponent implements OnInit, OnDestroy {
 
@@ -36,8 +36,8 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.timer = TimerObservable.create(0, 3000)
-    .subscribe( () => this.setVisibleMessagesSeen());
+    this.timer = TimerObservable.create(0, 5000)
+    .subscribe( () => this.updateStatus());
   }
 
   ngOnDestroy() {
@@ -45,9 +45,11 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
       this.timer.unsubscribe();
   }
 
-  setVisibleMessagesSeen(): void {
+  updateStatus(): void {
     if(this.messageService.selectedPeer)
       this.messageService.selectedPeer.hasUnreadMessages = false;
+    
+    this.messageService.checkOnlineStatus();
   }
 
   openDialogAddPeer() {
@@ -82,6 +84,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
       }
     })
   }
+
 
   displayMessageOnScreen(user, message, timestamp): void {
     // this.selectedPeer.messageHistory.unshift({

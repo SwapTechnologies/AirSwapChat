@@ -75,7 +75,7 @@ export class WebsocketConnectionComponent implements OnInit, OnDestroy {
             alias: this.alias
           }
           this.firebaseService.addUserOnline(this.wsService.loggedInUser);
-          
+          this.idleListening();
           this.messageService.startMessenger(); // start listening for chatter
           this.listenForOrders();
         } else {
@@ -137,8 +137,11 @@ export class WebsocketConnectionComponent implements OnInit, OnDestroy {
       let receivedMessage = JSON.parse(message);
       let content = JSON.parse(receivedMessage['message'])
       let method = content['method']
-      console.log('Got message:')
-      console.log(receivedMessage);
+      if (method === 'ping') {
+        let uuid = content['id'];
+        let sender = receivedMessage['sender'];
+        this.wsService.pongPeer(sender, uuid);
+      }
     });
   }
 }

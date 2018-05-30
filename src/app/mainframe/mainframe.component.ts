@@ -3,6 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 //services
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
+import { GetOrderService } from '../services/get-order.service';
 import { MessagingService } from '../services/messaging.service';
 import { OrderRequestsService } from '../services/order-requests.service';
 import { WebsocketService } from '../services/websocket.service';
@@ -25,8 +26,6 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
 })
 export class MainframeComponent implements OnInit {
 
-  public showMessenger: boolean = false;
-
   public showMessageBadge: boolean = false;
   public numUnreadMessages: number = 0;
 
@@ -41,7 +40,8 @@ export class MainframeComponent implements OnInit {
 
   constructor(
     private firebaseService: FirebaseService,
-    private messageService: MessagingService,
+    public messageService: MessagingService,
+    public getOrderService: GetOrderService,
     public orderService: OrderRequestsService,
     public web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
@@ -63,14 +63,14 @@ export class MainframeComponent implements OnInit {
   }
 
   toggleMessenger(): void {
-    this.showMessenger = !this.showMessenger;
+    this.messageService.showMessenger = !this.messageService.showMessenger;
   }
 
   updateNumbers(): void {
     this.numUnreadMessages = this.messageService.unreadMessages;
     this.showMessageBadge = this.numUnreadMessages>0;
 
-    this.numUnreadAnswers = this.orderService.openRequests;
+    this.numUnreadAnswers = this.orderService.openRequests + this.getOrderService.countOrderResponses();
     this.showAnswerBadge = this.numUnreadAnswers>0;
   }
 

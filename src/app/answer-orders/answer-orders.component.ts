@@ -1,8 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, Subscription } from 'rxjs/Rx';
+
+import { AirswapdexService } from '../services/airswapdex.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { WebsocketService } from '../services/websocket.service';
 import { OrderRequestsService } from '../services/order-requests.service';
+import { GetOrderService } from '../services/get-order.service'
 import { EthereumTokensSN, getTokenByAddress } from '../services/tokens';
 
 type Order = {
@@ -27,9 +30,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public openOrderIds: any = {};
 
   constructor(
+    private airswapDexService: AirswapdexService,
+    public getOrderService: GetOrderService,
+    public orderService: OrderRequestsService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
-    public orderService: OrderRequestsService,
   ) { }
 
   ngOnInit() {
@@ -119,5 +124,21 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
         this.wsService.sendOrder(orderCopy['takerAddress'], fullOrder, uuid);
       })
     }
+  }
+
+  count(obj: any): number {
+    return Object.keys(obj).length;
+  }
+  
+  sealDeal(order: any): void {
+    this.getOrderService.orderResponses = 
+    this.getOrderService.orderResponses.filter(
+      x => x.id !== order.id
+    );
+
+    this.airswapDexService.fill(
+      order['makerAddress'], order['makerAmount'], order['makerToken'],
+      order['takerAddress'],  order['takerAmount'], order['takerToken'],
+      order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
   }
 }
