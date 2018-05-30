@@ -171,12 +171,12 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       )
     }
   }
-  approveTaker(makerToken: string): void {
+  approveMaker(makerToken: string): void {
     this.clickedApprove[makerToken] = true;
     let contract = this.erc20service.getContract(makerToken);
     this.erc20service.approve(contract, this.airswapDexService.airswapDexAddress)
     .then(result => {
-      console.log('approve')
+      this.checkApproval();
     })
     .catch(error => {
       console.log("Approve failed.");

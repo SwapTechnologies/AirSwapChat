@@ -11,7 +11,7 @@ import { WebsocketService } from '../services/websocket.service';
 
 import { EthereumTokensSN, getTokenByName, getTokenByAddress } from '../services/tokens';
 
-import { MatDialog } from '@angular/material';
+import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
 import { DialogGetOrderComponent } from './dialog-get-order/dialog-get-order.component';
 import { Lexer } from '@angular/compiler';
 
@@ -103,6 +103,10 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
         let id = parsedContent['id'];
         if(id === uuid){
           this.foundIntents = parsedContent['result'];
+          this.foundIntents = this.foundIntents.filter(x => {
+            if(getTokenByAddress(x.makerToken) && getTokenByAddress(x.takerToken)) return true
+            else return false
+          })
           this.stillLoading = true;
           this.makerTokens = [];
           this.takerTokens = [];
