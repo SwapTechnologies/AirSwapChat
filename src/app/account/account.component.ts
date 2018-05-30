@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
+import { WebsocketService } from '../services/websocket.service';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Component({
@@ -16,6 +17,7 @@ export class AccountComponent implements OnInit, OnDestroy {
   public timer: any;
 
   constructor(private web3service: ConnectWeb3Service,
+              private wsService: WebsocketService,
               private zone: NgZone) { }
 
   ngOnInit() {   
@@ -47,7 +49,13 @@ export class AccountComponent implements OnInit, OnDestroy {
       return this.web3service.getAccount()
     }).then(account => {
       // is an account connected?
+      if(account && this.wsService.loggedInUser) {
+        if(account.toLowerCase() !== this.wsService.loggedInUser.address) {
+          this.wsService.connectionEstablished = false;
+        }
+      }
       this.zone.run(() => this.accountConnected = account !== undefined);
+
     }).catch((error) => {console.log('Error while checking connection.')})
   }
 }

@@ -18,8 +18,10 @@
           </mat-select>
         </mat-form-field>
         <span *ngIf="this.messageService.connectedPeers.length === 0">Add Peer</span>
-        <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot"></span>
-        <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot"></span>  
+        <span *ngIf="this.messageService.selectedPeer">
+          <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot"></span>
+          <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot"></span>  
+        </span>
         <button 
           mat-icon-button 
           color="primary"

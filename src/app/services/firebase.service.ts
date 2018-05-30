@@ -11,7 +11,7 @@ import { Message, Peer, LoggedInUser } from '../types/types';
 export class FirebaseService {
 
   constructor(
-    private db: AngularFireDatabase
+    private db: AngularFireDatabase,
   ) { }
 
   addUserOnline(user: LoggedInUser): void {
@@ -88,66 +88,91 @@ export class FirebaseService {
     })
   }
 
-  removeUnreceivedMessages(account: string): void {
-    let accountLC: string = account.toLowerCase()
-    this.db.object(accountLC+'/unreceivedMessage').remove();
+  removeUnreceivedMessages(account: string, peerAddress: string): Promise<number> {
+    let accountLC: string = account.toLowerCase();
+    let peerAddressLC: string = peerAddress.toLowerCase();
+    
+    return new Promise((resolve, reject) => {
+      let numberOfMessages: number = 0;
+      let numberOfRemoved: number = 0;
+      
+      let observableMyUnreceivedMessages =
+      this.db.object(accountLC+'/unreceivedMessage')
+      .valueChanges()
+      .subscribe(entries => {
+        if(entries) {
+          for(let msg in entries) {
+            numberOfMessages += 1
+            if(peerAddress === entries[msg]['sender']) {
+              this.db.object(accountLC+'/unreceivedMessage/'+msg).remove();
+              numberOfRemoved += 1
+            }
+          } 
+        }
+        observableMyUnreceivedMessages.unsubscribe();
+        resolve(numberOfMessages - numberOfRemoved);
+      })
+    })
   }
 
   storeMessageInFireBase(messageSender:string , messageReceiver:string , 
-    message:string , currentTime: number): Message {
+    message:string , currentTime: number): Promise<Message> {
     
-    let response: Message
+    let response: Message;
     
     let dbMyAccount: AngularFireObject<any>; 
     let obsNumberOfSendMessages: Subscription;
 
     dbMyAccount = this.db.object(messageSender.toLowerCase());
-    obsNumberOfSendMessages = dbMyAccount.valueChanges()
-    .subscribe(entries => {
-      let sendMessages = 0;
-      let lastSentMessageTime = currentTime;
-      let allowedToPost = true;
-
-      if(entries) {// do I have sent messages to firebase before?
-        if (entries['sendMessages'])
-          sendMessages = entries['sendMessages']
-
-        if (entries['lastSentMessageTime']) {
-          if (currentTime - entries['lastSentMessageTime'] < 60000) {
-            console.log('Spam protection. Message to firebase only allowed every 60s');
-            allowedToPost = false;
-            // this.displayMessageOnScreen(
-            //   '',
-            //   'He is offline. Can only send message every 60 seconds.',
-            //   currentTime
-            // )
+    return new Promise((resolve, reject) => {
+      obsNumberOfSendMessages = dbMyAccount.valueChanges()
+      .subscribe(entries => {
+        let sendMessages = 0;
+        let lastSentMessageTime = currentTime;
+        let allowedToPost = true;
+  
+        if(entries) {// do I have sent messages to firebase before?
+          if (entries['sendMessages'])
+            sendMessages = entries['sendMessages']
+  
+          if (entries['lastSentMessageTime']) {
+            if (currentTime - entries['lastSentMessageTime'] < 60) {
+              //Spam protection. Message to firebase only allowed every 60s
+              allowedToPost = false;
+            }
           }
         }
-      }
-
-      if(allowedToPost) {
-        dbMyAccount.update({
-          'sendMessages': sendMessages+1,
-          'lastSentMessageTime': currentTime
-        })
-        let receiverRef: AngularFireObject<any> = 
-          this.db.object(messageReceiver+'/unreceivedMessage');
-        receiverRef.update({
-          [currentTime]: {
-            sender: messageSender,
-            message: message
+  
+        if(allowedToPost) {
+          dbMyAccount.update({
+            'sendMessages': sendMessages+1,
+            'lastSentMessageTime': currentTime
+          })
+          let receiverRef: AngularFireObject<any> = 
+            this.db.object(messageReceiver+'/unreceivedMessage');
+          receiverRef.update({
+            [currentTime]: {
+              sender: messageSender,
+              message: message
+            }
+          });
+  
+          response = {
+            user: 'You',
+            message: message+' (Peer is offline.)',
+            timestamp: currentTime
           }
-        });
-
-        response = {
-          user: 'You',
-          message: message+'\n('+messageReceiver.slice(0,8)+' is offline.'+
-            'He will get the message when he signs in.)',
-          timestamp: currentTime
+        } else {
+          response = {
+            user: 'System',
+            message:
+              'SPAM PROTECTION: You can only send a message every 60s.',
+            timestamp: currentTime
+          }
         }
-      }
-      obsNumberOfSendMessages.unsubscribe();
+        obsNumberOfSendMessages.unsubscribe();
+        resolve(response);
+      })
     })
-    return response;
   }
 }

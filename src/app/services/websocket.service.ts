@@ -50,7 +50,6 @@ export class WebsocketService {
 
   getIntents(address: string): string {
     let callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g,'');;
-    console.log(address);
     // Construct the `getOrder` query
     let jsonrpc = {
         'id': callId,

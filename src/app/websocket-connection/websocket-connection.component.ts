@@ -92,6 +92,7 @@ export class WebsocketConnectionComponent implements OnInit, OnDestroy {
       .sign(message, this.web3service.connectedAccount)
       .then((signedMessage) => {
         this.wsService.send(signedMessage);
+        this.performingHandshake = false;
       })
       .catch(error => {
         this.infoMessage = 'Handshake failed.'
