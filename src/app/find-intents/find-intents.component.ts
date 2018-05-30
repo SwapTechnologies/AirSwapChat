@@ -198,6 +198,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if(result)
         intent['sentRequest'] = result;
+    })
   }
 
 }
