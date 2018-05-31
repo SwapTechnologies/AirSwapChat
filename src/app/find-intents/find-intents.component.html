@@ -81,7 +81,7 @@
                   Peer <b>sells {{intent.makerProps.name}}</b> to <b>buy {{intent.takerProps.name}}</b>
               </mat-card-subtitle>
               <mat-card-content>
-                <i>In his wallet are:</i> 
+                <i>In peers wallet are:</i> 
                 {{intent.peerBalanceMakerToken / getExponential(intent.makerProps.decimals)}}
                 {{intent.makerProps.symbol}},
                 {{intent.peerBalanceTakerToken / getExponential(intent.takerProps.decimals)}}
@@ -106,7 +106,6 @@
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
               </mat-card-content>
-              
             </mat-card>
           </div>
         </div>
@@ -157,10 +156,10 @@
     </div>
     <div *ngIf="selectedToken && foundIntents.length === 0">
       <p *ngIf="selectedRole==='maker'">
-        Sorry, nobody has signaled his intent to sell {{selectedToken.name}} in the indexer at the moment.
+        Sorry, nobody has signaled a intent to sell {{selectedToken.name}} in the indexer at the moment.
       </p>
       <p *ngIf="selectedRole==='taker'">
-        Sorry, nobody has signaled his intent to buy {{selectedToken.name}} in the indexer at the moment.
+        Sorry, nobody has signaled a intent to buy {{selectedToken.name}} in the indexer at the moment.
       </p>
     </div>
   </div>

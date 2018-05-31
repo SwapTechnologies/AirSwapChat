@@ -6,28 +6,37 @@
         {{order.takerAddress}}
       </mat-card-title>
       <mat-card-subtitle>
-          Wants to <b>trade your {{getTokenSymbol(order.makerToken)}} for his 
-            {{getTokenSymbol(order.takerToken)}}</b>
+        Wants to <b>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}} of yours for his 
+          {{order.takerProps.symbol}}</b>
       </mat-card-subtitle>
       <mat-card-content>
+        Peer has {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} and 
+        {{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}} in the wallet.
+      </mat-card-content>
+      <mat-card-content>
         <p>
-          <i>How many tokens do you want for this deal?</i> 
-        </p>
-        <p>
-          {{order.makerAmount / getTokenDecimals(order.makerToken)}} 
-          {{getTokenSymbol(order.makerToken)}} ({{order.makerToken.slice(0,8)}}) 
-          for {{getTokenSymbol(order.takerToken)}} ({{order.takerToken.slice(0,8)}})
+          <i>How many {{order.takerProps.symbol}} do you want for this deal?</i> 
         </p>
         <mat-form-field style="width: 100%;">
           <input 
           matInput
           type="number"
-          placeholder="Offer the deal for {{getTokenSymbol(order.takerToken)}}" 
-          [(ngModel)]="order['takerAmount']">
+          placeholder="Offer the deal for {{order.takerProps.symbol}}" 
+          [(ngModel)]="order['takerAmount']"
+          [disabled]="order.clickedOfferDeal">
         </mat-form-field>
-        <div *ngIf="order['takerAmount'] >= 0">
-          <button mat-raised-button (click)="answerOrder(order)">OFFER DEAL</button>
+        <div *ngIf="order['takerAmount'] >= 0 && takerHasEnough(order)">
+          <button mat-raised-button (click)="answerOrder(order)"
+          [disabled]="order.clickedOfferDeal">OFFER DEAL</button>
         </div>
+      </mat-card-content>
+      <mat-card-content *ngIf="order.clickedOfferDeal">
+        <i>Sign in Metamask that you accept a deal of your 
+        {{order.makerAmount /order.makerDecimals}}
+        {{order.makerProps.symbol}} for peers
+        {{order.takerAmount /order.takerDecimals}}
+        {{order.takerProps.symbol}}
+        </i>
       </mat-card-content>
     </mat-card>
   </div>
@@ -45,10 +54,10 @@
       </mat-card-subtitle> -->
       <mat-card-content>
         He signed the deal to give you 
-        {{order.makerAmount / getTokenDecimals(order.makerToken)}}
-        {{getTokenSymbol(order.makerToken)}} ({{order.makerToken.slice(0,8)}}) 
-        for {{order.takerAmount / getTokenDecimals(order.takerToken)}} 
-        {{getTokenSymbol(order.takerToken)}} ({{order.takerToken.slice(0,8)}})
+        {{order.makerAmount / order.makerDecimals}}
+        {{order.makerProps.symbol}} ({{order.makerToken.slice(0,8)}}) 
+        for {{order.takerAmount / order.takerDecimals}} 
+        {{order.takerProps.symbol}} ({{order.takerToken.slice(0,8)}})
       </mat-card-content>
       <button mat-raised-button (click)="sealDeal(order)">SEAL THE DEAL</button>
     </mat-card>     
