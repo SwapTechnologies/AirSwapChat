@@ -38,7 +38,7 @@
           [(ngModel)]="expiration"
           [disabled]="order.clickedOfferDeal">
         </mat-form-field>
-        <div *ngIf="order['takerAmount'] >= 0 && takerHasEnough(order)">
+        <div *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
           <button mat-raised-button (click)="answerOrder(order)"
           [disabled]="order.clickedOfferDeal">OFFER DEAL</button>
         </div>

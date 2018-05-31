@@ -27,7 +27,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   public isOpen: boolean = true;
   public orders: Order[] = [];
-  public takerAmount: Number[];
+  public takerAmount: any = {};
   public websocketSubscription: Subscription;
   public openOrderIds: any = {};
   public expiration: number = 5;
@@ -67,7 +67,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   takerHasEnough(order: any): boolean {
-    return (parseFloat(order.takerAmount) <= 
+    return (this.takerAmount[order.id] <= 
       (order.takerBalanceTakerToken / order.takerDecimals))
   }
 
@@ -102,7 +102,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   answerOrder(order: any):void {
-    if(Number(order['takerAmount']) >= 0) {
+    if(Number(this.takerAmount[order.id]) >= 0) {
       order['clickedOfferDeal'] = true;
       order['takerAmount'] = (Math.floor(Number(this.takerAmount[order.id])*order['takerDecimals'])).toString()
       order['takerAmount'] = this.toFixed(order['takerAmount']);
@@ -127,7 +127,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
   
   sealDeal(order: any): void {
-    
     order['clickedDealSeal'] = true;
     this.airswapDexService.fill(
     order['makerAddress'], order['makerAmount'], order['makerToken'],
