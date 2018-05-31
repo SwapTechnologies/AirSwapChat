@@ -6,3 +6,15 @@ table {
   font-size: 14px;
   width: 100%;
 }
+
+.row {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.peerCard {
+  min-width: 500px;
+  margin: 10px;
+}

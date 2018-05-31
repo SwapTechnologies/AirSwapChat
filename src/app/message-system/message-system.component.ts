@@ -57,10 +57,10 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if(this.web3service.web3.utils.isAddress(result))
-        this.messageService.addPeer(result);      
-      else
-        console.log('Entered invalid address.');
+      if(this.web3service.web3.utils.isAddress(result)) {
+        let peer = this.messageService.getPeerAndAdd(result);      
+        this.messageService.selectedPeer = peer;
+      } else console.log('Entered invalid address.');
     });
   }
   

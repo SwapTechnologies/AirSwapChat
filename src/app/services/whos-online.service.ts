@@ -15,7 +15,9 @@ export class WhosOnlineService {
   get numOnline(): Promise<number> {
     return this.firebaseService.readWhoIsOnline()
     .then((whosOnlineList) => {
-      this.whosOnlineList = whosOnlineList;
+      this.whosOnlineList = whosOnlineList.sort((a,b) => {
+        return ((a.alias < b.alias) ? -1 : (a.alias > b.alias) ? 1 : 0)
+      })
       return whosOnlineList.length;
     })
     

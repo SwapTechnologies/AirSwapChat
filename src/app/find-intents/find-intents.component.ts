@@ -9,9 +9,9 @@ import { GetOrderService } from '../services/get-order.service';
 import { WhosOnlineService } from '../services/whos-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { EthereumTokensSN, getTokenByName, getTokenByAddress } from '../services/tokens';
+import { EthereumTokensSN, getTokenByName, getTokenByAddress, EtherAddress } from '../services/tokens';
 
-import { MatDialog } from '@angular/material';
+import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
 import { DialogGetOrderComponent } from './dialog-get-order/dialog-get-order.component';
 import { Lexer } from '@angular/compiler';
 
@@ -103,6 +103,17 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
         let id = parsedContent['id'];
         if(id === uuid){
           this.foundIntents = parsedContent['result'];
+          
+          // only show intents of tokens known to us
+          this.foundIntents = this.foundIntents.filter(x => {
+            if(getTokenByAddress(x.makerToken) && getTokenByAddress(x.takerToken)) return true
+            else return false
+          })
+
+          // only show intents that are not made by myself
+          this.foundIntents = this.foundIntents.filter(x => {
+            return (x.address !== this.wsService.loggedInUser.address)
+          })
           this.stillLoading = true;
           this.makerTokens = [];
           this.takerTokens = [];
@@ -127,14 +138,21 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
       
       intent['makerProps'] = getTokenByAddress(makerToken);
       intent['takerProps'] = getTokenByAddress(takerToken);
+      intent['makerDecimals'] = 10**intent.makerProps.decimals;
+      intent['takerDecimals'] = 10**intent.takerProps.decimals;
+      
       let makerContract = this.erc20services.getContract(makerToken);
       let takerContract = this.erc20services.getContract(takerToken);
       
-      this.checkApproval(takerToken)
-      .then(approvedAmount => {
-        intent['approvedTakerToken'] = approvedAmount;
-        this.clickedApprove[intent['takerToken']] = false;
-      });
+      if(takerToken !== EtherAddress) {
+        this.checkApproval(takerToken)
+        .then(approvedAmount => {
+          intent['approvedTakerToken'] = approvedAmount;
+          this.clickedApprove[intent['takerToken']] = false;
+        });
+      } else {
+        intent['approvedTakerToken'] = 1e25;
+      }
 
       this.erc20services.balance(makerContract, peerAddress)
       .then(balance => {
@@ -230,7 +248,8 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   message(intent: any): void {
-    let peer = this.messageService.getPeerAndAdd(intent.address);
+    let peer = this.messageService.getPeerAndAdd(
+      intent.address);
     this.messageService.selectedPeer = peer;
     this.messageService.showMessenger = true;
   }
@@ -247,4 +266,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     })
   }
 
+  filterEther(token: any) {
+    return token.address !== EtherAddress
+  }
 }

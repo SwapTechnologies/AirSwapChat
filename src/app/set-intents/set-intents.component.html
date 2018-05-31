@@ -10,7 +10,7 @@
         placeholder="Add signal you sell" 
         [(value)]="makerToken">
           <mat-option 
-          *ngFor="let token of tokenList" 
+          *ngFor="let token of tokenList | callback: filterEther" 
           [value]='token.address'>
             {{token.name}} ({{token.address.slice(0,8)}}...)
           </mat-option>
@@ -48,8 +48,11 @@
     </div>
   
     <div *ngIf="markedIntents">
-      <button mat-raised-button (click)="callSetIntents()">UPDATE INTENTS TO INDEXER</button>
+      <button mat-raised-button (click)="removeMarkedIntents()">REMOVE MARKED INTENTS</button>
     </div>
+    <p style='color:red;'>
+      <strong>{{this.errorMessage}}</strong>
+    </p>
 
     <div *ngIf="unapprovedTokens.length > 0">
       <strong>
@@ -63,22 +66,12 @@
           <mat-list-item *ngFor="let token of unapprovedTokens"> 
             <button mat-raised-button
             [disabled]="clickedApprove[token]"
-            (click)="approveMaker(intent)">
+            (click)="approveMaker(token)">
               APPROVE {{callGetTokenByAddress(token)}} 
             </button>        
           </mat-list-item>
         </mat-list>
       </div>
     </div>
-    <!-- <div *ngIf="intents.length>0" class="row">
-      <p><i>Set intents to</i></p>
-      <mat-list>
-        <mat-list-item *ngFor="let intent of intents">
-          You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}}
-        </mat-list-item>
-      </mat-list>
-    </div>
-  
-     -->
   </div>  
 </div>

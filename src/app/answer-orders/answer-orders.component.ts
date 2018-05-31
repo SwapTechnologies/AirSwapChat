@@ -44,20 +44,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     if(this.websocketSubscription) this.websocketSubscription.unsubscribe;
   }
 
-  getTokenDecimals(token: string): number {
-    if(getTokenByAddress(token))
-      return 10**(getTokenByAddress(token).decimals)
-    else
-      return null
-  }
-
-  getTokenSymbol(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).symbol
-    else
-      return null
-  }
-
   toFixed(x) {
     if (Math.abs(x) < 1.0) {
       var e = parseInt(x.toString().split('e-')[1]);
@@ -74,6 +60,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       }
     }
     return x;
+  }
+
+  takerHasEnough(order: any): boolean {
+    return (parseFloat(order.takerAmount) <= 
+      (order.takerBalanceTakerToken / order.takerDecimals))
   }
 
   sign_order(order): Promise<any> {
@@ -108,20 +99,22 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   answerOrder(order: Order):void {
     if(Number(order['takerAmount']) >= 0) {
+      order['clickedOfferDeal'] = true;
       let orderCopy = JSON.parse(JSON.stringify(order))
-
-      let tokenDecimals = this.getTokenDecimals(order['takerToken']);
-      orderCopy['takerAmount'] = (Math.floor(Number(order['takerAmount'])*tokenDecimals)).toString()
+      orderCopy['takerAmount'] = (Math.floor(Number(order['takerAmount'])*order['takerDecimals'])).toString()
       orderCopy['takerAmount'] = this.toFixed(orderCopy['takerAmount']);
       orderCopy['makerAmount'] = this.toFixed(orderCopy['makerAmount']);
       let uuid = orderCopy.id;
       // delete orderCopy.id;
   
-      this.orderService.orderRequests = this.orderService.orderRequests.filter(
-        x => x.id !== uuid)
       this.sign_order(orderCopy)
       .then(fullOrder => {
         this.wsService.sendOrder(orderCopy['takerAddress'], fullOrder, uuid);
+        this.orderService.orderRequests = this.orderService.orderRequests.filter(
+          x => x.id !== uuid)
+      }).catch(error => {
+        console.log('Sign failed.')
+        order['clickedOfferDeal'] = false;
       })
     }
   }

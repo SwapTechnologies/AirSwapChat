@@ -36,37 +36,37 @@ export class ConnectWeb3Service {
   }
 
   connectToNode(): void {
-      let connectMetamask: () => void = () => {
-        console.log('Connecting to Metamask.')
-        this.web3 = new Web3(window.web3.currentProvider);
-        this.connected_to = 'Metamask';
-      }
-      let connectLocalNode: () => void = () => {
-        console.log('Connecting to localhost:8545');
-        this.web3 = new Web3('http://localhost:8545');
-        this.connected_to = 'local node'
-      }
+    let connectMetamask: () => void = () => {
+      console.log('Connecting to Metamask.')
+      this.web3 = new Web3(window.web3.currentProvider);
+      this.connected_to = 'Metamask';
+    }
+    let connectLocalNode: () => void = () => {
+      console.log('Connecting to localhost:8545');
+      this.web3 = new Web3('http://localhost:8545');
+      this.connected_to = 'local node'
+    }
 
-      console.log('Initializing Web3.')
-      if (typeof this._web3 !== 'undefined') { // if already defined -> ok.
-        console.log('Is already initialized. Reconnecting to current provider.')
-        this.web3 = new Web3(this.web3.currentProvider);
-      } 
-      else if (typeof window.web3 !== 'undefined') { // use injected web3 provider from browser
-        connectMetamask()      
-      } else {
-        connectLocalNode();
-        // this.isConnected()
-        // .then(connected => {
-        //   if(!connected) {
-        //     connectInfura();
-        //   } else
-        //     this.connected_to = 'local node';
-        // })
-        // .catch(() => connectInfura())
-      }
-      this.getNetworkId()
-      console.log('This page is using web3 version:', this.web3.version);
+    console.log('Initializing Web3.')
+    if (typeof this._web3 !== 'undefined') { // if already defined -> ok.
+      console.log('Is already initialized. Reconnecting to current provider.')
+      this.web3 = new Web3(this.web3.currentProvider);
+    } 
+    else if (typeof window.web3 !== 'undefined') { // use injected web3 provider from browser
+      connectMetamask()      
+    } else {
+      connectLocalNode();
+      // this.isConnected()
+      // .then(connected => {
+      //   if(!connected) {
+      //     connectInfura();
+      //   } else
+      //     this.connected_to = 'local node';
+      // })
+      // .catch(() => connectInfura())
+    }
+    this.getNetworkId()
+    console.log('This page is using web3 version:', this.web3.version);
   }
 
   getNetworkId(): Promise<string> {
@@ -92,7 +92,7 @@ export class ConnectWeb3Service {
 
   getBalance(account: string): Promise<number> {
     return this.web3.eth.getBalance(account).then(result => {
-      return this.web3.utils.fromWei(result, 'ether')
+      return result;
     })
   }
 }
