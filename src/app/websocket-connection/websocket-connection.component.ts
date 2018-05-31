@@ -34,20 +34,6 @@ export class WebsocketConnectionComponent implements OnInit, OnDestroy {
   ) { }
   
   ngOnInit() { 
-    // for(let token of EthereumTokensSN) {
-    //   if(token.address === '0x0000000000000000000000000000000000000000')
-    //     continue
-    //   // console.log(token);
-    //   let contract = this.erc20service.getContract(token.address);
-      
-    //   this.erc20service
-    //   .approvedAmount(contract, this.airswapDexService.airswapDexAddress)
-    //   .then(approvedAmount => {
-    //     if(Number(approvedAmount) === 0) {
-    //       this.erc20service.approve(contract, this.airswapDexService.airswapDexAddress);
-    //     }
-    //   })
-    // }
     this.alias = this.web3service.connectedAccount.toLowerCase().slice(2,6);
   }
 
