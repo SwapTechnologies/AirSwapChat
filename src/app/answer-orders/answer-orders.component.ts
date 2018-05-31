@@ -8,6 +8,8 @@ import { OrderRequestsService } from '../services/order-requests.service';
 import { GetOrderService } from '../services/get-order.service'
 import { EthereumTokensSN, getTokenByAddress } from '../services/tokens';
 
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
+
 type Order = {
   makerAddress: string,
   makerAmount: string,
@@ -25,9 +27,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   public isOpen: boolean = true;
   public orders: Order[] = [];
-  public takerAmount: Number[];
+  public takerAmount: any = {};
   public websocketSubscription: Subscription;
   public openOrderIds: any = {};
+  public expiration: number = 5;
+  public timers: any = {};
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -63,13 +67,13 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   takerHasEnough(order: any): boolean {
-    return (parseFloat(order.takerAmount) <= 
+    return (this.takerAmount[order.id] <= 
       (order.takerBalanceTakerToken / order.takerDecimals))
   }
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random()*100*Date.now()).toString();
-    order['expiration'] = Math.round(Date.now()/1000 + 1000).toString();
+    order['expiration'] = Math.round(Date.now()/1000 + this.expiration*60).toString();
     
     let hashV = this.web3service.web3.utils.soliditySha3(
       order['makerAddress'],
@@ -97,19 +101,18 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     })
   }
 
-  answerOrder(order: Order):void {
-    if(Number(order['takerAmount']) >= 0) {
+  answerOrder(order: any):void {
+    if(Number(this.takerAmount[order.id]) >= 0) {
       order['clickedOfferDeal'] = true;
-      let orderCopy = JSON.parse(JSON.stringify(order))
-      orderCopy['takerAmount'] = (Math.floor(Number(order['takerAmount'])*order['takerDecimals'])).toString()
-      orderCopy['takerAmount'] = this.toFixed(orderCopy['takerAmount']);
-      orderCopy['makerAmount'] = this.toFixed(orderCopy['makerAmount']);
-      let uuid = orderCopy.id;
-      // delete orderCopy.id;
+      order['takerAmount'] = (Math.floor(Number(this.takerAmount[order.id])*order['takerDecimals'])).toString()
+      order['takerAmount'] = this.toFixed(order['takerAmount']);
+      order['makerAmount'] = this.toFixed(order['makerAmount']);
+      let uuid = order.id;
+      // delete order.id;
   
-      this.sign_order(orderCopy)
+      this.sign_order(order)
       .then(fullOrder => {
-        this.wsService.sendOrder(orderCopy['takerAddress'], fullOrder, uuid);
+        this.wsService.sendOrder(order['takerAddress'], fullOrder, uuid);
         this.orderService.orderRequests = this.orderService.orderRequests.filter(
           x => x.id !== uuid)
       }).catch(error => {
@@ -124,14 +127,21 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
   
   sealDeal(order: any): void {
-    this.getOrderService.orderResponses = 
-    this.getOrderService.orderResponses.filter(
-      x => x.id !== order.id
-    );
-
+    order['clickedDealSeal'] = true;
     this.airswapDexService.fill(
-      order['makerAddress'], order['makerAmount'], order['makerToken'],
-      order['takerAddress'],  order['takerAmount'], order['takerToken'],
-      order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
+    order['makerAddress'], order['makerAmount'], order['makerToken'],
+    order['takerAddress'],  order['takerAmount'], order['takerToken'],
+    order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
+    .then(() => {
+      this.getOrderService.orderResponses = 
+      this.getOrderService.orderResponses.filter(
+        x => x.id !== order.id
+      );
+    }).catch(error => {
+      console.log('Deal was not sealed.')
+      order['clickedDealSeal'] = false;
+    })
   }
 }
+
+

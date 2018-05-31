@@ -22,19 +22,32 @@
           matInput
           type="number"
           placeholder="Offer the deal for {{order.takerProps.symbol}}" 
-          [(ngModel)]="order['takerAmount']"
+          [(ngModel)]="takerAmount[order.id]"
           [disabled]="order.clickedOfferDeal">
         </mat-form-field>
-        <div *ngIf="order['takerAmount'] >= 0 && takerHasEnough(order)">
+      </mat-card-content>
+      <mat-card-content>
+        <p>
+          <i>How many minutes should the order be open for the counterparty to seal?</i> 
+        </p>
+        <mat-form-field style="width: 100%;">
+          <input 
+          matInput
+          type="number"
+          placeholder="Minutes after the order should expire" 
+          [(ngModel)]="expiration"
+          [disabled]="order.clickedOfferDeal">
+        </mat-form-field>
+        <div *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
           <button mat-raised-button (click)="answerOrder(order)"
           [disabled]="order.clickedOfferDeal">OFFER DEAL</button>
         </div>
       </mat-card-content>
       <mat-card-content *ngIf="order.clickedOfferDeal">
         <i>Sign in Metamask that you accept a deal of your 
-        {{order.makerAmount /order.makerDecimals}}
+        {{order.makerAmount / order.makerDecimals}}
         {{order.makerProps.symbol}} for peers
-        {{order.takerAmount /order.takerDecimals}}
+        {{order.takerAmount / order.takerDecimals}}
         {{order.takerProps.symbol}}
         </i>
       </mat-card-content>
@@ -55,11 +68,27 @@
       <mat-card-content>
         He signed the deal to give you 
         {{order.makerAmount / order.makerDecimals}}
-        {{order.makerProps.symbol}} ({{order.makerToken.slice(0,8)}}) 
+        {{order.makerProps.symbol}}
         for {{order.takerAmount / order.takerDecimals}} 
-        {{order.takerProps.symbol}} ({{order.takerToken.slice(0,8)}})
+        {{order.takerProps.symbol}}
       </mat-card-content>
-      <button mat-raised-button (click)="sealDeal(order)">SEAL THE DEAL</button>
+      <mat-card-content>
+        Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
+      </mat-card-content>
+      <button 
+      mat-raised-button 
+      (click)="sealDeal(order)"
+      [disabled]="order.clickedDealSeal">
+        SEAL THE DEAL
+      </button>
+      <mat-card-content *ngIf="order.clickedDealSeal">
+        <i>Send transaction in Metamask to seal the deal to trade peers
+        {{order.makerAmount /order.makerDecimals}}
+        {{order.makerProps.symbol}} for your
+        {{order.takerAmount/order.takerDecimals}}
+        {{order.takerProps.symbol}}
+        </i>
+      </mat-card-content>
     </mat-card>     
   </div>
 </div>

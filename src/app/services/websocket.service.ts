@@ -43,7 +43,7 @@ export class WebsocketService {
       'receiver': receiver.toLowerCase(),
       'message': JSON.stringify(jsonrpc)
     }
-    console.log('sending', envelope);
+    // console.log('sending', envelope);
     let request: string = JSON.stringify(envelope)
     this.send(request)
   }
