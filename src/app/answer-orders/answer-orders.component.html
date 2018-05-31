@@ -22,7 +22,7 @@
           matInput
           type="number"
           placeholder="Offer the deal for {{order.takerProps.symbol}}" 
-          [(ngModel)]="order['takerAmount']"
+          [(ngModel)]="takerAmount[order.id]"
           [disabled]="order.clickedOfferDeal">
         </mat-form-field>
       </mat-card-content>
@@ -45,9 +45,9 @@
       </mat-card-content>
       <mat-card-content *ngIf="order.clickedOfferDeal">
         <i>Sign in Metamask that you accept a deal of your 
-        {{order.makerAmount /order.makerDecimals}}
+        {{order.makerAmount / order.makerDecimals}}
         {{order.makerProps.symbol}} for peers
-        {{order.takerAmount}}
+        {{order.takerAmount / order.takerDecimals}}
         {{order.takerProps.symbol}}
         </i>
       </mat-card-content>

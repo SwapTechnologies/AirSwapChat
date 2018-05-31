@@ -101,19 +101,18 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     })
   }
 
-  answerOrder(order: Order):void {
+  answerOrder(order: any):void {
     if(Number(order['takerAmount']) >= 0) {
       order['clickedOfferDeal'] = true;
-      let orderCopy = JSON.parse(JSON.stringify(order))
-      orderCopy['takerAmount'] = (Math.floor(Number(order['takerAmount'])*order['takerDecimals'])).toString()
-      orderCopy['takerAmount'] = this.toFixed(orderCopy['takerAmount']);
-      orderCopy['makerAmount'] = this.toFixed(orderCopy['makerAmount']);
-      let uuid = orderCopy.id;
-      // delete orderCopy.id;
+      order['takerAmount'] = (Math.floor(Number(this.takerAmount[order.id])*order['takerDecimals'])).toString()
+      order['takerAmount'] = this.toFixed(order['takerAmount']);
+      order['makerAmount'] = this.toFixed(order['makerAmount']);
+      let uuid = order.id;
+      // delete order.id;
   
-      this.sign_order(orderCopy)
+      this.sign_order(order)
       .then(fullOrder => {
-        this.wsService.sendOrder(orderCopy['takerAddress'], fullOrder, uuid);
+        this.wsService.sendOrder(order['takerAddress'], fullOrder, uuid);
         this.orderService.orderRequests = this.orderService.orderRequests.filter(
           x => x.id !== uuid)
       }).catch(error => {
