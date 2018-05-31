@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
+import { EtherAddress } from './tokens';
 
 @Injectable({
   providedIn: 'root'
@@ -75,13 +76,24 @@ export class AirswapdexService {
     //   gasPrice: gasPrice,
     //   gas: gas
     // }).then(console.log)
-    this.web3service.web3.eth.sendTransaction({
-      from: this.web3service.connectedAccount,
-      to: this.airswapDexAddress,
-      gas: gas,
-      gasPrice: 10e9,
-      data: dataString
-    })
+    if(takerToken === EtherAddress) {
+      this.web3service.web3.eth.sendTransaction({
+        from: this.web3service.connectedAccount,
+        to: this.airswapDexAddress,
+        value: takerAmount,
+        gas: gas,
+        gasPrice: 10e9,
+        data: dataString
+      })
+    } else {
+      this.web3service.web3.eth.sendTransaction({
+        from: this.web3service.connectedAccount,
+        to: this.airswapDexAddress,
+        gas: gas,
+        gasPrice: 10e9,
+        data: dataString
+      })
+    }
   }
 
 }

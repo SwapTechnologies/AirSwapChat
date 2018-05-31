@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ConnectWeb3Service } from './connectWeb3.service';
+import { EtherAddress } from './tokens';
 
 @Injectable({
   providedIn: 'root'
@@ -39,10 +40,14 @@ export class Erc20Service {
   }
 
   balance(contract: any, address: string): Promise<number> {
-    return contract.methods
-    .balanceOf(address)
-    .call()
-    .then(balance => {return balance})
+    if(contract._address === EtherAddress) {
+      return this.web3service.getBalance(address)
+    } else {
+      return contract.methods
+      .balanceOf(address)
+      .call()
+      .then(balance => {return balance})
+    }
   }
 
   approvedAmount(contract: any, spender): Promise<number> {

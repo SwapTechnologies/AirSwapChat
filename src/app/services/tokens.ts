@@ -607,12 +607,12 @@ export const EthereumTokens: any[] = [
     "decimals": "4",
     "metadata": "AirSwap"
   },
-//   {
-//     "address": "0x0000000000000000000000000000000000000000",
-//     "name": "Ether",
-//     "symbol": "ETH",
-//     "decimals": "18",
-//   },
+  {
+    "address": "0x0000000000000000000000000000000000000000",
+    "name": "Ether",
+    "symbol": "ETH",
+    "decimals": "18",
+  },
   {
     "address": "0xbaEd6c1F8Cd4A443Cc372fd15D770e3764B4B2E7",
     "name": "0x",
@@ -628,6 +628,9 @@ export const EthereumTokens: any[] = [
   },
   
 ]
+
+export const EtherAddress: string = "0x0000000000000000000000000000000000000000";
+
 
 export let EthereumTokensSN = EthereumTokens.slice(0);
 

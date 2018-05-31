@@ -5,7 +5,7 @@ import { WebsocketService } from '../services/websocket.service';
 import { Erc20Service } from '../services/erc20.service';
 import { AirswapdexService } from '../services/airswapdex.service';
 
-import { EthereumTokensSN, getTokenByName, getTokenByAddress } from '../services/tokens';
+import { EthereumTokensSN, getTokenByName, getTokenByAddress, EtherAddress } from '../services/tokens';
 
 @Component({
   selector: 'app-set-intents',
@@ -99,7 +99,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       }
       if(!this.isIntentInList(intent)) {
         this.myIntents.push(intent);
-        this.callSetIntents();
+        this.callSetIntents(this.myIntents);
       }
     }
   }
@@ -111,7 +111,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       return null
   }
 
-  callSetIntents(): void {
+  removeMarkedIntents(): void {
     let newIntentList = JSON.parse(JSON.stringify(this.myIntents));
     // removed marked intents
     for(let intent of this.intentsMarkedForRemoval) {
@@ -121,17 +121,19 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     }
     this.markedIntents = false;
 
+    this.callSetIntents(newIntentList);
+  }
+
+  callSetIntents(intentList): void {
     let sendIntents = [];
-    for(let intent of newIntentList) {
+    for(let intent of intentList) {
       sendIntents.push({
         makerToken: intent.makerToken,
         takerToken: intent.takerToken,
         role: intent.role,
       })
     }
-
     let uuid = this.wsService.setIntents(sendIntents)
-
     this.websocketSubscription = this.wsService.websocketSubject
     .subscribe(message => {
       let parsedMessage = JSON.parse(message);
@@ -142,14 +144,10 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
         if(response === 'ok') {
           this.getMyIntents();
         } else {
-          console.log('Error at setting intent.')
           if(parsedContent['error']){
-            console.log(parsedContent['error']);
             this.myIntents.splice(-1,1);
             this.errorMessage = parsedContent['error']['message'];
-
           }
-          this.checkApproval();
         }
         this.websocketSubscription.unsubscribe();
       }
@@ -184,5 +182,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     })
   }
 
+  filterEther(token: any) {
+    return token.address !== EtherAddress
+  }
 
 }

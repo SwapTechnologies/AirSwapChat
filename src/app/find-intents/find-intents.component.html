@@ -3,27 +3,53 @@
     Search the Indexer for Peers
   </h1>
   <div>
-    <mat-form-field>
-      <mat-select 
-      placeholder="Search Token" 
-      [(value)]="selectedToken"
-      (selectionChange)="showIntents()">
-        <mat-option 
-        *ngFor="let token of tokenList" 
-        [value]='token'>
-          {{token.name}} ({{token.address.slice(0,8)}}...)
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-select 
-      placeholder="What is your role" 
-      [(value)]="selectedRole"
-      (selectionChange)="showIntents()">
-        <mat-option value="maker">I want to buy it</mat-option>
-        <mat-option value="taker">I want to sell it</mat-option>
-      </mat-select> 
-    </mat-form-field>
+    <span *ngIf="selectedRole === 'maker'">
+      <mat-form-field>
+        <mat-select 
+        placeholder="Search Token" 
+        [(value)]="selectedToken"
+        (selectionChange)="showIntents()">
+          <mat-option 
+          *ngFor="let token of tokenList | callback: filterEther" 
+          [value]='token'>
+            {{token.name}} ({{token.address.slice(0,8)}}...)
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select 
+        placeholder="What is your role" 
+        [(value)]="selectedRole"
+        (selectionChange)="showIntents()">
+          <mat-option value="maker">I want to buy it</mat-option>
+          <mat-option value="taker">I want to sell it</mat-option>
+        </mat-select> 
+      </mat-form-field>
+    </span>
+
+    <span *ngIf="selectedRole === 'taker'">
+      <mat-form-field>
+        <mat-select 
+        placeholder="Search Token" 
+        [(value)]="selectedToken"
+        (selectionChange)="showIntents()">
+          <mat-option 
+          *ngFor="let token of tokenList" 
+          [value]='token'>
+            {{token.name}} ({{token.address.slice(0,8)}}...)
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select 
+        placeholder="What is your role" 
+        [(value)]="selectedRole"
+        (selectionChange)="showIntents()">
+          <mat-option value="maker">I want to buy it</mat-option>
+          <mat-option value="taker">I want to sell it</mat-option>
+        </mat-select> 
+      </mat-form-field>
+    </span>
   </div>
 
   <div *ngIf="stillLoading" class="row">
@@ -44,7 +70,7 @@
           <div *ngIf="intent.makerToken" class="peerCard">
             <mat-card>
               <mat-card-title>
-                {{intent.alias}}
+                {{intent.alias}} wants {{intent.takerProps.symbol}}
                 <span *ngIf="intent.isOnline" class="onlineDot"></span>
                 <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
               </mat-card-title>
@@ -52,7 +78,7 @@
                   Address {{intent.address}}
               </mat-card-subtitle>
               <mat-card-subtitle>
-                  In turn the peer wants to <b>buy {{intent.takerProps.name}}</b> from you
+                  Peer <b>sells {{intent.makerProps.name}}</b> to <b>buy {{intent.takerProps.name}}</b>
               </mat-card-subtitle>
               <mat-card-content>
                 <i>In his wallet are:</i> 
@@ -93,7 +119,7 @@
           <div *ngIf="callGetTokenByAddress(intent.takerToken)" class="peerCard">
             <mat-card>
               <mat-card-title>
-                {{intent.alias}} 
+                {{intent.alias}} sells {{intent.makerProps.symbol}}
                 <span *ngIf="intent.isOnline" class="onlineDot"></span>
                 <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
               </mat-card-title>
@@ -101,7 +127,7 @@
                   Address {{intent.address}}
               </mat-card-subtitle>
               <mat-card-subtitle>
-                  In turn Peer wants to <b>sell {{intent.takerProps.name}}</b> from you
+                  Peer <b>buys {{intent.takerProps.name}}</b> to <b>sell {{intent.makerProps.name}}</b>
               </mat-card-subtitle>
               <mat-card-content>
                 <i>Owns:</i> 

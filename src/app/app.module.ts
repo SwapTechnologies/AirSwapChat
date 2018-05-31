@@ -34,6 +34,7 @@ import { WhosOnlineService } from './services/whos-online.service';
 
 //pipes
 import { RoundPipe } from './pipes/round';
+import { CallbackPipe } from './pipes/callback';
 
 // dialogs
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
@@ -62,9 +63,10 @@ const appRoutes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,
-    MainframeComponent,
     AccountComponent,
+    AppComponent,
+    CallbackPipe,
+    MainframeComponent,
     WebsocketConnectionComponent,
     SetIntentsComponent,
     FindIntentsComponent,

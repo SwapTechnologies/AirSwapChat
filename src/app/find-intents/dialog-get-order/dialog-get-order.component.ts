@@ -77,6 +77,10 @@ export class DialogGetOrderComponent implements OnInit {
   stringIsValidNumber(x: string): boolean {
     return Number(x) >= 0;
   }
+  makerHasEnough(): boolean {
+    return (parseFloat(this.makerAmount) <= 
+      (this.data.peerBalanceMakerToken / this.data.makerDecimals))
+  }
   
   getOrder():void {
     if(this.web3service.web3.utils.isAddress(this.receiver) 
