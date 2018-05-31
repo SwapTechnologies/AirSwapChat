@@ -8,6 +8,8 @@ import { OrderRequestsService } from '../services/order-requests.service';
 import { GetOrderService } from '../services/get-order.service'
 import { EthereumTokensSN, getTokenByAddress } from '../services/tokens';
 
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
+
 type Order = {
   makerAddress: string,
   makerAmount: string,
@@ -28,6 +30,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public takerAmount: Number[];
   public websocketSubscription: Subscription;
   public openOrderIds: any = {};
+  public expiration: number = 5;
+  public timers: any = {};
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -69,7 +73,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random()*100*Date.now()).toString();
-    order['expiration'] = Math.round(Date.now()/1000 + 1000).toString();
+    order['expiration'] = Math.round(Date.now()/1000 + this.expiration*60).toString();
     
     let hashV = this.web3service.web3.utils.soliditySha3(
       order['makerAddress'],
@@ -124,14 +128,22 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
   
   sealDeal(order: any): void {
-    this.getOrderService.orderResponses = 
-    this.getOrderService.orderResponses.filter(
-      x => x.id !== order.id
-    );
-
+    
+    order['clickedDealSeal'] = true;
     this.airswapDexService.fill(
-      order['makerAddress'], order['makerAmount'], order['makerToken'],
-      order['takerAddress'],  order['takerAmount'], order['takerToken'],
-      order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
+    order['makerAddress'], order['makerAmount'], order['makerToken'],
+    order['takerAddress'],  order['takerAmount'], order['takerToken'],
+    order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
+    .then(() => {
+      this.getOrderService.orderResponses = 
+      this.getOrderService.orderResponses.filter(
+        x => x.id !== order.id
+      );
+    }).catch(error => {
+      console.log('Deal was not sealed.')
+      order['clickedDealSeal'] = false;
+    })
   }
 }
+
+

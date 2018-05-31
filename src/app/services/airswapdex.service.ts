@@ -38,11 +38,7 @@ export class AirswapdexService {
 
   fill(makerAddress: string, makerAmount: string, makerToken: string,
   takerAddress: string, takerAmount: string, takerToken: string,
-  expiration: number,  nonce: number, v: string, r: string, s: string): void {
-    // console.log('Fill order', makerAddress, makerAmount, makerToken,
-    // takerAddress,  takerAmount, takerToken,
-    // expiration, nonce, v, r, s);
-    // console.log(this.airswapDexContract);
+  expiration: number,  nonce: number, v: string, r: string, s: string): Promise<any> {
     let gasPrice = 10e9;
     let gas = 200000;
     let dataString = '0x1d4d691d'
@@ -57,27 +53,9 @@ export class AirswapdexService {
     dataString = dataString + this.pad(this.toHex(v).slice(2), 64)
     dataString = dataString + this.pad(r.slice(2), 64)
     dataString = dataString + this.pad(s.slice(2), 64)
-    // let call_fill = this.airswapDexContract.methods.fill(
-    // makerAddress, makerAmount, makerToken,
-    // takerAddress, takerAmount, takerToken,
-    // expiration, nonce, v, r, s) //{from: this.web3service.connectedAccount}
-    // .then(gas => {
-    //   console.log('estimated gas', gas);
-    // })
-    //   gas = Math.round(gas*1.1);
-    //   console.log(gas);
-      
-    //   return 
-    // this.airswapDexContract.methods.fill(
-    // makerAddress, makerAmount, makerToken,
-    // takerAddress,  takerAmount, takerToken,
-    // expiration, nonce, v, r, s).send({
-    //   from: this.web3service.connectedAccount,
-    //   gasPrice: gasPrice,
-    //   gas: gas
-    // }).then(console.log)
+
     if(takerToken === EtherAddress) {
-      this.web3service.web3.eth.sendTransaction({
+      return this.web3service.web3.eth.sendTransaction({
         from: this.web3service.connectedAccount,
         to: this.airswapDexAddress,
         value: takerAmount,
@@ -86,7 +64,7 @@ export class AirswapdexService {
         data: dataString
       })
     } else {
-      this.web3service.web3.eth.sendTransaction({
+      return this.web3service.web3.eth.sendTransaction({
         from: this.web3service.connectedAccount,
         to: this.airswapDexAddress,
         gas: gas,

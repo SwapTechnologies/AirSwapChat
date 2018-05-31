@@ -12,10 +12,8 @@ export class InitialPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    
   }
 
   ngOnDestroy(): void {
-    
   }
 }
