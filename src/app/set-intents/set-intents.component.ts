@@ -39,8 +39,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     private ref: ChangeDetectorRef) { }
 
   ngOnInit() {
-    let astContract = this.erc20service.getContract(getTokenByName("AirSwap").address);
-    this.erc20service.balance(astContract, this.web3service.connectedAccount)
+    this.erc20service.balance(getTokenByName("AirSwap").address, this.wsService.loggedInUser.address)
     .then(balance => {
       this.astBalance = balance/1e4;
       this.balanceTooLow = this.astBalance < 250;
