@@ -38,11 +38,12 @@ export class Erc20Service {
     return contract.methods.decimals().call()
     .then(decimals => {return decimals});
   }
-
-  balance(contract: any, address: string): Promise<number> {
-    if(contract._address === EtherAddress) {
+    
+  balance(tokenAddress: any, address: string): Promise<number> {
+    if(tokenAddress === EtherAddress) {
       return this.web3service.getBalance(address)
     } else {
+      let contract = this.getContract(tokenAddress);
       return contract.methods
       .balanceOf(address)
       .call()

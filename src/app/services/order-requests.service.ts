@@ -20,15 +20,6 @@ export class OrderRequestsService {
     return this.orderRequests.length;
   }
 
-  getBalance(account: string, tokenAddress: string): Promise<number> {
-    if(tokenAddress === EtherAddress) {
-      return this.web3service.getBalance(account);
-    } else {
-      let contract = this.erc20service.getContract(tokenAddress);
-      return this.erc20service.balance(contract, account);
-    }
-  } 
-
   addOrder(order:any): void {
     console.log('got order', order)
     order['clickedOfferDeal'] = false;
@@ -37,10 +28,10 @@ export class OrderRequestsService {
     order['makerDecimals'] = 10**order.makerProps.decimals;
     order['takerDecimals'] = 10**order.takerProps.decimals;
     
-    this.getBalance(order.takerAddress, order.makerToken)
+    this.erc20service.balance(order.takerAddress, order.makerToken)
     .then(balance => {
       order['takerBalanceMakerToken'] = balance;
-      return this.getBalance(order.takerAddress, order.takerToken)
+      return this.erc20service.balance(order.takerAddress, order.takerToken)
     }).then(balance => {
       order['takerBalanceTakerToken'] = balance;
       this.orderRequests.push(order);

@@ -25,6 +25,12 @@
           <mat-option value="taker">I want to sell it</mat-option>
         </mat-select> 
       </mat-form-field>
+      <button 
+        mat-icon-button 
+        color="primary"
+        (click)="showIntents()">
+        <mat-icon>autorenew</mat-icon>
+      </button>  
     </span>
 
     <span *ngIf="selectedRole === 'taker'">
@@ -82,10 +88,16 @@
               </mat-card-subtitle>
               <mat-card-content>
                 <i>In peers wallet are:</i> 
-                {{intent.peerBalanceMakerToken / getExponential(intent.makerProps.decimals)}}
+                {{intent.makerBalanceMakerToken / intent.makerDecimals}}
                 {{intent.makerProps.symbol}},
-                {{intent.peerBalanceTakerToken / getExponential(intent.takerProps.decimals)}}
+                {{intent.makerBalanceTakerToken / intent.takerDecimals}}
                 {{intent.takerProps.symbol}}
+                <br/>
+                <i>In your wallet are:</i> 
+                {{intent.takerBalanceTakerToken / intent.takerDecimals}}
+                {{intent.takerProps.symbol}},
+                {{intent.takerBalanceMakerToken / intent.makerDecimals}}
+                {{intent.makerProps.symbol}}
               </mat-card-content>
               <mat-card-content>
                 <button mat-raised-button
@@ -129,11 +141,17 @@
                   Peer <b>buys {{intent.takerProps.name}}</b> to <b>sell {{intent.makerProps.name}}</b>
               </mat-card-subtitle>
               <mat-card-content>
-                <i>Owns:</i> 
-                {{intent.peerBalanceMakerToken / getExponential(intent.makerProps.decimals)}}
+                <i>In peers wallet are:</i> 
+                {{intent.makerBalanceMakerToken / intent.makerDecimals}}
                 {{intent.makerProps.symbol}},
-                {{intent.peerBalanceTakerToken / getExponential(intent.takerProps.decimals)}}
+                {{intent.makerBalanceTakerToken / intent.takerDecimals}}
                 {{intent.takerProps.symbol}}
+                <br/>
+                <i>In your wallet are:</i> 
+                {{intent.takerBalanceTakerToken / intent.takerDecimals}}
+                {{intent.takerProps.symbol}},
+                {{intent.takerBalanceMakerToken / intent.makerDecimals}}
+                {{intent.makerProps.symbol}}
               </mat-card-content>
               <mat-card-content>
                 <button mat-raised-button

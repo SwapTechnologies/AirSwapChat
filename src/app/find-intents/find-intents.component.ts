@@ -141,9 +141,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
       intent['makerDecimals'] = 10**intent.makerProps.decimals;
       intent['takerDecimals'] = 10**intent.takerProps.decimals;
       
-      let makerContract = this.erc20services.getContract(makerToken);
-      let takerContract = this.erc20services.getContract(takerToken);
-      
       if(takerToken !== EtherAddress) {
         this.checkApproval(takerToken)
         .then(approvedAmount => {
@@ -154,19 +151,33 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
         intent['approvedTakerToken'] = 1e25;
       }
 
-      this.erc20services.balance(makerContract, peerAddress)
+      this.erc20services.balance(makerToken, peerAddress)
       .then(balance => {
-        intent['peerBalanceMakerToken'] = balance ;
+        intent['makerBalanceMakerToken'] = balance;
       })
       .catch(error => 
         console.log('Error fetching the balance of ' + peerAddress + ' for contract ' + makerToken))
       
-      this.erc20services.balance(takerContract, peerAddress)
+      this.erc20services.balance(takerToken, peerAddress)
       .then(balance => {
-        intent['peerBalanceTakerToken'] = balance;
+        intent['makerBalanceTakerToken'] = balance;
       })
       .catch(error => 
         console.log('Error fetching the balance of ' + peerAddress + ' for contract ' + takerToken))
+
+      this.erc20services.balance(makerToken, this.wsService.loggedInUser.address)
+      .then(balance => {
+        intent['takerBalanceMakerToken'] = balance;
+      })
+      .catch(error => 
+        console.log('Error fetching the balance of ' + this.wsService.loggedInUser.address + ' for contract ' + makerToken))
+      
+      this.erc20services.balance(takerToken, this.wsService.loggedInUser.address)
+      .then(balance => {
+        intent['takerBalanceTakerToken'] = balance;
+      })
+      .catch(error => 
+        console.log('Error fetching the balance of ' + this.wsService.loggedInUser.address + ' for contract ' + takerToken))
     }
   }
 
