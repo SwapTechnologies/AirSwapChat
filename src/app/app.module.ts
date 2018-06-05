@@ -1,6 +1,7 @@
 // modules
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgMaterialModule } from './ng-material/ng-material.module';
@@ -34,6 +35,7 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { ConnectWeb3Service } from './services/connectWeb3.service';
+import { ColumnSpaceObserverService } from './services/column-space-observer.service';
 import { FirebaseService } from './services/firebase.service';
 import { GetOrderService } from './services/get-order.service';
 import { MessagingService } from './services/messaging.service';
@@ -148,6 +150,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
+    FlexLayoutModule,
     NgMaterialModule,
     AngularFireModule.initializeApp(environment.firebase),
     RouterModule.forRoot(
@@ -160,6 +163,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
   providers: [
     AngularFireDatabase,
     AngularFireAuth,
+    ColumnSpaceObserverService,
     ConnectWeb3Service,
     FirebaseService,
     MessagingService,

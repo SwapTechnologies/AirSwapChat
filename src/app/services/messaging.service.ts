@@ -20,10 +20,10 @@ export class MessagingService {
   public selectedPeer: Peer;
 
   private websocketSubscription: any;
-  private websocketAnswerSubscription: any;
 
   public showMessenger = false;
   public gotMessagesFromDatabase = false;
+  public sendingMessage = false;
 
 
   constructor(
@@ -137,10 +137,10 @@ export class MessagingService {
     const currentTime = Date.now();
     const messageId =
       this.wsService.sendMessage(messageReceiver, message, currentTime);
-
+    this.sendingMessage = true;
     // check if peer is online: does a automated respond come back?
     let gotReponse = false;
-    this.websocketAnswerSubscription = this.wsService.websocketSubject
+    const websocketAnswerSubscription = this.wsService.websocketSubject
     .subscribe(answer => {
       const receivedMessage = JSON.parse(answer);
       const content = JSON.parse(receivedMessage['message']);
@@ -148,6 +148,7 @@ export class MessagingService {
       const answerId = content['id'];
       if (method === 'messageAnswer' && answerId === messageId) {
         gotReponse = true;
+        this.sendingMessage = false;
         this.addMessage(
           this.selectedPeer,
           'You',
@@ -189,7 +190,8 @@ export class MessagingService {
           console.log('You are offline.');
         }
       }
-      this.websocketAnswerSubscription.unsubscribe();
+      this.sendingMessage = false;
+      websocketAnswerSubscription.unsubscribe();
     }, 3000);
   }
 

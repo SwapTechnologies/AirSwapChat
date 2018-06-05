@@ -70,8 +70,9 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   }
 
   sendMessage(): void {
-    if (this.message.length > 0) {
-      this.messageService.sendMessage(this.message);
+    if (this.message && this.message.trim().length > 0
+        && !this.messageService.sendingMessage) {
+      this.messageService.sendMessage(this.message.trim());
       this.message = '';
     }
   }

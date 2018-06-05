@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs/Subscription';
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
+import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectionService } from '../services/connection.service';
 import { Erc20Service } from '../services/erc20.service';
 import { FirebaseService } from '../services/firebase.service';
@@ -39,6 +40,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   public stillLoading = false;
   constructor(
     private airswapDexService: AirswapdexService,
+    public columnSpaceObserver: ColumnSpaceObserverService,
     private connectionService: ConnectionService,
     private erc20services: Erc20Service,
     private firebaseService: FirebaseService,
@@ -47,7 +49,8 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     public tokenService: TokenService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
-    public dialog: MatDialog  ) { }
+    public dialog: MatDialog,
+    ) { }
 
   ngOnInit() {
     this.tokenService.getCustomTokenList();

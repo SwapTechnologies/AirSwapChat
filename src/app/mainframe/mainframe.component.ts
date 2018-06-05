@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 
 // services
 import { AngularFireAuth } from 'angularfire2/auth';
+import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectionService } from '../services/connection.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
@@ -20,6 +21,7 @@ import { AnswerOrdersComponent } from '../answer-orders/answer-orders.component'
 import { MessageSystemComponent } from '../message-system/message-system.component';
 import { InitialPageComponent } from '../initial-page/initial-page.component';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-mainframe',
@@ -43,12 +45,14 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
   constructor(
     private afAuth: AngularFireAuth,
+    private columnSpaceObserver: ColumnSpaceObserverService,
     private getOrderService: GetOrderService,
     private orderRequestsService: OrderRequestsService,
     private tokenService: TokenService,
     public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
     public messageService: MessagingService,
+    private titleService: Title,
     public web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
   ) {}
@@ -129,11 +133,22 @@ export class MainframeComponent implements OnInit, OnDestroy {
     this.numUnreadAnswers = this.orderRequestsService.openRequests
                             + this.getOrderService.countOrderResponses();
     this.showAnswerBadge = this.numUnreadAnswers > 0;
+
+    const sum_unread = this.numUnreadAnswers + this.numUnreadMessages;
+    if (sum_unread > 0) {
+      this.setTitle('(' + sum_unread + ') AirSwapChat');
+    } else {
+      this.setTitle('AirSwapChat');
+    }
   }
 
   updateRareNumbers(): void {
     if (this.connectionService.connected) {
       this.firebaseService.pingMe();
     }
+  }
+
+  setTitle(newTitle: string) {
+    this.titleService.setTitle( newTitle );
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import {MatTableDataSource} from '@angular/material';
 
+import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { MessagingService } from '../services/messaging.service';
 import { FirebaseService } from '../services/firebase.service';
 
@@ -13,6 +14,7 @@ import { FirebaseService } from '../services/firebase.service';
 export class WhosOnlineComponent implements OnInit {
 
   constructor(
+    public columnSpaceObserver: ColumnSpaceObserverService,
     public firebaseService: FirebaseService,
     private messageService: MessagingService,
   ) { }

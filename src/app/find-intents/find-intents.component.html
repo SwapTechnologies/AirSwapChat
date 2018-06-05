@@ -31,12 +31,6 @@
         </mat-select>
         <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
-      <button 
-        mat-icon-button 
-        color="primary"
-        (click)="showIntents()">
-        <mat-icon>autorenew</mat-icon>
-      </button>  
     </span>
 
     <ng-template #takerSearch>
@@ -87,150 +81,8 @@
     </mat-progress-spinner>
     <p>Standby. Fetching peers, their balances and checking who's online</p>
   </div>
+
   <div *ngIf="!stillLoading">
-    <div *ngIf="foundIntents.length>0">
-      <div *ngIf="selectedRole === 'maker'">
-        <p>
-          <i>Peers selling <b>{{selectedToken.name}}</b></i>
-        </p>
-        <div *ngFor="let intent of foundIntents" class="row">
-          <div *ngIf="intent.makerToken" class="peerCard">
-            <mat-card>
-              <mat-card-title>
-                {{intent.alias}} wants {{intent.takerProps.symbol}}
-                <span *ngIf="intent.isOnline" class="onlineDot"></span>
-                <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
-              </mat-card-title>
-              <mat-card-subtitle>
-                  Address {{intent.address}}
-              </mat-card-subtitle>
-              <mat-card-subtitle>
-                  Peer <b>sells {{intent.makerProps.name}}</b> to <b>buy {{intent.takerProps.name}}</b>
-              </mat-card-subtitle>
-              <mat-card-content>
-                <i>In peers wallet are:</i> 
-                {{intent.makerBalanceMakerToken / intent.makerDecimals}}
-                {{intent.makerProps.symbol}},
-                {{intent.makerBalanceTakerToken / intent.takerDecimals}}
-                {{intent.takerProps.symbol}}
-                <br/>
-                <i>In your wallet are:</i> 
-                {{intent.takerBalanceTakerToken / intent.takerDecimals}}
-                {{intent.takerProps.symbol}},
-                {{intent.takerBalanceMakerToken / intent.makerDecimals}}
-                {{intent.makerProps.symbol}}
-              </mat-card-content>
-              <mat-card-content>
-                <span style='color:red' *ngIf="!intent.makerValid">
-                  <strong>
-                    {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
-                  </strong>
-                </span> 
-              </mat-card-content>
-              <mat-card-content>
-                <span style='color:red' *ngIf="!intent.takerValid">
-                  <strong>
-                    {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
-                  </strong>
-                </span> 
-              </mat-card-content>
-              <mat-card-content *ngIf="!intent.bothTokensValid">
-                <span style='color:red'><strong>
-                    Warning: Trade contains unvalidated tokens. Don't get scammed.
-                </strong></span> 
-              </mat-card-content>
-              <mat-card-content>
-                <button mat-raised-button
-                (click)="message(intent)">MESSAGE</button>
-                <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
-                (click)="openDialogGetOrder(intent)"
-                [disabled]="!intent.isOnline">
-                  GET ORDER
-                </button>           
-                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
-                [disabled]="clickedApprove[intent.takerToken]"
-                (click)="approveTaker(intent)">
-                  APPROVE {{intent.takerProps.symbol}}
-                </button>              
-              </mat-card-content>
-              <mat-card-content *ngIf="intent.sentRequest">
-                <i>Sent request for an offer of 
-                {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
-                {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="selectedRole==='taker'">
-        <p>
-          <i>Peers buying <b>{{selectedToken.name}}</b></i>
-        </p>
-        <div *ngFor="let intent of foundIntents" class="row">
-          <div *ngIf="intent.takerToken" class="peerCard">
-            <mat-card>
-              <mat-card-title>
-                {{intent.alias}} sells {{intent.makerProps.symbol}}
-                <span *ngIf="intent.isOnline" class="onlineDot"></span>
-                <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
-              </mat-card-title>
-              <mat-card-subtitle>
-                  Address {{intent.address}}
-              </mat-card-subtitle>
-              <mat-card-subtitle>
-                  Peer <b>buys {{intent.takerProps.name}}</b> to <b>sell {{intent.makerProps.name}}</b>
-              </mat-card-subtitle>
-              <mat-card-content>
-                <i>In peers wallet are:</i> 
-                {{intent.makerBalanceMakerToken / intent.makerDecimals}}
-                {{intent.makerProps.symbol}},
-                {{intent.makerBalanceTakerToken / intent.takerDecimals}}
-                {{intent.takerProps.symbol}}
-                <br/>
-                <i>In your wallet are:</i> 
-                {{intent.takerBalanceTakerToken / intent.takerDecimals}}
-                {{intent.takerProps.symbol}},
-                {{intent.takerBalanceMakerToken / intent.makerDecimals}}
-                {{intent.makerProps.symbol}}
-              </mat-card-content>
-              <mat-card-content *ngIf="!intent.makerValid">
-                <span style='color:red'>
-                  <strong>
-                    {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
-                  </strong>
-                </span> 
-              </mat-card-content>
-              <mat-card-content *ngIf="!intent.takerValid">
-                <span style='color:red'>
-                  <strong>
-                    {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
-                  </strong>
-                </span> 
-              </mat-card-content>
-              <mat-card-content *ngIf="!intent.bothTokensValid">
-                <span style='color:red'><strong>
-                    Warning: Trade contains unvalidated tokens. Don't get scammed.
-                </strong></span> 
-              </mat-card-content>  
-              <mat-card-content>
-                <button mat-raised-button
-                (click)="message(intent)">MESSAGE</button>
-                <button mat-raised-button *ngIf="(intent.approvedTakerToken > 0)"
-                (click)="openDialogGetOrder(intent)"
-                [disabled]="!intent.isOnline">
-                  GET ORDER
-                </button>           
-                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
-                [disabled]="clickedApprove[intent.takerToken]"
-                (click)="approveTaker(intent)">
-                  APPROVE {{intent.takerProps.symbol}}
-                </button>        
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </div>
-      </div>        
-    </div>
     <div *ngIf="selectedToken && foundIntents.length === 0">
       <p>
         Sorry, nobody has signaled an intent to 
@@ -238,6 +90,159 @@
         <span *ngIf="selectedRole==='taker'">buy</span> 
         {{selectedToken.name}} in the indexer at the moment.
       </p>
+    </div>
+    <div *ngIf="foundIntents.length>0">
+      <div *ngIf="selectedRole === 'maker'">
+        <p>
+          <i>Peers selling <b>{{selectedToken.name}}</b></i>
+        </p>
+        <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='350px'>
+          <mat-grid-tile *ngFor="let intent of foundIntents">
+            <div *ngIf="intent.makerToken">
+              <mat-card class="peerCard">
+                <mat-card-title>
+                  {{intent.alias}} wants {{intent.takerProps.symbol}}
+                  <span *ngIf="intent.isOnline" class="onlineDot"></span>
+                  <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
+                </mat-card-title>
+                <mat-card-subtitle>
+                    Address {{intent.address}}
+                </mat-card-subtitle>
+                <mat-card-subtitle>
+                    Peer <b>sells {{intent.makerProps.name}}</b> to <b>buy {{intent.takerProps.name}}</b>
+                </mat-card-subtitle>
+                <mat-card-content>
+                  <i>In peers wallet are:</i> 
+                  {{intent.makerBalanceMakerToken / intent.makerDecimals}}
+                  {{intent.makerProps.symbol}},
+                  {{intent.makerBalanceTakerToken / intent.takerDecimals}}
+                  {{intent.takerProps.symbol}}
+                  <br/>
+                  <i>In your wallet are:</i> 
+                  {{intent.takerBalanceTakerToken / intent.takerDecimals}}
+                  {{intent.takerProps.symbol}},
+                  {{intent.takerBalanceMakerToken / intent.makerDecimals}}
+                  {{intent.makerProps.symbol}}
+                </mat-card-content>
+                <mat-card-content>
+                  <span style='color:red' *ngIf="!intent.makerValid">
+                    <strong>
+                      {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
+                    </strong>
+                  </span> 
+                </mat-card-content>
+                <mat-card-content>
+                  <span style='color:red' *ngIf="!intent.takerValid">
+                    <strong>
+                      {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
+                    </strong>
+                  </span> 
+                </mat-card-content>
+                <mat-card-content *ngIf="!intent.bothTokensValid">
+                  <span style='color:red'><strong>
+                      Warning: Trade contains unvalidated tokens. Don't get scammed.
+                  </strong></span> 
+                </mat-card-content>
+                <mat-card-content>
+                  <button mat-raised-button
+                  (click)="message(intent)">MESSAGE</button>
+                  <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
+                  (click)="openDialogGetOrder(intent)"
+                  [disabled]="!intent.isOnline">
+                    GET ORDER
+                  </button>           
+                  <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                  [disabled]="clickedApprove[intent.takerToken]"
+                  (click)="approveTaker(intent)">
+                    APPROVE {{intent.takerProps.symbol}}
+                  </button>              
+                </mat-card-content>
+                <mat-card-content *ngIf="intent.sentRequest">
+                  <i>Sent request for an offer of 
+                  {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
+                  {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </div>
+
+      <div *ngIf="selectedRole==='taker'">
+        <p>
+          <i>Peers buying <b>{{selectedToken.name}}</b></i>
+        </p>
+        <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='350px'>
+          <mat-grid-tile *ngFor="let intent of foundIntents">  
+            <div *ngIf="intent.takerToken">
+              <mat-card class="peerCard">
+                <mat-card-title>
+                  {{intent.alias}} sells {{intent.makerProps.symbol}}
+                  <span *ngIf="intent.isOnline" class="onlineDot"></span>
+                  <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
+                </mat-card-title>
+                <mat-card-subtitle>
+                    Address {{intent.address}}
+                </mat-card-subtitle>
+                <mat-card-subtitle>
+                    Peer <b>buys {{intent.takerProps.name}}</b> to <b>sell {{intent.makerProps.name}}</b>
+                </mat-card-subtitle>
+                <mat-card-content>
+                  <i>In peers wallet are:</i> 
+                  {{intent.makerBalanceMakerToken / intent.makerDecimals}}
+                  {{intent.makerProps.symbol}},
+                  {{intent.makerBalanceTakerToken / intent.takerDecimals}}
+                  {{intent.takerProps.symbol}}
+                  <br/>
+                  <i>In your wallet are:</i> 
+                  {{intent.takerBalanceTakerToken / intent.takerDecimals}}
+                  {{intent.takerProps.symbol}},
+                  {{intent.takerBalanceMakerToken / intent.makerDecimals}}
+                  {{intent.makerProps.symbol}}
+                </mat-card-content>
+                <mat-card-content *ngIf="!intent.makerValid">
+                  <span style='color:red'>
+                    <strong>
+                      {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
+                    </strong>
+                  </span> 
+                </mat-card-content>
+                <mat-card-content *ngIf="!intent.takerValid">
+                  <span style='color:red'>
+                    <strong>
+                      {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
+                    </strong>
+                  </span> 
+                </mat-card-content>
+                <mat-card-content *ngIf="!intent.bothTokensValid">
+                  <span style='color:red'><strong>
+                      Warning: Trade contains unvalidated tokens. Don't get scammed.
+                  </strong></span> 
+                </mat-card-content>  
+                <mat-card-content>
+                  <button mat-raised-button
+                  (click)="message(intent)">MESSAGE</button>
+                  <button mat-raised-button *ngIf="(intent.approvedTakerToken > 0)"
+                  (click)="openDialogGetOrder(intent)"
+                  [disabled]="!intent.isOnline">
+                    GET ORDER
+                  </button>           
+                  <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
+                  [disabled]="clickedApprove[intent.takerToken]"
+                  (click)="approveTaker(intent)">
+                    APPROVE {{intent.takerProps.symbol}}
+                  </button>        
+                </mat-card-content>
+                <mat-card-content *ngIf="intent.sentRequest">
+                  <i>Sent request for an offer of 
+                  {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
+                  {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </div>        
     </div>
   </div>
 </div>

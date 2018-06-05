@@ -1,7 +1,7 @@
 <div class="message_system_container">
   
   <!-- Select the peer you are communicating with -->
-  <div class="connect_card">
+  <div class="select_peer_card">
     <mat-card>
       <mat-card-actions>
         <mat-form-field *ngIf="this.messageService.connectedPeers.length > 0"
@@ -33,37 +33,66 @@
   </div>
 
   <!-- Display & Send Messages to peer -->
-  <ng-container *ngIf="this.messageService.connectedPeers.length > 0">
-    <div class="chat_card">
-      <mat-card>
+  <div class="chat_card" 
+  *ngIf="this.messageService.connectedPeers.length > 0 
+  && this.messageService.selectedPeer.messageHistory.length > 0"
+  #scrollMe [scrollTop]="scrollMe.scrollHeight">
+    <ng-container *ngFor="let msg of this.messageService.selectedPeer.messageHistory">
+      <mat-card *ngIf="msg.user == 'You'" class='chat_message_card myMessage'>
+        <mat-card-content style="display: flex;">
+          <div>
+            {{msg.user}}
+          </div>
+          <div style='flex: 1;'>
+          </div>
+          <div>
+            {{msg.timestamp | date: 'HH:mm'}}
+          </div>
+        </mat-card-content>
         <mat-card-content>
-          <li *ngFor="let msg of this.messageService.selectedPeer.messageHistory">
-            {{msg.user.slice(0,8)}}: {{msg.message}}
-          </li>
+          {{msg.message}}
         </mat-card-content>
       </mat-card>
-    </div>
+
+      <mat-card *ngIf="msg.user != 'You'" class="chat_message_card peerMessage">
+        <mat-card-content style="display: flex;">
+          <div>
+            {{msg.user}}
+          </div>
+          <div style='flex: 1;'>
+          </div>
+          <div>
+            {{msg.timestamp | date: 'HH:mm'}}
+          </div>
+        </mat-card-content>
+        <mat-card-content>
+          {{msg.message}}
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </div>
     
-    <div class="message_card">
-      <mat-card>
-        <mat-form-field style="width:90%;">
-          <textarea 
-            matInput 
-            (keydown.enter)="sendMessage()"
-            placeholder="Send message"
-            [(ngModel)]="message">
-          </textarea>
-          
-        </mat-form-field>
-        <button style="width:10%;"
+  <div class="send_message_card" *ngIf="this.messageService.selectedPeer">
+    <mat-card>
+      <mat-form-field class="send_message_card">
+        <input 
+          matInput
+          type="text"
+          (keydown.enter)="sendMessage()"
+          placeholder="Send message"
+          [(ngModel)]="message"/>
+        <button
+          mat-button
           mat-icon-button 
+          matSuffix
           color="primary"
+          aria-label="Send"
           (click)="sendMessage()">
           <mat-icon>send</mat-icon>
         </button>
-      </mat-card>
-    </div>
-  </ng-container>
+      </mat-form-field>
+    </mat-card>
+  </div>
 </div>
 
 
