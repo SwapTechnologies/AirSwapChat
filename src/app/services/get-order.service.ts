@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Subject, Subscription } from 'rxjs/Rx';
 
+// services
+import { FirebaseService } from '../services/firebase.service';
 import { WebsocketService } from './websocket.service';
-import { ConnectWeb3Service } from './connectWeb3.service';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
@@ -16,12 +16,12 @@ export class GetOrderService {
   public orderResponses: any = [];
 
   constructor(
+    private firebaseService: FirebaseService,
     private wsService: WebsocketService,
-    private web3service: ConnectWeb3Service,
   ) { }
 
   sendGetOrder(order: any): string {
-    let uuid = this.wsService.getOrder(
+    const uuid = this.wsService.getOrder(
       order.makerAddress,
       order.makerAmount,
       order.makerToken,
@@ -32,28 +32,25 @@ export class GetOrderService {
 
     this.websocketSubscriptions[uuid] = this.wsService.websocketSubject
     .subscribe(message => {
-      let parsedMessage = JSON.parse(message);
-      let parsedContent = JSON.parse(parsedMessage['message']);
-      let id = parsedContent['id'];
-      
-      if(id === uuid 
-        && parsedContent['method'] 
+      const parsedMessage = JSON.parse(message);
+      const parsedContent = JSON.parse(parsedMessage['message']);
+      const id = parsedContent['id'];
+
+      if (id === uuid
+        && parsedContent['method']
         && parsedContent['method'] === 'orderResponse') {
-        let signedOrder = parsedContent['result'];
+        const signedOrder = parsedContent['result'];
         signedOrder['clickedDealSeal'] = false;
-        let currentTime = Date.now()/1000;
-        let difference = signedOrder['expiration'] - currentTime;
-        signedOrder['minutesLeft'] = Math.floor(difference/60);
-        signedOrder['secondsLeft'] = Math.floor(difference%60);
+
         signedOrder['timedOut'] = false;
         signedOrder['timer'] = TimerObservable.create(0, 1000)
         .subscribe( () => {
-          let currentTime = Date.now()/1000;
-          let difference = signedOrder['expiration'] - currentTime;
-          signedOrder['minutesLeft'] = Math.floor(difference/60);
-          signedOrder['secondsLeft'] = Math.floor(difference%60);
-          
-          if(signedOrder['minutesLeft'] <= 0 && signedOrder['secondsLeft'] <= 0) {
+          const currentTime = Date.now() / 1000;
+          const difference = signedOrder['expiration'] - currentTime;
+          signedOrder['minutesLeft'] = Math.floor(difference / 60);
+          signedOrder['secondsLeft'] = Math.floor(difference % 60);
+
+          if (signedOrder['minutesLeft'] <= 0 && signedOrder['secondsLeft'] <= 0) {
             signedOrder['timedOut'] = true;
             signedOrder['timer'].unsubscribe();
             this.orderResponses = this.orderResponses.filter(
@@ -61,11 +58,19 @@ export class GetOrderService {
             );
           }
         });
-        this.orderResponses.push(signedOrder);
-        this.websocketSubscriptions[uuid].unsubscribe();
+        this.firebaseService.getUserDetailsFromAddress(signedOrder.makerAddress)
+        .then(userDetails => {
+          if (userDetails) {
+            signedOrder['alias'] = userDetails.alias;
+          } else {
+            signedOrder['alias'] = order.takerAddress.slice(2, 6);
+          }
+          this.orderResponses.push(signedOrder);
+          this.websocketSubscriptions[uuid].unsubscribe();
+        });
       }
-    })
-    return uuid
+    });
+    return uuid;
   }
 
   countOrderResponses(): number {

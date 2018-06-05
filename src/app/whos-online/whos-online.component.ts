@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import {MatTableDataSource} from '@angular/material';
 
-import { WhosOnlineService } from '../services/whos-online.service';
 import { MessagingService } from '../services/messaging.service';
+import { FirebaseService } from '../services/firebase.service';
 
 @Component({
   selector: 'app-whos-online',
@@ -13,7 +13,7 @@ import { MessagingService } from '../services/messaging.service';
 export class WhosOnlineComponent implements OnInit {
 
   constructor(
-    public whoOnlineService: WhosOnlineService,
+    public firebaseService: FirebaseService,
     private messageService: MessagingService,
   ) { }
 
@@ -21,9 +21,10 @@ export class WhosOnlineComponent implements OnInit {
   }
 
   message(user: any) {
-    let peer = this.messageService.getPeerAndAdd(
-      user.address);
-    this.messageService.selectedPeer = peer;
-    this.messageService.showMessenger = true;
+    this.messageService.getPeerAndAdd(user.address)
+    .then((peer) => {
+      this.messageService.selectedPeer = peer;
+      this.messageService.showMessenger = true;
+    });
   }
 }

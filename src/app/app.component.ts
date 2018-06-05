@@ -1,7 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { FirebaseService } from './services/firebase.service';
-import { WebsocketService } from './services/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -10,15 +8,11 @@ import { WebsocketService } from './services/websocket.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
 
-  constructor(private firebaseService: FirebaseService,
-              private wsService: WebsocketService ) { }
+  constructor() { }
 
   ngOnInit() {
-   
   }
 
   ngOnDestroy() {
-    this.firebaseService.logOffUser(this.wsService.loggedInUser);
-    console.log('signing off.')
   }
 }

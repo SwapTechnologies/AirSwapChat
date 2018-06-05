@@ -1,6 +1,9 @@
-<span *ngIf="connected && correctNetwork && accountConnected">
+<div *ngIf="this.web3service.connectionEstablished; else notConnected">
   <mat-icon>check</mat-icon> Account: {{this.web3service.connectedAccount}}
-</span>
-<span *ngIf="!(connected && correctNetwork && accountConnected)">
-  Login with Metamask <span *ngIf="!correctNetwork">to {{this.web3service.desiredNetwork}}</span>
-</span>
+</div>
+<ng-template #notConnected>
+  Login with Metamask 
+  <span *ngIf="!this.web3service.correctNetwork">
+    to {{this.web3service.desiredNetwork}}
+  </span>
+</ng-template>

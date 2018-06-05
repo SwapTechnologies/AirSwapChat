@@ -1,39 +1,39 @@
-export type Message = {
+export interface Message {
   user: string;
   message: string;
   timestamp: number;
 }
 
-export type Peer = {
+export interface StoredMessage {
+  uid: string;
+  message: string;
+  timestamp: number;
+}
+
+export interface Peer {
   address: string;
   messageHistory: Message[];
   hasUnreadMessages: boolean;
   isOnline: boolean;
   alias: string;
+  uid: string;
 }
 
-export type Token = {
+export interface Token {
   address: string;
   name: string;
   symbol: string;
   decimals: number;
 }
 
-export type LoggedInUser = {
+export interface LoggedInUser {
+  address: string;
+  wsAddress: string;
+  alias: string;
+  uid: string;
+}
+export interface OtherUser {
   address: string;
   alias: string;
+  uid: string;
 }
-
-// export type Order = {
-//   makerAddress: string, 
-//   makerAmount: string,
-//   makerToken: string,
-//   takerAddress: string,
-//   takerAmount: string, 
-//   takerToken: string,
-//   expiration: string, 
-//   nonce: string, 
-//   v: string, 
-//   r: string, 
-//   s: string
-// }

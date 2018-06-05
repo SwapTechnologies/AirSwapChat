@@ -1,8 +1,7 @@
 import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
-import { Subject, Subscription, Observable } from 'rxjs/Rx';
 import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 
-//services
+// services
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
@@ -22,7 +21,7 @@ import { Message, Peer } from '../types/types';
 })
 export class MessageSystemComponent implements OnInit, OnDestroy {
 
-  public message: string = ''; // text entered in message box
+  public message = ''; // text entered in message box
 
   public timer: any;
 
@@ -41,29 +40,35 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if(this.timer)
+    if (this.timer) {
       this.timer.unsubscribe();
+    }
   }
 
   updateStatus(): void {
-    if(this.messageService.selectedPeer)
+    if (this.messageService.selectedPeer) {
       this.messageService.setMessageRead();
+    }
     this.messageService.checkOnlineStatus();
   }
 
   openDialogAddPeer() {
-    let dialogRef = this.dialog.open(DialogAddPeerComponent, {
+    const dialogRef = this.dialog.open(DialogAddPeerComponent, {
       width: '400px'
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if(this.web3service.web3.utils.isAddress(result)) {
-        let peer = this.messageService.getPeerAndAdd(result);      
-        this.messageService.selectedPeer = peer;
-      } else console.log('Entered invalid address.');
+      if (this.web3service.web3.utils.isAddress(result)) {
+        this.firebaseService.getUserDetailsFromAddress(result)
+        .then(userDetails => {
+          return this.messageService.getPeerAndAdd(result, userDetails);
+        }).then(peer => {
+          this.messageService.selectedPeer = peer;
+        });
+      } else { console.log('Entered invalid address.'); }
     });
   }
-  
+
   sendMessage(): void {
     if (this.message.length > 0) {
       this.messageService.sendMessage(this.message);

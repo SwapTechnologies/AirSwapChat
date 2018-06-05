@@ -14,10 +14,10 @@ deploy:
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
-  bucket: swapchat
+  bucket: airswapchat.com
   region: $AWS_DEFAULT_REGION
   skip_cleanup: true
   acl: public_read
-  local-dir: dist/chatswap
+  local-dir: dist/
   on:
     branch: master

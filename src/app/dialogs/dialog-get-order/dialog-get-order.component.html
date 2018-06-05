@@ -13,15 +13,15 @@
   </div>
   <div>
     <i>{{receiver.slice(2,6)}} has 
-    {{data.peerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</i>
+    {{data.makerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</i>
   </div>
   <div>
-    Give me {{data.makerProps.name}} for 
-    {{data.takerProps.name}}
+    Give me {{data.makerProps.name}} for {{data.takerProps.name}}
   <mat-form-field style="width: 100%;">
     <input 
     matInput 
     type="number"
+    (keydown.enter)="getOrder()"
     placeholder="I want the following amount of {{data.makerProps.symbol}}" 
     [(ngModel)]="makerAmount">
   </mat-form-field>

@@ -10,7 +10,7 @@ import { MessageSystemComponent } from '../message-system.component';
 })
 export class DialogAddPeerComponent implements OnInit {
 
-  public peerAddress: string = '';
+  public peerAddress = '';
 
   constructor(
     public dialogRef: MatDialogRef<DialogAddPeerComponent>,
@@ -19,7 +19,7 @@ export class DialogAddPeerComponent implements OnInit {
   ngOnInit() {
 
   }
-    
+
   onNoClick(): void {
     this.dialogRef.close('Cancel');
   }

@@ -15,7 +15,7 @@ export class DialogSendOfflineComponent implements OnInit {
 
   ngOnInit() {
   }
-    
+
   onNoClick(): void {
     this.dialogRef.close(false);
   }

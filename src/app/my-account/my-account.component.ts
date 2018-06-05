@@ -1,0 +1,49 @@
+import { Component, OnInit } from '@angular/core';
+
+import { ConnectionService } from '../services/connection.service';
+import { FirebaseService } from '../services/firebase.service';
+
+
+@Component({
+  selector: 'app-my-account',
+  templateUrl: './my-account.component.html',
+  styleUrls: ['./my-account.component.scss']
+})
+export class MyAccountComponent implements OnInit {
+
+  public wantsToChangeAlias = false;
+  public newAlias: string;
+  public buttonVerb = 'CHANGE';
+  constructor(
+    public connectionService: ConnectionService,
+    public firebaseService: FirebaseService,
+  ) { }
+
+  ngOnInit() {
+  }
+
+  changeAlias(): void {
+    if (this.wantsToChangeAlias) {
+      this.acceptAliasChange();
+    } else {
+      this.newAlias = this.connectionService.loggedInUser.alias;
+      this.wantsToChangeAlias = true;
+      this.buttonVerb = 'SET';
+    }
+  }
+
+  acceptAliasChange(): void {
+    this.firebaseService.updateName(this.newAlias);
+    this.wantsToChangeAlias = false;
+    this.buttonVerb = 'CHANGE';
+
+  }
+
+  logOut(): void {
+    this.firebaseService.logOffUser();
+  }
+
+  deleteMe(): void {
+    this.firebaseService.deleteUser();
+  }
+}

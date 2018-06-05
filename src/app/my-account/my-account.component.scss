@@ -1,11 +1,11 @@
-.container {
+.row {
   display: flex;
   flex-flow: column wrap;
   justify-content: center;
   align-items: center;
-  height:30vh;
 }
 
-.alias_input {
-  margin: auto;
+.peerCard {
+  min-width: 500px;
+  margin: 10px;
 }

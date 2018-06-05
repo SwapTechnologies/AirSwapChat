@@ -1,7 +1,7 @@
 <h1> Who is online? </h1>
 
 <div>
-  <div *ngFor="let user of this.whoOnlineService.whosOnlineList" class="row">
+  <div *ngFor="let user of firebaseService.whosOnlineList" class="row">
       <div class="peerCard">
         <mat-card>
           <mat-card-title>

@@ -3,27 +3,33 @@
     Search the Indexer for Peers
   </h1>
   <div>
-    <span *ngIf="selectedRole === 'maker'">
+    <button 
+      mat-icon-button 
+      color="primary"
+      (click)="addToken()">
+      <mat-icon>add</mat-icon>
+    </button>
+
+    <span *ngIf="selectedRole === 'maker'; else takerSearch">
       <mat-form-field>
         <mat-select 
         placeholder="Search Token" 
         [(value)]="selectedToken"
         (selectionChange)="showIntents()">
           <mat-option 
-          *ngFor="let token of tokenList | callback: filterEther" 
+          *ngFor="let token of tokenService.validatedTokens | callback: filterEther"
           [value]='token'>
-            {{token.name}} ({{token.address.slice(0,8)}}...)
+            {{token.name}}
           </mat-option>
+          <mat-optgroup label="User Added Tokens">
+            <mat-option 
+            *ngFor="let token of tokenService.customTokens" 
+            [value]="token">
+              {{ token.name }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
-      </mat-form-field>
-      <mat-form-field>
-        <mat-select 
-        placeholder="What is your role" 
-        [(value)]="selectedRole"
-        (selectionChange)="showIntents()">
-          <mat-option value="maker">I want to buy it</mat-option>
-          <mat-option value="taker">I want to sell it</mat-option>
-        </mat-select> 
+        <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <button 
         mat-icon-button 
@@ -33,29 +39,44 @@
       </button>  
     </span>
 
-    <span *ngIf="selectedRole === 'taker'">
+    <ng-template #takerSearch>
       <mat-form-field>
         <mat-select 
         placeholder="Search Token" 
         [(value)]="selectedToken"
         (selectionChange)="showIntents()">
           <mat-option 
-          *ngFor="let token of tokenList" 
+          *ngFor="let token of tokenService.validatedTokens" 
           [value]='token'>
-            {{token.name}} ({{token.address.slice(0,8)}}...)
+            {{token.name}}
           </mat-option>
+          <mat-optgroup label="User Added Tokens">
+            <mat-option 
+            *ngFor="let token of tokenService.customTokens"
+            [value]="token">
+              {{ token.name }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
+        <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
-      <mat-form-field>
-        <mat-select 
-        placeholder="What is your role" 
-        [(value)]="selectedRole"
-        (selectionChange)="showIntents()">
-          <mat-option value="maker">I want to buy it</mat-option>
-          <mat-option value="taker">I want to sell it</mat-option>
-        </mat-select> 
-      </mat-form-field>
-    </span>
+    </ng-template>
+
+    <mat-form-field>
+      <mat-select 
+      placeholder="What is your role" 
+      [(value)]="selectedRole"
+      (selectionChange)="showIntents()">
+        <mat-option value="maker">I want to buy it</mat-option>
+        <mat-option value="taker">I want to sell it</mat-option>
+      </mat-select> 
+    </mat-form-field>
+    <button 
+      mat-icon-button 
+      color="primary"
+      (click)="refresh()">
+      <mat-icon>autorenew</mat-icon>
+    </button>  
   </div>
 
   <div *ngIf="stillLoading" class="row">
@@ -100,6 +121,25 @@
                 {{intent.makerProps.symbol}}
               </mat-card-content>
               <mat-card-content>
+                <span style='color:red' *ngIf="!intent.makerValid">
+                  <strong>
+                    {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
+                  </strong>
+                </span> 
+              </mat-card-content>
+              <mat-card-content>
+                <span style='color:red' *ngIf="!intent.takerValid">
+                  <strong>
+                    {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
+                  </strong>
+                </span> 
+              </mat-card-content>
+              <mat-card-content *ngIf="!intent.bothTokensValid">
+                <span style='color:red'><strong>
+                    Warning: Trade contains unvalidated tokens. Don't get scammed.
+                </strong></span> 
+              </mat-card-content>
+              <mat-card-content>
                 <button mat-raised-button
                 (click)="message(intent)">MESSAGE</button>
                 <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
@@ -127,7 +167,7 @@
           <i>Peers buying <b>{{selectedToken.name}}</b></i>
         </p>
         <div *ngFor="let intent of foundIntents" class="row">
-          <div *ngIf="callGetTokenByAddress(intent.takerToken)" class="peerCard">
+          <div *ngIf="intent.takerToken" class="peerCard">
             <mat-card>
               <mat-card-title>
                 {{intent.alias}} sells {{intent.makerProps.symbol}}
@@ -153,6 +193,25 @@
                 {{intent.takerBalanceMakerToken / intent.makerDecimals}}
                 {{intent.makerProps.symbol}}
               </mat-card-content>
+              <mat-card-content *ngIf="!intent.makerValid">
+                <span style='color:red'>
+                  <strong>
+                    {{intent.makerProps.symbol}}: {{intent.makerProps.address}}
+                  </strong>
+                </span> 
+              </mat-card-content>
+              <mat-card-content *ngIf="!intent.takerValid">
+                <span style='color:red'>
+                  <strong>
+                    {{intent.takerProps.symbol}}: {{intent.takerProps.address}}
+                  </strong>
+                </span> 
+              </mat-card-content>
+              <mat-card-content *ngIf="!intent.bothTokensValid">
+                <span style='color:red'><strong>
+                    Warning: Trade contains unvalidated tokens. Don't get scammed.
+                </strong></span> 
+              </mat-card-content>  
               <mat-card-content>
                 <button mat-raised-button
                 (click)="message(intent)">MESSAGE</button>
@@ -173,11 +232,11 @@
       </div>        
     </div>
     <div *ngIf="selectedToken && foundIntents.length === 0">
-      <p *ngIf="selectedRole==='maker'">
-        Sorry, nobody has signaled a intent to sell {{selectedToken.name}} in the indexer at the moment.
-      </p>
-      <p *ngIf="selectedRole==='taker'">
-        Sorry, nobody has signaled a intent to buy {{selectedToken.name}} in the indexer at the moment.
+      <p>
+        Sorry, nobody has signaled an intent to 
+        <span *ngIf="selectedRole==='maker'">sell</span> 
+        <span *ngIf="selectedRole==='taker'">buy</span> 
+        {{selectedToken.name}} in the indexer at the moment.
       </p>
     </div>
   </div>

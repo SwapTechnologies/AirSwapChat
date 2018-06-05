@@ -1,19 +1,21 @@
+import { Lexer } from '@angular/compiler';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
-import { Subject, Subscription } from 'rxjs/Rx';
+import { Subscription } from 'rxjs/Subscription';
 
+// services
 import { AirswapdexService } from '../services/airswapdex.service';
+import { ConnectionService } from '../services/connection.service';
 import { Erc20Service } from '../services/erc20.service';
+import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
 import { GetOrderService } from '../services/get-order.service';
-import { WhosOnlineService } from '../services/whos-online.service';
+import { TokenService, EtherAddress } from '../services/token.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { EthereumTokensSN, getTokenByName, getTokenByAddress, EtherAddress } from '../services/tokens';
-
 import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
-import { DialogGetOrderComponent } from './dialog-get-order/dialog-get-order.component';
-import { Lexer } from '@angular/compiler';
+import { DialogGetOrderComponent } from '../dialogs/dialog-get-order/dialog-get-order.component';
+import { DialogAddTokenComponent } from '../dialogs/dialog-add-token/dialog-add-token.component';
 
 @Component({
   selector: 'app-find-intents',
@@ -22,126 +24,96 @@ import { Lexer } from '@angular/compiler';
 })
 export class FindIntentsComponent implements OnInit, OnDestroy {
 
-  public tokenList: any[] = EthereumTokensSN;
   public websocketSubscription: Subscription;
 
   public makerTokens: string[] = [];
   public takerTokens: string[] = [];
 
   public selectedToken: any;
-  public selectedRole: string = 'maker';
+  public selectedRole = 'maker';
 
-  public foundIntents: any[] = []
+  public foundIntents: any[] = [];
 
   public clickedApprove: any = {};
-  
-  public stillLoading: boolean = false;
+
+  public stillLoading = false;
   constructor(
     private airswapDexService: AirswapdexService,
+    private connectionService: ConnectionService,
     private erc20services: Erc20Service,
+    private firebaseService: FirebaseService,
     private messageService: MessagingService,
     public getOrderService: GetOrderService,
+    public tokenService: TokenService,
     private web3service: ConnectWeb3Service,
-    private whosOnlineService: WhosOnlineService,
     public wsService: WebsocketService,
     public dialog: MatDialog  ) { }
 
   ngOnInit() {
+    this.tokenService.getCustomTokenList();
   }
 
   ngOnDestroy() {
-    if(this.websocketSubscription) this.websocketSubscription.unsubscribe;
-  }
-
-  addToken(): void {
-    if(this.selectedToken && this.selectedRole) {
-      if (this.selectedRole === 'maker')
-        this.makerTokens.push(this.selectedToken.address.toLowerCase())
-      else if (this.selectedRole === 'taker')
-        this.takerTokens.push(this.selectedToken.address.toLowerCase())
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
     }
   }
-  
-  callGetTokenByAddress(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token)
-    else
-      return null
-  }
 
-  callGetTokenNameByAddress(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).name
-    else
-      return null
-  }
-
-  callGetTokenSymbolByAddress(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).symbol
-    else
-      return null
-  }
-
-  callGetTokenDecimalsByAddress(token: string): number {
-    if(getTokenByAddress(token))
-      return 10**getTokenByAddress(token).decimals
-    else
-      return null
-  }
-
-  showIntents():void {
+  showIntents(): void {
     this.makerTokens = [];
     this.takerTokens = [];
-    this.addToken();
-    if(this.makerTokens.length > 0 || this.takerTokens.length >0) {
-      let uuid = this.wsService.findIntents(this.makerTokens, this.takerTokens)
+    if (this.selectedToken && this.selectedRole) {
+      if (this.selectedRole === 'maker') {
+        this.makerTokens.push(this.selectedToken.address.toLowerCase());
+      } else if (this.selectedRole === 'taker') {
+        this.takerTokens.push(this.selectedToken.address.toLowerCase());
+      }
+    }
+    if (this.makerTokens.length > 0 || this.takerTokens.length > 0) {
+      const uuid = this.wsService.findIntents(this.makerTokens, this.takerTokens);
       this.websocketSubscription = this.wsService.websocketSubject
       .subscribe(message => {
-        let parsedMessage = JSON.parse(message);
-        let parsedContent = JSON.parse(parsedMessage['message']);
-        let id = parsedContent['id'];
-        if(id === uuid){
+        const parsedMessage = JSON.parse(message);
+        const parsedContent = JSON.parse(parsedMessage['message']);
+        const id = parsedContent['id'];
+        if (id === uuid) {
           this.foundIntents = parsedContent['result'];
-          
+
           // only show intents of tokens known to us
           this.foundIntents = this.foundIntents.filter(x => {
-            if(getTokenByAddress(x.makerToken) && getTokenByAddress(x.takerToken)) return true
-            else return false
-          })
+            if (this.tokenService.getToken(x.makerToken) && this.tokenService.getToken(x.takerToken)) {
+              return true;
+            } else {
+              return false;
+            }
+          });
 
           // only show intents that are not made by myself
           this.foundIntents = this.foundIntents.filter(x => {
-            return (x.address !== this.wsService.loggedInUser.address)
-          })
+            return (x.address !== this.connectionService.loggedInUser.address);
+          });
           this.stillLoading = true;
           this.makerTokens = [];
           this.takerTokens = [];
           this.websocketSubscription.unsubscribe();
-          
+
+          this.getTokenProperties();
+          this.checkAllApprovals();
           this.fetchBalances();
           this.checkOnlineStatus();
         }
-      })
+      });
     }
   }
 
   getExponential(exponent: number): number {
-    return 10**exponent;
+    return 10 ** exponent;
   }
 
-  fetchBalances(): void {
-    for(let intent of this.foundIntents) {
-      let peerAddress = intent['address'];
-      let makerToken = intent['makerToken'];
-      let takerToken = intent['takerToken'];
-      
-      intent['makerProps'] = getTokenByAddress(makerToken);
-      intent['takerProps'] = getTokenByAddress(takerToken);
-      intent['makerDecimals'] = 10**intent.makerProps.decimals;
-      intent['takerDecimals'] = 10**intent.takerProps.decimals;
-      
-      if(takerToken !== EtherAddress) {
+  checkAllApprovals(): void {
+    for (const intent of this.foundIntents) {
+      const takerToken = intent['takerToken'];
+      if (takerToken !== EtherAddress) {
         this.checkApproval(takerToken)
         .then(approvedAmount => {
           intent['approvedTakerToken'] = approvedAmount;
@@ -150,40 +122,70 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
       } else {
         intent['approvedTakerToken'] = 1e25;
       }
+    }
+  }
+
+  getTokenProperties(): void {
+    for (const intent of this.foundIntents) {
+      const makerToken = intent['makerToken'];
+      const takerToken = intent['takerToken'];
+      const helper_makerToken = this.tokenService.getTokenAndWhetherItsValid(makerToken);
+      const helper_takerToken = this.tokenService.getTokenAndWhetherItsValid(takerToken);
+      intent['makerValid'] = helper_makerToken.isValid;
+      intent['takerValid'] = helper_takerToken.isValid;
+      intent['bothTokensValid'] = helper_makerToken.isValid && helper_takerToken.isValid;
+      intent['makerProps'] = helper_makerToken.token;
+      intent['takerProps'] = helper_takerToken.token;
+      intent['makerDecimals'] = 10 ** intent.makerProps.decimals;
+      intent['takerDecimals'] = 10 ** intent.takerProps.decimals;
+    }
+  }
+
+  fetchBalances(): void {
+    for (const intent of this.foundIntents) {
+      const peerAddress = intent['address'];
+      const makerToken = intent['makerToken'];
+      const takerToken = intent['takerToken'];
 
       this.erc20services.balance(makerToken, peerAddress)
       .then(balance => {
         intent['makerBalanceMakerToken'] = balance;
       })
-      .catch(error => 
-        console.log('Error fetching the balance of ' + peerAddress + ' for contract ' + makerToken))
-      
+      .catch(error =>
+        console.log('Error fetching the balance of ' + peerAddress +
+          ' for contract ' + makerToken));
+
       this.erc20services.balance(takerToken, peerAddress)
       .then(balance => {
         intent['makerBalanceTakerToken'] = balance;
       })
-      .catch(error => 
-        console.log('Error fetching the balance of ' + peerAddress + ' for contract ' + takerToken))
+      .catch(error =>
+        console.log('Error fetching the balance of ' + peerAddress +
+          ' for contract ' + takerToken));
 
-      this.erc20services.balance(makerToken, this.wsService.loggedInUser.address)
+      this.erc20services.balance(makerToken, this.connectionService.loggedInUser.address)
       .then(balance => {
         intent['takerBalanceMakerToken'] = balance;
       })
-      .catch(error => 
-        console.log('Error fetching the balance of ' + this.wsService.loggedInUser.address + ' for contract ' + makerToken))
-      
-      this.erc20services.balance(takerToken, this.wsService.loggedInUser.address)
+      .catch(error =>
+        console.log('Error fetching the balance of ' +
+          this.connectionService.loggedInUser.address +
+          ' for contract ' + makerToken));
+
+      this.erc20services.balance(takerToken, this.connectionService.loggedInUser.address)
       .then(balance => {
         intent['takerBalanceTakerToken'] = balance;
       })
-      .catch(error => 
-        console.log('Error fetching the balance of ' + this.wsService.loggedInUser.address + ' for contract ' + takerToken))
+      .catch(error =>
+        console.log('Error fetching the balance of ' +
+          this.connectionService.loggedInUser.address +
+          ' for contract ' + takerToken));
     }
   }
 
   checkApproval(address: string): Promise<any> {
-    let contract = this.erc20services.getContract(address);
-    return this.erc20services.approvedAmount(contract,  this.airswapDexService.airswapDexAddress)
+    const contract = this.erc20services.getContract(address);
+    return this.erc20services.approvedAmount(contract,  this.airswapDexService.airswapDexAddress);
   }
 
   stringIsValidNumber(x: string): boolean {
@@ -192,92 +194,117 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   approveTaker(intent: any): void {
     this.clickedApprove[intent['takerToken']] = true;
-    let contract = this.erc20services.getContract(intent.takerToken);
+    const contract = this.erc20services.getContract(intent.takerToken);
     this.erc20services.approve(contract, this.airswapDexService.airswapDexAddress)
     .then(result => {
-      console.log('approve')
-      this.fetchBalances();
+      this.checkAllApprovals();
     })
     .catch(error => {
-      console.log("Approve failed.");
+      console.log('Approve failed.');
       this.clickedApprove[intent['takerToken']] = false;
-    })
+    });
   }
 
   checkOnlineStatus(): void {
-    let PromiseList = [];
-    let subscriptions = [];
+    const PromiseList = [];
+    const subscriptions = [];
 
-    for(let intent of this.foundIntents) {
+    for (const intent of this.foundIntents) {
       intent['isOnline'] = false;
-      intent['alias'] = intent.address.slice(2,6);
       PromiseList.push(
-        new Promise((resolve, reject) => {
-          let peerAddress = intent['address'];
-          let uuid = this.wsService.pingPeer(peerAddress);
-          subscriptions.push(
-            this.wsService.websocketSubject
-            .subscribe(message => {
-              let parsedMessage = JSON.parse(message);
-              let parsedContent = JSON.parse(parsedMessage['message']);
-              let id = parsedContent['id'];
-              if(id === uuid){
-                let method = parsedContent['method']
-                if(method === 'pong') {
-                  intent['isOnline'] = true;
-                  let loggedInPeer = this.whosOnlineService.whosOnlineList
-                  .find(x => x.address === intent.address);
-                  if(loggedInPeer) {
-                    intent['alias'] = loggedInPeer.alias;
+        this.firebaseService.getUserDetailsFromAddress(intent.address)
+        .then(userDetails => {
+          if (userDetails) {
+            intent['alias'] = userDetails.alias;
+          } else {
+            intent['alias'] = intent.address.slice(2, 6);
+          }
+          return new Promise((resolve, reject) => {
+            const peerAddress = intent['address'];
+            const uuid = this.wsService.pingPeer(peerAddress);
+            subscriptions.push(
+              this.wsService.websocketSubject
+              .subscribe(message => {
+                const parsedMessage = JSON.parse(message);
+                const parsedContent = JSON.parse(parsedMessage['message']);
+                const id = parsedContent['id'];
+                if (id === uuid) {
+                  const method = parsedContent['method'];
+                  if (method === 'pong') {
+                    intent['isOnline'] = true;
                   }
                   resolve(true);
                 }
-              }
-            })
-          );
+              })
+            );
+          });
         })
-      )
+      );
     }
-    let delayPromise = new Promise((resolve, reject) => {
-      setTimeout(()=> {
+
+    const delayPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
         resolve(false);
       }, 2000);
-    })
+    });
 
     Promise.race([Promise.all(PromiseList), delayPromise])
     .then((onlineStatus) => {
-      for (let subscription of subscriptions)
+      for (const subscription of subscriptions) {
         subscription.unsubscribe();
-      this.foundIntents =this.foundIntents.sort((a:any,b:any) => {
-        return (a.isOnline === b.isOnline)? 0 : a.isOnline? -1 : 1;
+      }
+      this.foundIntents = this.foundIntents.sort((a: any, b: any) => {
+        return (a.isOnline === b.isOnline) ? 0 : a.isOnline ? -1 : 1;
       });
       this.stillLoading = false;
     })
     .catch(error => {
       console.log('Failed retrieving online status of peers');
-    })
+    });
   }
 
   message(intent: any): void {
-    let peer = this.messageService.getPeerAndAdd(
-      intent.address);
-    this.messageService.selectedPeer = peer;
-    this.messageService.showMessenger = true;
+    this.messageService.getPeerAndAdd(intent.address)
+    .then(peer => {
+      this.messageService.selectedPeer = peer;
+      this.messageService.showMessenger = true;
+    });
   }
 
   openDialogGetOrder(intent: any): void {
-    let dialogRef = this.dialog.open(DialogGetOrderComponent, {
+    const dialogRef = this.dialog.open(DialogGetOrderComponent, {
       width: '500px',
       data: intent
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if(result)
+      if (result) {
         intent['sentRequest'] = result;
-    })
+      }
+    });
   }
 
   filterEther(token: any) {
-    return token.address !== EtherAddress
+    return token.address !== EtherAddress;
+  }
+
+  addToken(): void {
+    const dialogRef = this.dialog.open(DialogAddTokenComponent, {
+      width: '500px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // console.log(result);
+        this.refresh();
+      }
+    });
+  }
+
+  refresh(): void {
+    this.tokenService.getCustomTokenList()
+    .then(() => {
+      this.showIntents();
+    });
   }
 }

@@ -1,12 +1,14 @@
 <mat-toolbar class="main-header">
-  <a routerLink="" style="color:white">Chat Swap</a>
+  <a routerLink="" style="color:white">AirSwapChat</a>
 </mat-toolbar>
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
-  <mat-sidenav #sidenav mode="side" [opened]="this.wsService.connectionEstablished" 
-               class="main-sidenav"
-               [fixedInViewport]="false" [fixedTopGap]="0"
-               [fixedBottomGap]="0">
+  <mat-sidenav 
+  #sidenav mode="side" 
+  [opened]="this.connectionService.connected" 
+  class="main-sidenav"
+  [fixedInViewport]="false" [fixedTopGap]="0"
+  [fixedBottomGap]="0">
     <mat-nav-list>
       <a routerLink="./findPeers">
         <button mat-raised-button class="menu_button">
@@ -24,13 +26,6 @@
         MESSAGE
       </button>
         
-      <!-- <a routerLink="./order">
-        <button mat-raised-button class="menu_button">
-          <mat-icon class='menu_icon'>send</mat-icon>
-          ORDER
-        </button>
-      </a> -->
-
       <a routerLink="./intents">
         <button mat-raised-button class="menu_button">
           <mat-icon class='menu_icon'>create</mat-icon>
@@ -57,16 +52,28 @@
       <a routerLink="./whosOnline">
         <button 
         mat-raised-button 
-        [disabled]="!showWhosOnlineBadge"
+        [disabled]="this.firebaseService.numWhosOnline===0"
         class="menu_button">
           <mat-icon 
           class='menu_icon' 
-          [matBadge]="numWhosOnline"
-          [matBadgeHidden]="!showWhosOnlineBadge" 
+          [matBadge]="this.firebaseService.numWhosOnline"
+          [matBadgeHidden]="this.firebaseService.numWhosOnline===0" 
           matBadgePosition="above after">
             people
           </mat-icon>
           ONLINE
+        </button>
+      </a>
+      
+      <a routerLink="./myAccount">
+        <button 
+        mat-raised-button 
+        class="menu_button">
+          <mat-icon 
+          class='menu_icon'>
+            person
+          </mat-icon>
+          ACCOUNT
         </button>
       </a>
 
@@ -83,27 +90,57 @@
 
   <mat-sidenav-content>
     <div class="content">
-      <router-outlet></router-outlet>  
-      <div class="websocket_button" *ngIf="this.web3service.connectionEstablished">
-        <app-websocket-connection></app-websocket-connection>
+      <div *ngIf="connectionService.connected; else initialPage">
+        <router-outlet></router-outlet>
       </div>
-      <div *ngIf="!web3service.connectionEstablished">
+      <ng-template #initialPage>
+          <div>
+            <h1>
+              Peer-to-Peer Trading based on AirSwap
+            </h1>
+            <p>
+              <i> Make yourself visible, find peers, connect, trade</i>
+            </p>
+            <p>
+              <i>
+                No need for order books. Negotiate privately & buy/sell every ERC20 token for any ERC20 token at the price that you and your counterparty agree upon.
+              </i>
+            </p>
+          </div>
+          
+          <div 
+          *ngIf="connectionService.web3Connected && !connectionService.wsConnected"
+          class="container">
+            <p>{{wsService.infoMessage}}</p>
+            <button mat-raised-button
+              (click)="connectWebsocket()" 
+              *ngIf="!wsService.performingHandshake && !connectionService.wsConnected">
+              Click to Connect with AirSwap
+            </button>
+          </div>
+          
+          <div *ngIf="connectionService.web3Connected
+                  && connectionService.wsConnected
+                  && !connectionService.firebaseConnected"
+          class="firebase_auth_container">
+            <firebase-ui class="firebase_auth"></firebase-ui>
+          </div>
+      </ng-template>
+      <div *ngIf="!connectionService.web3Connected">
         <span style="color:red"><b>Login to Metamask to access the platform</b></span>
       </div> 
     </div>
   </mat-sidenav-content>
-  <!-- <mat-sidenav #sidechat mode="side" opened="true"  -->
   <mat-sidenav #sidechat mode="side" [opened]="this.messageService.showMessenger" 
                class="chat-side" position="end"
                disableClose="true">
-               <!-- <app-message-system></app-message-system> -->
     <app-message-system *ngIf="this.messageService.showMessenger"></app-message-system>
   </mat-sidenav>
 </mat-sidenav-container>
 
 <mat-toolbar class="main-footer">
   <div>
-    <app-account></app-account>
+    <app-account></app-account> <!-- Connection to web3 -->
   </div>
   <div>
   </div>

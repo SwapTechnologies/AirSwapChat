@@ -1,22 +1,24 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-//services
+// services
+import { AngularFireAuth } from 'angularfire2/auth';
+import { ConnectionService } from '../services/connection.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
 import { GetOrderService } from '../services/get-order.service';
 import { MessagingService } from '../services/messaging.service';
 import { OrderRequestsService } from '../services/order-requests.service';
+import { TokenService } from '../services/token.service';
 import { WebsocketService } from '../services/websocket.service';
-import { WhosOnlineService } from '../services/whos-online.service';
 
-//components
+// components
 import { AccountComponent } from '../account/account.component';
 import { SetIntentsComponent } from '../set-intents/set-intents.component';
 import { FindIntentsComponent } from '../find-intents/find-intents.component';
 import { GetOrderComponent } from '../get-order/get-order.component';
 import { AnswerOrdersComponent } from '../answer-orders/answer-orders.component';
 import { MessageSystemComponent } from '../message-system/message-system.component';
-
+import { InitialPageComponent } from '../initial-page/initial-page.component';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Component({
@@ -24,42 +26,82 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   templateUrl: './mainframe.component.html',
   styleUrls: ['./mainframe.component.scss']
 })
-export class MainframeComponent implements OnInit {
+export class MainframeComponent implements OnInit, OnDestroy {
 
-  public showMessageBadge: boolean = false;
-  public numUnreadMessages: number = 0;
+  public showMessageBadge = false;
+  public numUnreadMessages = 0;
 
-  public showAnswerBadge: boolean = false;
-  public numUnreadAnswers: number = 0;
+  public showAnswerBadge = false;
+  public numUnreadAnswers = 0;
 
-  public showWhosOnlineBadge: boolean = false;
-  public numWhosOnline: number = 0;
-  
+  public showWhosOnlineBadge = false;
+  public numWhosOnline = 0;
+
   public timer: any;
   public rareTimer: any;
 
   constructor(
-    private firebaseService: FirebaseService,
+    private afAuth: AngularFireAuth,
+    private getOrderService: GetOrderService,
+    private orderRequestsService: OrderRequestsService,
+    private tokenService: TokenService,
+    public connectionService: ConnectionService,
+    public firebaseService: FirebaseService,
     public messageService: MessagingService,
-    public getOrderService: GetOrderService,
-    public orderService: OrderRequestsService,
     public web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
-    public whoOnlineService: WhosOnlineService,
   ) {}
 
 
   ngOnInit() {
+    this.authUser();
+    this.tokenService.getValidatedTokens();
+    this.tokenService.getCustomTokenList();
+
     this.timer = TimerObservable.create(0, 2000)
     .subscribe( () => this.updateNumbers());
-    this.rareTimer = TimerObservable.create(0, 10000)
+    this.rareTimer = TimerObservable.create(0, 60000)
     .subscribe( () => this.updateRareNumbers());
-    
   }
 
   ngOnDestroy() {
-    if(this.timer)
+    if (this.timer) {
       this.timer.unsubscribe();
+    }
+  }
+
+  authUser(): void {
+    // listen for auth of user
+    this.afAuth.auth.onAuthStateChanged((user) => {
+      if (user && user.uid) {
+        this.firebaseService.user = user;
+        this.connectionService.loggedInUser.alias = user.displayName;
+        this.connectionService.loggedInUser.uid = user.uid;
+        this.connectionService.firebaseConnected = true;
+        if (this.connectionService.connected) {
+          this.connectionInitialized();
+        }
+      } else {
+        this.connectionService.firebaseConnected = false;
+        this.firebaseService.stopReadWhosOnline();
+      }
+    });
+  }
+
+  connectWebsocket(): void {
+    this.wsService.initSocket()
+    .then((connected) => {
+      if (connected && this.connectionService.connected) {
+        this.connectionInitialized();
+      }
+    });
+  }
+
+  connectionInitialized(): void {
+    this.firebaseService.registerUser();
+    this.firebaseService.pingMe();
+    this.firebaseService.initReadWhosOnline();
+    this.messageService.startMessenger();
   }
 
   toggleMessenger(): void {
@@ -68,20 +110,16 @@ export class MainframeComponent implements OnInit {
 
   updateNumbers(): void {
     this.numUnreadMessages = this.messageService.unreadMessages;
-    this.showMessageBadge = this.numUnreadMessages>0;
+    this.showMessageBadge = this.numUnreadMessages > 0;
 
-    this.numUnreadAnswers = this.orderService.openRequests + this.getOrderService.countOrderResponses();
-    this.showAnswerBadge = this.numUnreadAnswers>0;
+    this.numUnreadAnswers = this.orderRequestsService.openRequests
+                            + this.getOrderService.countOrderResponses();
+    this.showAnswerBadge = this.numUnreadAnswers > 0;
   }
 
   updateRareNumbers(): void {
-    this.whoOnlineService.numOnline
-    .then((numWhosOnline) => {
-      this.numWhosOnline = numWhosOnline;
-      this.showWhosOnlineBadge = this.numWhosOnline>0;
-    })
-    
-    if(this.wsService.connectionEstablished)
-      this.firebaseService.pingUser(this.wsService.loggedInUser);
+    if (this.connectionService.connected) {
+      this.firebaseService.pingMe();
     }
+  }
 }

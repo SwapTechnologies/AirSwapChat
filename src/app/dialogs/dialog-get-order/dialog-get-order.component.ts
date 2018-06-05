@@ -1,8 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { Subject, Subscription } from 'rxjs/Rx';
-
-import { FindIntentsComponent } from '../find-intents.component';
+import { Subscription } from 'rxjs/Subscription';
 
 import { ConnectWeb3Service } from '../../services/connectWeb3.service';
 import { GetOrderService } from '../../services/get-order.service';
@@ -26,7 +24,7 @@ export class DialogGetOrderComponent implements OnInit {
   public foundIntents: any[] = [];
   public orderResponses: any[] = [];
   public websocketSubscription: Subscription;
-  
+
 
   constructor(
     public dialogRef: MatDialogRef<DialogGetOrderComponent>,
@@ -54,45 +52,49 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   getTokenName(token: string): number {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).name
-    else
-      return null
+    if (getTokenByAddress(token)) {
+      return getTokenByAddress(token).name;
+    } else {
+      return null;
+    }
   }
 
   getTokenDecimals(token: string): number {
-    if(getTokenByAddress(token))
-      return 10**(getTokenByAddress(token).decimals)
-    else
-      return null
+    if (getTokenByAddress(token)) {
+      return 10 ** (getTokenByAddress(token).decimals);
+    } else {
+      return null;
+    }
   }
-  
+
   getTokenSymbol(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).symbol
-    else
-      return null
+    if (getTokenByAddress(token)) {
+      return getTokenByAddress(token).symbol;
+    } else {
+      return null;
+    }
   }
 
   stringIsValidNumber(x: string): boolean {
     return Number(x) >= 0;
   }
-  makerHasEnough(): boolean {
-    return (parseFloat(this.makerAmount) <= 
-      (this.data.peerBalanceMakerToken / this.data.makerDecimals))
-  }
-  
-  getOrder():void {
-    if(this.web3service.web3.utils.isAddress(this.receiver) 
-    && Number(this.makerAmount) >= 0) {
 
-      let makerProps = getTokenByAddress(this.data.makerToken);
-      let takerProps = getTokenByAddress(this.data.takerToken);
-      
-      let makerDecimals = 10**makerProps.decimals;
-      let makerAmount = Math.floor(Number(this.makerAmount)*makerDecimals);
-      if(makerAmount < this.data.peerBalanceMakerToken) {
-        let uuid = this.getOrderService.sendGetOrder({
+  makerHasEnough(): boolean {
+    return (parseFloat(this.makerAmount) <=
+      (this.data.makerBalanceMakerToken / this.data.makerDecimals));
+  }
+
+  getOrder(): void {
+    if (this.web3service.web3.utils.isAddress(this.receiver)
+    && Number(this.makerAmount) >= 0 && this.makerHasEnough()) {
+
+      const makerProps = getTokenByAddress(this.data.makerToken);
+      const takerProps = getTokenByAddress(this.data.takerToken);
+
+      const makerDecimals = 10 ** makerProps.decimals;
+      const makerAmount = Math.floor(Number(this.makerAmount) * makerDecimals);
+      if (makerAmount < this.data.makerBalanceMakerToken) {
+        const uuid = this.getOrderService.sendGetOrder({
           makerAddress: this.receiver,
           takerAddress: this.web3service.connectedAccount.toLowerCase(),
           makerAmount: makerAmount.toString(),
@@ -101,7 +103,7 @@ export class DialogGetOrderComponent implements OnInit {
           makerProps: makerProps,
           takerProps: takerProps,
           makerDecimals: makerDecimals,
-        })
+        });
         this.onCloseConfirm(uuid);
       }
     }

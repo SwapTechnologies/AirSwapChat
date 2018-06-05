@@ -1,31 +1,47 @@
 <div>
   <h2>Signal Your Intents to Trade on the Indexer</h2>
-  <div *ngIf="balanceTooLow">
+  <div *ngIf="balanceTooLow; else enoughBalance">
     <p>Your AST balance too low! You need 250 AST to interact with the Indexer.</p>
   </div>
-  <div *ngIf="!balanceTooLow">
+  <ng-template #enoughBalance>
     <div>
       <mat-form-field>
         <mat-select 
         placeholder="Add signal you sell" 
         [(value)]="makerToken">
           <mat-option 
-          *ngFor="let token of tokenList | callback: filterEther" 
-          [value]='token.address'>
-            {{token.name}} ({{token.address.slice(0,8)}}...)
+          *ngFor="let token of tokenService.validatedTokens | callback: filterEther" 
+          [value]='token'>
+            {{token.name}}
           </mat-option>
+          <mat-optgroup label="User Added Tokens">
+            <mat-option 
+            *ngFor="let token of tokenService.customTokens" 
+            [value]="token">
+              {{ token.name }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
+        <mat-hint *ngIf="makerToken">{{makerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <mat-form-field>
         <mat-select 
         placeholder="when others give you" 
         [(value)]="takerToken">
           <mat-option 
-          *ngFor="let token of tokenList" 
-          [value]='token.address'>
-            {{token.name}} ({{token.address.slice(0,8)}}...)
+          *ngFor="let token of tokenService.validatedTokens" 
+          [value]='token'>
+            {{token.name}}
           </mat-option>
+          <mat-optgroup label="User Added Tokens">
+            <mat-option 
+            *ngFor="let token of tokenService.customTokens" 
+            [value]="token">
+              {{ token.name }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
+        <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <button 
         mat-icon-button 
@@ -42,7 +58,8 @@
       (ngModelChange)="changedList($event)">
         <mat-list-option *ngFor="let intent of myIntents" 
         [value]="intent">
-          You want to sell {{callGetTokenByAddress(intent.makerToken)}} for {{callGetTokenByAddress(intent.takerToken)}} 
+          You want to sell {{tokenSymbol(intent.makerToken)}} 
+          for {{tokenSymbol(intent.takerToken)}} 
         </mat-list-option>
       </mat-selection-list>
     </div>
@@ -54,12 +71,12 @@
       <strong>{{this.errorMessage}}</strong>
     </p>
 
-    <div *ngIf="unapprovedTokens.length > 0">
+    <div style='color:red;' *ngIf="unapprovedTokens.length > 0">
       <strong>
         You want to trade unapproved tokens. 
       </strong>
       <p>
-        Approve them or the AirSwap smart contract can not swap the tokens for you.
+        You have to approve them or the AirSwap smart contract is not able to swap the token for you.
       </p>
       <div class="row">
         <mat-list>
@@ -67,11 +84,11 @@
             <button mat-raised-button
             [disabled]="clickedApprove[token]"
             (click)="approveMaker(token)">
-              APPROVE {{callGetTokenByAddress(token)}} 
+              APPROVE {{tokenSymbol(token)}} 
             </button>        
           </mat-list-item>
         </mat-list>
       </div>
     </div>
-  </div>  
-</div>
+  </ng-template>
+</div>  

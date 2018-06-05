@@ -1,11 +1,14 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { ConnectWeb3Service } from '../services/connectWeb3.service';
-import { Subject, Subscription } from 'rxjs/Rx';
-import { WebsocketService } from '../services/websocket.service';
-import { Erc20Service } from '../services/erc20.service';
-import { AirswapdexService } from '../services/airswapdex.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
-import { EthereumTokensSN, getTokenByName, getTokenByAddress, EtherAddress } from '../services/tokens';
+// services
+import { AirswapdexService } from '../services/airswapdex.service';
+import { ConnectionService } from '../services/connection.service';
+import { Erc20Service } from '../services/erc20.service';
+import { TokenService, EtherAddress } from '../services/token.service';
+import { WebsocketService } from '../services/websocket.service';
+
+import { Token } from '../types/types';
 
 @Component({
   selector: 'app-set-intents',
@@ -14,175 +17,188 @@ import { EthereumTokensSN, getTokenByName, getTokenByAddress, EtherAddress } fro
 })
 export class SetIntentsComponent implements OnInit, OnDestroy {
 
-  public makerToken: string;
-  public takerToken: string;
+  public makerToken: Token;
+  public takerToken: Token;
 
   public myIntents: any[] = [];
-  public markedIntents: boolean = false;
+  public markedIntents = false;
   public intentsMarkedForRemoval: any;
 
-  public tokenList: any[] = EthereumTokensSN;
   public unapprovedTokens: any[] = [];
   public websocketSubscription: Subscription;
 
-  public astBalance: number = 0;
-  public balanceTooLow: boolean = true;
+  public astBalance = 0;
+  public balanceTooLow = true;
 
   public clickedApprove: any = {};
-  public errorMessage: string = '';
+  public errorMessage = '';
 
   constructor(
-    private erc20service: Erc20Service,
     private airswapDexService: AirswapdexService,
-    private web3service: ConnectWeb3Service,
+    private connectionService: ConnectionService,
+    private erc20service: Erc20Service,
+    public tokenService: TokenService,
     public wsService: WebsocketService,
-    private ref: ChangeDetectorRef) { }
+  ) { }
 
   ngOnInit() {
-    this.erc20service.balance(getTokenByName("AirSwap").address, this.wsService.loggedInUser.address)
-    .then(balance => {
-      this.astBalance = balance/1e4;
-      this.balanceTooLow = this.astBalance < 250;
-    })
 
-    this.getMyIntents();
+    this.erc20service.balance(this.tokenService.getTokenByName('AirSwap').address,
+      this.connectionService.loggedInUser.address)
+
+    .then(balance => {
+      this.astBalance = balance / 1e4;
+      this.balanceTooLow = this.astBalance < 250;
+    });
+
+    this.tokenService.getCustomTokenList()
+    .then(() => {
+      this.getMyIntents();
+    });
+
   }
 
-  getMyIntents():void {
-    let uuid = this.wsService.getIntents(this.web3service.connectedAccount.toLowerCase());
-    let answerSubscription = this.wsService.websocketSubject
+  getMyIntents(): void {
+
+    const uuid = this.wsService.getIntents(this.connectionService.loggedInUser.address);
+    const answerSubscription = this.wsService.websocketSubject
     .subscribe(message => {
-      let parsedMessage = JSON.parse(message);
-      let parsedContent = JSON.parse(parsedMessage['message']);
-      let id = parsedContent['id'];
-      if(id === uuid){
+      const parsedMessage = JSON.parse(message);
+      const parsedContent = JSON.parse(parsedMessage['message']);
+      const id = parsedContent['id'];
+      if (id === uuid) {
         this.myIntents = parsedContent['result'];
         this.intentsMarkedForRemoval = [];
         this.checkApproval();
         answerSubscription.unsubscribe();
       }
-    })
+    });
   }
 
   findIdxOfIntent(intent, intentList): number {
     return intentList.findIndex(x => {
       return (x.makerToken === intent.makerToken
-           && x.takerToken === intent.takerToken)
-    })
+           && x.takerToken === intent.takerToken);
+    });
   }
 
   isIntentInList(intent): any {
     return this.myIntents.find(x => {
       return (x.makerToken === intent.makerToken
-           && x.takerToken === intent.takerToken)
-    })
+           && x.takerToken === intent.takerToken);
+    });
   }
 
   changedList(event): void {
-    this.markedIntents = event.length>0
+    this.markedIntents = event.length > 0;
   }
-  
+
   ngOnDestroy() {
-    if(this.websocketSubscription) this.websocketSubscription.unsubscribe;
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
+    }
   }
-  
+
   addTokenPair(): void {
-    if(this.makerToken 
-    && this.takerToken 
-    && this.makerToken 
-    !== this.takerToken) {
-      let intent = {
-        "makerToken": this.makerToken.toLowerCase(),
-        "takerToken": this.takerToken.toLowerCase(),
-        "role": "maker"
-      }
-      if(!this.isIntentInList(intent)) {
+    if (this.makerToken
+    && this.takerToken
+    && this.makerToken.address !== this.takerToken.address) {
+      const intent = {
+        'makerToken': this.makerToken.address.toLowerCase(),
+        'takerToken': this.takerToken.address.toLowerCase(),
+        'role': 'maker'
+      };
+      if (!this.isIntentInList(intent)) {
         this.myIntents.push(intent);
         this.callSetIntents(this.myIntents);
       }
     }
   }
 
-  callGetTokenByAddress(token: string): string {
-    if(getTokenByAddress(token))
-      return getTokenByAddress(token).symbol
-    else
-      return null
+  tokenSymbol(tokenAddress: string): string {
+    const token = this.tokenService.getToken(tokenAddress.toLowerCase());
+    if (token) {
+      return token.symbol;
+    } else {
+      return null;
+    }
   }
 
   removeMarkedIntents(): void {
-    let newIntentList = JSON.parse(JSON.stringify(this.myIntents));
+    const newIntentList = JSON.parse(JSON.stringify(this.myIntents));
     // removed marked intents
-    for(let intent of this.intentsMarkedForRemoval) {
-      let idx = this.findIdxOfIntent(intent, newIntentList)
-      if(idx >= 0)
-      newIntentList.splice( idx, 1 );
+    for (const intent of this.intentsMarkedForRemoval) {
+      const idx = this.findIdxOfIntent(intent, newIntentList);
+      if (idx >= 0) {
+        newIntentList.splice( idx, 1 );
+      }
     }
     this.markedIntents = false;
-
     this.callSetIntents(newIntentList);
   }
 
   callSetIntents(intentList): void {
-    let sendIntents = [];
-    for(let intent of intentList) {
+    const sendIntents = [];
+    for (const intent of intentList) {
       sendIntents.push({
         makerToken: intent.makerToken,
         takerToken: intent.takerToken,
         role: intent.role,
-      })
+      });
     }
-    let uuid = this.wsService.setIntents(sendIntents)
+    const uuid = this.wsService.setIntents(sendIntents);
     this.websocketSubscription = this.wsService.websocketSubject
     .subscribe(message => {
-      let parsedMessage = JSON.parse(message);
-      let parsedContent = JSON.parse(parsedMessage['message']);
-      let id = parsedContent['id'];
-      if(id === uuid){
-        let response = parsedContent['result'];
-        if(response === 'ok') {
+      const parsedMessage = JSON.parse(message);
+      const parsedContent = JSON.parse(parsedMessage['message']);
+      const id = parsedContent['id'];
+      if (id === uuid) {
+        const response = parsedContent['result'];
+        if (response === 'ok') {
           this.getMyIntents();
         } else {
-          if(parsedContent['error']){
-            this.myIntents.splice(-1,1);
+          if (parsedContent['error']) {
+            this.myIntents.splice(-1, 1);
             this.errorMessage = parsedContent['error']['message'];
           }
         }
         this.websocketSubscription.unsubscribe();
       }
-    })
+    });
   }
 
   checkApproval(): void {
-    let promiseList = [];
-    console.log('checking approval of ', this.myIntents);
-    for(let intent of this.myIntents) {
-      let contract = this.erc20service.getContract(intent.makerToken);
+    const promiseList = [];
+    this.unapprovedTokens = [];
+    for (const intent of this.myIntents) {
+      const contract = this.erc20service.getContract(intent.makerToken);
       this.clickedApprove[intent.makerToken] = false;
       promiseList.push(
         this.erc20service.approvedAmount(contract,  this.airswapDexService.airswapDexAddress)
         .then(approvedAmount => {
-          if(!(approvedAmount > 0) && !this.unapprovedTokens.find(x => {return x===intent.makerToken}) )
-            this.unapprovedTokens.push(intent.makerToken)
+          if (!(approvedAmount > 0)
+          && !this.unapprovedTokens.find(x => x === intent.makerToken) ) {
+            this.unapprovedTokens.push(intent.makerToken);
+          }
         })
-      )
+      );
     }
   }
+
   approveMaker(makerToken: string): void {
     this.clickedApprove[makerToken] = true;
-    let contract = this.erc20service.getContract(makerToken);
+    const contract = this.erc20service.getContract(makerToken);
     this.erc20service.approve(contract, this.airswapDexService.airswapDexAddress)
     .then(result => {
       this.checkApproval();
     })
     .catch(error => {
-      console.log("Approve failed.");
+      console.log('Approve failed.');
       this.clickedApprove[makerToken] = false;
-    })
+    });
   }
 
   filterEther(token: any) {
-    return token.address !== EtherAddress
+    return token.address !== EtherAddress;
   }
-
 }

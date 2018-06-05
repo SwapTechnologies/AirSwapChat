@@ -68,3 +68,30 @@ $text-color: black;
   background: linear-gradient(to bottom, rgba(0, 117, 195, 1), rgb(255,255,255));
   overflow-x: hidden;
 }
+
+
+.websocket_button {
+  margin: 50px 0px 50px 0px;
+}
+.container {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+  height:30vh;
+}
+
+.alias_input {
+  margin: auto;
+}
+
+.firebase_auth_container {
+  display: flex;
+  margin: 50px 0px 50px 0px;
+}
+
+.firebase_auth {
+  width: 400px;
+  margin-left: auto;
+  margin-right:auto;
+}

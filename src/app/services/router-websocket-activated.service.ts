@@ -1,8 +1,7 @@
-import { Injectable, NgZone } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
 
-import { WebsocketService } from '../services/websocket.service';
+import { ConnectionService } from '../services/connection.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,18 +9,15 @@ import { WebsocketService } from '../services/websocket.service';
 export class RouterWebsocketActivatedService implements CanActivate {
 
   constructor(
-    private wsService: WebsocketService,
-    private router: Router,
-    private zone: NgZone) { }
+    private connectionService: ConnectionService,
+    public router: Router,
+  ) { }
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean>|Promise<boolean>|boolean {
-    if (!this.wsService.connectionEstablished) {
-      this.zone.run(() => {
-        this.router.navigate([""]);
-      })
+  canActivate(): boolean {
+    if (!this.connectionService.connected) {
+      console.log('Rerouting.');
+      this.router.navigate(['']);
+      return false;
     }
     return true;
   }
