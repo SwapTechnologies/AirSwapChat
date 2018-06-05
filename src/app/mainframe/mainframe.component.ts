@@ -38,6 +38,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public numWhosOnline = 0;
 
   public timer: any;
+  // public checkVerificationTimer: any;
   public rareTimer: any;
 
   constructor(
@@ -74,7 +75,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
     // listen for auth of user
     this.afAuth.auth.onAuthStateChanged((user) => {
       if (user && user.uid) {
-        this.firebaseService.user = user;
         this.connectionService.loggedInUser.alias = user.displayName;
         this.connectionService.loggedInUser.uid = user.uid;
         this.connectionService.firebaseConnected = true;
@@ -98,10 +98,24 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   connectionInitialized(): void {
-    this.firebaseService.registerUser();
-    this.firebaseService.pingMe();
-    this.firebaseService.initReadWhosOnline();
-    this.messageService.startMessenger();
+    if (this.connectionService.connected && this.firebaseService.user.emailVerified) {
+      this.firebaseService.userIsVerified = true;
+      this.firebaseService.registerUser();
+      this.firebaseService.pingMe();
+      this.firebaseService.initReadWhosOnline();
+      this.messageService.startMessenger();
+    } else {
+      // this.checkVerificationTimer = TimerObservable.create(0, 2000)
+      // .subscribe( () => {
+      //   console.log('check.');
+      //   console.log(this.firebaseService.user);
+      //   if (this.firebaseService.user.emailVerified) {
+      //     this.checkVerificationTimer.unsubscribe();
+      //     this.connectionInitialized();
+      //   }
+      // });
+    }
+
   }
 
   toggleMessenger(): void {

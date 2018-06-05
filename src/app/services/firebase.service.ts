@@ -16,11 +16,10 @@ import { Message, StoredMessage, Peer, LoggedInUser, OtherUser, Token } from '..
 })
 export class FirebaseService {
 
-  public user: User;
-
   public observerWhosOnline: any;
   public whosOnlineList: OtherUser[] = [];
   public numWhosOnline = 0;
+  public userIsVerified = false;
 
   constructor(
     private db: AngularFireDatabase,
@@ -49,19 +48,27 @@ export class FirebaseService {
   }
 
   logOffUser(): void {
-    // this.db.object('users/' + this.connectionService.loggedInUser.uid)
-    // .remove();
-    this.connectionService.loggedInUser.uid = '';
-    this.afAuth.auth.signOut();
+    this.afAuth.auth.signOut()
+    .then(() => {
+      this.userIsVerified = false;
+      this.connectionService.loggedInUser.uid = '';
+      this.stopReadWhosOnline();
+    });
   }
 
-  deleteUser(): void {
-    const uid = this.connectionService.loggedInUser.uid;
-    const address = this.connectionService.loggedInUser.address;
-    this.db.object('registeredAddresses/' + address).remove();
-    this.db.object('messaging/' + uid).remove();
-    this.db.object('users/' + uid).remove();
-    this.afAuth.auth.currentUser.delete();
+  get user(): User {
+    return this.afAuth.auth.currentUser;
+  }
+
+  deleteUser(): Promise<any> {
+    return this.afAuth.auth.currentUser.delete()
+    .then(() => {
+      const uid = this.connectionService.loggedInUser.uid;
+      const address = this.connectionService.loggedInUser.address;
+      this.db.object('registeredAddresses/' + address).remove();
+      this.db.object('messaging/' + uid).remove();
+      this.db.object('users/' + uid).remove();
+    });
   }
 
   updateName(newName: string): void {

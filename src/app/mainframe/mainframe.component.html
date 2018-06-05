@@ -5,7 +5,7 @@
 <mat-sidenav-container class="main-container" hasBackdrop="false">
   <mat-sidenav 
   #sidenav mode="side" 
-  [opened]="this.connectionService.connected" 
+  [opened]="this.connectionService.connected && firebaseService.userIsVerified" 
   class="main-sidenav"
   [fixedInViewport]="false" [fixedTopGap]="0"
   [fixedBottomGap]="0">
@@ -90,7 +90,7 @@
 
   <mat-sidenav-content>
     <div class="content">
-      <div *ngIf="connectionService.connected; else initialPage">
+      <div *ngIf="connectionService.connected && firebaseService.userIsVerified; else initialPage">
         <router-outlet></router-outlet>
       </div>
       <ng-template #initialPage>
@@ -124,6 +124,10 @@
                   && !connectionService.firebaseConnected"
           class="firebase_auth_container">
             <firebase-ui class="firebase_auth"></firebase-ui>
+          </div>
+          <div class="firebase_auth_container"
+          *ngIf="this.connectionService.connected && !firebaseService.userIsVerified">
+            <app-verify-user class="firebase_auth"></app-verify-user>
           </div>
       </ng-template>
       <div *ngIf="!connectionService.web3Connected">

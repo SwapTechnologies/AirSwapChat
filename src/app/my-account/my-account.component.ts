@@ -14,6 +14,9 @@ export class MyAccountComponent implements OnInit {
   public wantsToChangeAlias = false;
   public newAlias: string;
   public buttonVerb = 'CHANGE';
+
+  public errorMessage = '';
+
   constructor(
     public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
@@ -44,6 +47,12 @@ export class MyAccountComponent implements OnInit {
   }
 
   deleteMe(): void {
-    this.firebaseService.deleteUser();
+    this.firebaseService.deleteUser()
+    .catch(error => {
+      if (error.code && error.code === 'auth/requires-recent-login') {
+        this.errorMessage = 'Your last login is too long back. ' +
+          'Please logoff + login again if you want to delete your account.';
+      }
+    });
   }
 }

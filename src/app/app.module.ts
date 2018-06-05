@@ -57,6 +57,7 @@ import { environment } from '../environments/environment';
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
 import { DialogAddTokenComponent } from './dialogs/dialog-add-token/dialog-add-token.component';
+import { VerifyUserComponent } from './verify-user/verify-user.component';
 
 
 const appRoutes: Routes = [
@@ -109,14 +110,14 @@ const emailCustomConfig: AuthProviderWithCustomConfig = {
 
 const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
   providers: [
+    // googleCustomConfig,
     emailCustomConfig,
-    googleCustomConfig,
-    AuthProvider.Github,
-    AuthProvider.Twitter,
+    // AuthProvider.Github,
+    // AuthProvider.Twitter,
   ],
   method: AuthMethods.Popup,
   tos: '<your-tos-link>',
-  credentialHelper: CredentialHelper.None,
+  credentialHelper: CredentialHelper.OneTap,
 };
 
 @NgModule({
@@ -141,6 +142,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     ErrorComponent,
     DialogAddTokenComponent,
     MyAccountComponent,
+    VerifyUserComponent,
   ],
   imports: [
     BrowserModule,
