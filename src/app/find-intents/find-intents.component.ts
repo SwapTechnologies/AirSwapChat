@@ -18,6 +18,8 @@ import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
 import { DialogGetOrderComponent } from '../dialogs/dialog-get-order/dialog-get-order.component';
 import { DialogAddTokenComponent } from '../dialogs/dialog-add-token/dialog-add-token.component';
 
+import {PageEvent} from '@angular/material';
+
 @Component({
   selector: 'app-find-intents',
   templateUrl: './find-intents.component.html',
@@ -34,10 +36,26 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   public selectedRole = 'maker';
 
   public foundIntents: any[] = [];
+  public displayIntents: any[] = [];
 
   public clickedApprove: any = {};
 
   public stillLoading = false;
+
+  // public displayWords = {
+  //   maker: {
+  //     peerAction: 'selling',
+  //   },
+  //   taker: {
+  //     peerAction: 'buying',
+  //   }
+  // };
+
+  public pageSize = 6;
+  public pageIndex = 0;
+  // public pageEvent: PageEvent;
+  // public pageSizeOptions = [5, 10, 25, 100];
+
   constructor(
     private airswapDexService: AirswapdexService,
     public columnSpaceObserver: ColumnSpaceObserverService,
@@ -54,6 +72,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.tokenService.getCustomTokenList();
+    // this.pageEvent.
   }
 
   ngOnDestroy() {
@@ -95,41 +114,39 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           this.foundIntents = this.foundIntents.filter(x => {
             return (x.address !== this.connectionService.loggedInUser.address);
           });
-          this.stillLoading = true;
+          // this.stillLoading = true;
           this.makerTokens = [];
           this.takerTokens = [];
           this.websocketSubscription.unsubscribe();
 
-          this.getTokenProperties();
-          this.checkAllApprovals();
-          this.fetchBalances();
-          this.checkOnlineStatus();
+          this.pageIndex = 0;
+          this.updateDisplayedIntents();
         }
       });
     }
+  }
+
+  page(event) {
+    this.pageIndex = event.pageIndex;
+    this.updateDisplayedIntents();
+  }
+
+  updateDisplayedIntents() {
+    this.displayIntents = this.foundIntents.slice(
+      this.pageIndex * this.pageSize,
+      (this.pageIndex + 1) * this.pageSize);
+    this.getTokenProperties();
+    this.checkAllApprovals();
+    this.fetchBalances();
+    this.checkOnlineStatus();
   }
 
   getExponential(exponent: number): number {
     return 10 ** exponent;
   }
 
-  checkAllApprovals(): void {
-    for (const intent of this.foundIntents) {
-      const takerToken = intent['takerToken'];
-      if (takerToken !== EtherAddress) {
-        this.checkApproval(takerToken)
-        .then(approvedAmount => {
-          intent['approvedTakerToken'] = approvedAmount;
-          this.clickedApprove[intent['takerToken']] = false;
-        });
-      } else {
-        intent['approvedTakerToken'] = 1e25;
-      }
-    }
-  }
-
   getTokenProperties(): void {
-    for (const intent of this.foundIntents) {
+    for (const intent of this.displayIntents) {
       const makerToken = intent['makerToken'];
       const takerToken = intent['takerToken'];
       const helper_makerToken = this.tokenService.getTokenAndWhetherItsValid(makerToken);
@@ -144,8 +161,23 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  checkAllApprovals(): void {
+    for (const intent of this.displayIntents) {
+      const takerToken = intent['takerToken'];
+      if (takerToken !== EtherAddress) {
+        this.checkApproval(takerToken)
+        .then(approvedAmount => {
+          intent['approvedTakerToken'] = approvedAmount;
+          this.clickedApprove[intent['takerToken']] = false;
+        });
+      } else {
+        intent['approvedTakerToken'] = 1e25;
+      }
+    }
+  }
+
   fetchBalances(): void {
-    for (const intent of this.foundIntents) {
+    for (const intent of this.displayIntents) {
       const peerAddress = intent['address'];
       const makerToken = intent['makerToken'];
       const takerToken = intent['takerToken'];
@@ -212,7 +244,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     const PromiseList = [];
     const subscriptions = [];
 
-    for (const intent of this.foundIntents) {
+    for (const intent of this.displayIntents) {
       const peerAddress = intent['address'];
       let uid;
       PromiseList.push(
@@ -238,21 +270,15 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
       );
     }
 
-    // const delayPromise = new Promise((resolve, reject) => {
-    //   setTimeout(() => {
-    //     resolve(false);
-    //   }, 2000);
-    // });
-
     // Promise.race([Promise.all(PromiseList), delayPromise])
     Promise.all(PromiseList)
     .then((onlineStatus) => {
       for (const subscription of subscriptions) {
         subscription.unsubscribe();
       }
-      this.foundIntents = this.foundIntents.sort((a: any, b: any) => {
-        return (a.isOnline === b.isOnline) ? 0 : a.isOnline ? -1 : 1;
-      });
+      // this.foundIntents = this.foundIntents.sort((a: any, b: any) => {
+      //   return (a.isOnline === b.isOnline) ? 0 : a.isOnline ? -1 : 1;
+      // });
       this.stillLoading = false;
     })
     .catch(error => {
