@@ -12,8 +12,6 @@ import { DialogAddPeerComponent } from './dialog-add-peer/dialog-add-peer.compon
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
-import { Message, Peer } from '../types/types';
-
 @Component({
   selector: 'app-message-system',
   templateUrl: './message-system.component.html',
@@ -76,8 +74,8 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   }
 
   addPeerAsFriend(): void {
-    if (this.messageService.selectedPeer && this.messageService.selectedPeer.uid) {
-      this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.uid);
+    if (this.messageService.selectedPeer && this.messageService.selectedPeer.peerDetails.uid) {
+      this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
     }
   }
 }

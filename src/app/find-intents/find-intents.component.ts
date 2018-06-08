@@ -12,6 +12,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
 import { GetOrderService } from '../services/get-order.service';
 import { TokenService, EtherAddress } from '../services/token.service';
+import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
 import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
@@ -42,19 +43,8 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   public stillLoading = false;
 
-  // public displayWords = {
-  //   maker: {
-  //     peerAction: 'selling',
-  //   },
-  //   taker: {
-  //     peerAction: 'buying',
-  //   }
-  // };
-
   public pageSize = 6;
   public pageIndex = 0;
-  // public pageEvent: PageEvent;
-  // public pageSizeOptions = [5, 10, 25, 100];
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -65,14 +55,13 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     private messageService: MessagingService,
     public getOrderService: GetOrderService,
     public tokenService: TokenService,
+    private userOnlineService: UserOnlineService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
     public dialog: MatDialog,
     ) { }
 
   ngOnInit() {
-    this.tokenService.getCustomTokenList();
-    // this.pageEvent.
   }
 
   ngOnDestroy() {
@@ -81,6 +70,10 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Send request to websocket for a specific token and load the answer
+   * into foundIntents
+   */
   showIntents(): void {
     this.makerTokens = [];
     this.takerTokens = [];
@@ -126,6 +119,10 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Triggered when set paginator is changed
+   * @param event includes current pageIndex etc.
+   */
   page(event) {
     this.pageIndex = event.pageIndex;
     this.updateDisplayedIntents();
@@ -138,7 +135,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     this.getTokenProperties();
     this.checkAllApprovals();
     this.fetchBalances();
-    this.checkOnlineStatus();
+    this.checkPeerData();
   }
 
   getExponential(exponent: number): number {
@@ -240,54 +237,46 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  checkOnlineStatus(): void {
-    const PromiseList = [];
-    const subscriptions = [];
-
+  checkPeerData(): void {
+    const checkedUser = {};
+    const promiseList = [];
+    const deferredIntents = [];
     for (const intent of this.displayIntents) {
       const peerAddress = intent['address'];
-      let uid;
-      PromiseList.push(
-        this.firebaseService.getUserUid(peerAddress)
-        .then(userUid => {
-          uid = userUid;
-          intent['uid'] = uid;
-          if (uid) {
-            return this.firebaseService.getUserAlias(uid);
-          } else {
-            return peerAddress.slice(2, 6);
-          }
-        }).then(alias => {
-          intent['alias'] = alias;
-          if (uid) {
-            return this.firebaseService.getUserOnline(uid);
-          } else {
-            return false;
-          }
-        }).then(isOnline => {
-          intent['isOnline'] = isOnline;
+      if (checkedUser[peerAddress]) {
+        deferredIntents.push(intent);
+        continue;
+      } // else
+      checkedUser[peerAddress] = true;
+
+      // check if user was already seen at any point earlier, if no add his details
+      // otherwise load old data, fails if user is not in database
+      promiseList.push(
+        this.userOnlineService.addUserFromFirebaseByAddress(peerAddress)
+        .then(peer => {
+          intent['peer'] = peer;
         })
       );
     }
-
-    // Promise.race([Promise.all(PromiseList), delayPromise])
-    Promise.all(PromiseList)
-    .then((onlineStatus) => {
-      for (const subscription of subscriptions) {
-        subscription.unsubscribe();
+    Promise.all(promiseList)
+    .then(() => {
+      for (const intent of deferredIntents) {
+        const peerAddress = intent['address'];
+        const peer = this.userOnlineService.getUserByAddress(peerAddress);
+        intent['peer'] = peer;
       }
-      // this.foundIntents = this.foundIntents.sort((a: any, b: any) => {
-      //   return (a.isOnline === b.isOnline) ? 0 : a.isOnline ? -1 : 1;
-      // });
-      this.stillLoading = false;
-    })
-    .catch(error => {
-      console.log('Failed retrieving online status of peers');
     });
   }
 
   message(intent: any): void {
-    this.messageService.getPeerAndAdd(intent.uid)
+    // const selectedIntentIdx = this.displayIntents.findIndex(x => {
+    //   return x.uid === intent.uid;
+    // });
+    // const helpObject = this.displayIntents[0];
+    // this.displayIntents[0] = intent;
+    // this.displayIntents[selectedIntentIdx] = helpObject;
+
+    this.messageService.getPeerAndAdd(intent.peer.uid)
     .then(peer => {
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;
@@ -318,15 +307,16 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.refresh();
+        this.refreshTokens();
       }
     });
   }
 
-  refresh(): void {
-    this.tokenService.getCustomTokenList()
-    .then(() => {
-      this.showIntents();
-    });
+  refreshIntents(): void {
+    this.showIntents();
+  }
+
+  refreshTokens(): void {
+    this.tokenService.getCustomTokenListFromDB();
   }
 }

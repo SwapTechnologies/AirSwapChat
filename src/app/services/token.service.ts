@@ -16,6 +16,8 @@ export class TokenService {
   public validatedTokens: Token[];
   public customTokens: Token[];
 
+  public lastUpdateOfCustomTokens = 0;
+
   constructor(
     private firebaseService: FirebaseService,
     private erc20Service: Erc20Service,
@@ -99,15 +101,47 @@ export class TokenService {
 
   getValidatedTokens(): Token[] {
     this.validatedTokens = validatedTokens;
+    this.validatedTokens = this.validatedTokens.sort((a, b) => {
+      if (a.name < b.name) { return -1; }
+      if (a.name > b.name) { return 1; }
+      return 0;
+    });
     return validatedTokens;
   }
 
-  getCustomTokenList(): Promise<Token[]> {
-    return this.firebaseService.getTokenListFromDatabase()
-    .then((customTokens) => {
-      this.customTokens = customTokens;
-      return customTokens;
-    });
+  getCustomTokenListFromDB(): Promise<Token[]> {
+    if (Date.now() - this.lastUpdateOfCustomTokens > 60000) {
+      this.lastUpdateOfCustomTokens = Date.now();
+      return this.firebaseService.getTokenListFromDatabase()
+      .then((customTokens) => {
+        this.customTokens = customTokens.sort((a, b) => {
+          if (a.name < b.name) { return -1; }
+          if (a.name > b.name) { return 1; }
+          return 0;
+        });
+        return customTokens;
+      });
+    } else {
+      return Promise.resolve(this.customTokens);
+    }
   }
 
+  addTokenToCustomList(address: string, name: string,
+  symbol: string, decimals: number): void {
+    if (!this.getToken(address)) {
+      const newToken: Token = {
+        name: name,
+        symbol: symbol,
+        decimals: decimals,
+        address: address
+      };
+      this.customTokens.push(newToken);
+      this.customTokens = this.customTokens.sort((a, b) => {
+        if (a.name < b.name) { return -1; }
+        if (a.name > b.name) { return 1; }
+        return 0;
+      });
+    }
+
+  }
 }

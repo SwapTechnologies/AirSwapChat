@@ -4,7 +4,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ConnectWeb3Service } from '../../services/connectWeb3.service';
 import { Erc20Service } from '../../services/erc20.service';
 import { FirebaseService } from '../../services/firebase.service';
-
+import { TokenService } from '../../services/token.service';
 import { getTokenByAddress } from '../../services/tokens';
 
 import { Token } from '../../types/types';
@@ -29,6 +29,7 @@ export class DialogAddTokenComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private erc20Service: Erc20Service,
     private firebaseService: FirebaseService,
+    private tokenService: TokenService,
     private web3Service: ConnectWeb3Service,
   ) { }
 
@@ -62,6 +63,8 @@ export class DialogAddTokenComponent implements OnInit {
         this.tokenSymbol, this.tokenDecimals
       ).then(addedToken => {
         if (addedToken) {
+          this.tokenService.addTokenToCustomList(this.tokenAddress, this.tokenName,
+            this.tokenSymbol, this.tokenDecimals);
           this.onCloseConfirm();
         } else {
           this.onCloseCancel();

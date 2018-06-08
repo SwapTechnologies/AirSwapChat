@@ -51,11 +51,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       this.balanceTooLow = this.astBalance < 250;
     });
 
-    this.tokenService.getCustomTokenList()
-    .then(() => {
-      this.getMyIntents();
-    });
-
+    this.getMyIntents();
   }
 
   getMyIntents(): void {
@@ -200,5 +196,9 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
 
   filterEther(token: any) {
     return token.address !== EtherAddress;
+  }
+
+  refreshTokens(): void {
+    this.tokenService.getCustomTokenListFromDB();
   }
 }

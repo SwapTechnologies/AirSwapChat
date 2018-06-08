@@ -5,7 +5,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
   MatCardModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule,
   MatGridListModule, MatIconModule, MatInputModule, MatListModule, MatProgressSpinnerModule,
   MatPaginatorModule, MatSelectModule, MatSidenavModule, MatSnackBarModule,
-  MatTableModule, MatTabsModule, MatToolbarModule,
+  MatTableModule, MatTabsModule, MatToolbarModule, MatTooltipModule
   } from '@angular/material';
 @NgModule({
   imports: [
@@ -28,7 +28,8 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
     MatSnackBarModule,
     MatTableModule,
     MatTabsModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatTooltipModule,
   ],
   exports: [
     MatBadgeModule,
@@ -50,6 +51,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
     MatTableModule,
     MatTabsModule,
     MatToolbarModule,
+    MatTooltipModule,
   ],
   declarations: [
   ]

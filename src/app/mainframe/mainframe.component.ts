@@ -10,6 +10,7 @@ import { GetOrderService } from '../services/get-order.service';
 import { MessagingService } from '../services/messaging.service';
 import { OrderRequestsService } from '../services/order-requests.service';
 import { TokenService } from '../services/token.service';
+import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
 // components
@@ -51,6 +52,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
     public firebaseService: FirebaseService,
     public messageService: MessagingService,
     private titleService: Title,
+    private userOnlineService: UserOnlineService,
     public web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
   ) {}
@@ -102,7 +104,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
       this.timer = TimerObservable.create(0, 2000)
       .subscribe( () => this.updateNumbers());
 
-      this.tokenService.getCustomTokenList(); // load custom token list from firebase
+      this.tokenService.getCustomTokenListFromDB(); // load custom token list from firebase
       this.firebaseService.registerUser() // set user as online
       .then(() => {
         // check if I have unreceived messages

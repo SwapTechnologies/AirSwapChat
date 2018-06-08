@@ -1,14 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
+// firebase
 import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { auth, User, database } from 'firebase/app';
 
+// services
 import { Erc20Service } from './erc20.service';
 import { ConnectionService } from './connection.service';
 import { WebsocketService } from './websocket.service';
-import { Message, StoredMessage, Peer, LoggedInUser, OtherUser, Token } from '../types/types';
+
+// types
+import { StoredMessage, OtherUser, Token } from '../types/types';
 
 
 @Injectable({
@@ -18,8 +22,9 @@ export class FirebaseService {
 
   public observerWhosOnline: any;
   public whosOnlineList: OtherUser[] = [];
-  public lastTimeLoadedUserList = 0;
+  public lastTimeLoadedWhosOnline = 0;
   public userIsVerified = false;
+  public numOfFirebaseReads = 0;
 
   constructor(
     private db: AngularFireDatabase,
@@ -87,93 +92,74 @@ export class FirebaseService {
     .update({alias: newName});
   }
 
-  readUserList(): Promise<any> {
-    const promiseList = [];
+  getObjectFromDatabase(path: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.lastTimeLoadedUserList = Date.now();
-      const subscriptionWhosOnline = this.db.object('online')
-      .valueChanges()
-      .subscribe(entries => {
-        subscriptionWhosOnline.unsubscribe();
-        this.whosOnlineList = [];
-        if (!entries) {
-          resolve();
-        } else {
-          for (const uid in entries) {
-            if (entries[uid]) {
-              let alias;
-              let address;
-              promiseList.push(
-                this.getUserAlias(uid)
-                .then((userAlias) => {
-                  alias = userAlias;
-                  return this.getUserAddress(uid);
-                }).then((userAddress) => {
-                  address = userAddress;
-                  const user: OtherUser = {
-                    address: address,
-                    alias: alias,
-                    uid: uid
-                  };
-                  this.whosOnlineList.push(user);
-                })
-              );
-            }
-          }
-          Promise.all(promiseList)
-          .then(() => {
-            this.whosOnlineList = this.whosOnlineList.filter(x => {
-              return x.uid !== this.connectionService.loggedInUser.uid;
-            });
-            resolve();
-          });
-        }
+      const subscription = this.db.object(path).valueChanges()
+      .subscribe(result => {
+        subscription.unsubscribe();
+        this.numOfFirebaseReads += 1;
+        resolve(result);
       });
     });
+  }
+
+  readWhosOnline(): Promise<any> {
+    // const promiseList = [];
+    this.lastTimeLoadedWhosOnline = Date.now();
+    return this.getObjectFromDatabase('online');
+    // return new Promise((resolve, reject) => {
+    //   const subscriptionWhosOnline = this.db.object('online')
+    //   .valueChanges()
+    //   .subscribe(entries => {
+    //     console.log('get user list', entries);
+    //     subscriptionWhosOnline.unsubscribe();
+    //     this.whosOnlineList = [];
+    //     if (!entries) {
+    //       resolve();
+    //     } else {
+    //       for (const uid in entries) {
+    //         if (entries[uid]) {
+    //           let alias;
+    //           let address;
+    //           promiseList.push(
+    //             this.getUserAlias(uid)
+    //             .then((userAlias) => {
+    //               alias = userAlias;
+    //               return this.getUserAddress(uid);
+    //             }).then((userAddress) => {
+    //               address = userAddress;
+    //               const user: OtherUser = {
+    //                 address: address,
+    //                 alias: alias,
+    //                 uid: uid
+    //               };
+    //               this.whosOnlineList.push(user);
+    //             })
+    //           );
+    //         }
+    //       }
+    //       Promise.all(promiseList)
+    //       .then(() => {
+    //         this.whosOnlineList = this.whosOnlineList.filter(x => {
+    //           return x.uid !== this.connectionService.loggedInUser.uid;
+    //         });
+    //         resolve();
+    //       });
+    //     }
+    //   });
+    // });
   }
 
   getUserUid(address: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const subscription = this.db.object('registeredAddresses/' + address.toLowerCase())
-      .valueChanges()
-      .subscribe(user => {
-        subscription.unsubscribe();
-        if (user && user['uid']) {
-          resolve(user['uid']);
-        }
-        resolve(null);
-      });
-    });
+    return this.getObjectFromDatabase('registeredAddresses/' + address.toLowerCase() + '/uid');
   }
 
   getUserAddress(uid: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const subscription = this.db.object('users/' + uid + '/address')
-      .valueChanges()
-      .subscribe(address => {
-        subscription.unsubscribe();
-        if (address) {
-          resolve(address);
-        } else {
-          resolve(null);
-        }
-      });
-    });
+    return this.getObjectFromDatabase('users/' + uid + '/address');
   }
 
   getUserAlias(uid: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const subscription = this.db.object('users/' + uid + '/alias')
-      .valueChanges()
-      .subscribe(alias => {
-        subscription.unsubscribe();
-        if (alias) {
-          resolve(alias);
-        } else {
-          resolve(null);
-        }
-      });
-    });
+    return this.getObjectFromDatabase('users/' + uid + '/alias');
   }
 
   getUserAliasFromAddress(address: string): Promise<any> {
@@ -188,11 +174,18 @@ export class FirebaseService {
     });
   }
 
+  getUserOnlineSubscription(uid: string, callback: any): Subscription {
+    return this.db.object('online/' + uid + '/online')
+    .valueChanges()
+    .subscribe(online => callback(online));
+  }
+
   getUserOnline(uid: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       const subscription = this.db.object('online/' + uid)
       .valueChanges()
       .subscribe(online => {
+        console.log('check if user is online', online);
         subscription.unsubscribe();
         if (online) {
           resolve(true);
@@ -294,6 +287,7 @@ export class FirebaseService {
     return new Promise((resolve, reject) => {
       obsToken = dbToken.valueChanges()
       .subscribe(entry => {
+        // console.log('getting tokenlist', entry);
         obsToken.unsubscribe();
         const tokenList: Token[] = [];
         if (entry) {
@@ -314,27 +308,12 @@ export class FirebaseService {
     });
   }
 
+  /**
+   * Check the firebase database whether token is already stored
+   * @param tokenAddress Token you want to check
+   */
   getTokenFromDatabase(tokenAddress): Promise<Token> {
-    let dbToken: AngularFireObject<any>;
-    let obsToken: Subscription;
-    dbToken = this.db.object('tokens/' + tokenAddress.toLowerCase());
-
-    return new Promise((resolve, reject) => {
-      obsToken = dbToken.valueChanges()
-      .subscribe(entry => {
-        obsToken.unsubscribe();
-        let foundToken;
-        if (entry) {
-          foundToken = {
-            address: entry,
-            name: entry['name'],
-            symbol: entry['symbol'],
-            decimals: entry['decimals']
-          };
-        }
-        resolve(entry);
-      });
-    });
+    return this.getObjectFromDatabase('tokens/' + tokenAddress.toLowerCase());
   }
 
   addToken(tokenAddress, tokenName, tokenSymbol, tokenDecimals): Promise<boolean> {

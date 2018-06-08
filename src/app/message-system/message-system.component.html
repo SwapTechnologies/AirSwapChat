@@ -4,24 +4,28 @@
   <div class="select_peer_card">
     <mat-card>
       <mat-card-actions>
-        <mat-form-field *ngIf="this.messageService.connectedPeers.length > 0"
+        <mat-form-field *ngIf="messageService.selectedPeer && messageService.connectedPeers.length > 0"
             style="width: 100%;">
-          <mat-select placeholder="Select Peer" [(value)]="this.messageService.selectedPeer">
-            <mat-option *ngFor="let peer of this.messageService.connectedPeers"
+          <mat-select 
+          placeholder="Select Peer" 
+          [disabled]="messageService.sendingMessage"
+          [(value)]="messageService.selectedPeer">
+            <mat-option *ngFor="let peer of messageService.connectedPeers"
             [value]="peer"
             style="width: 100%;">
-              {{peer.alias}}
+              {{peer.peerDetails.alias}}
               <span *ngIf="peer.hasUnreadMessages" class="unreadMessagesDot"></span>
-              <span *ngIf="peer.isOnline" class="onlineDot"></span>
-              <span *ngIf="!(peer.isOnline)" class="offlineDot"></span>  
+              <span *ngIf="peer.peerDetails.online" class="onlineDot"></span>
+              <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>  
             </mat-option>
           </mat-select>
-          <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot" matSuffix></span>
-          <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot" matSuffix></span>
+          <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
+          <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
           <button *ngIf="messageService.selectedPeer"
           mat-button
           mat-icon-button 
           matSuffix
+          matTooltip="Add peer to your list"
           aria-label="Add Friend"
           color="primary"
           (click)="addPeerAsFriend()">
@@ -31,25 +35,33 @@
             mat-button
             mat-icon-button 
             matSuffix
+            matTooltip="Add new peer from address"
             color="primary"
             (click)="openDialogAddPeer()">
             <mat-icon>add</mat-icon>
-          </button>  
+          </button>
         </mat-form-field>
-        <span *ngIf="this.messageService.connectedPeers.length === 0">Add Peer</span>
-        <!-- <span *ngIf="this.messageService.selectedPeer">
-          
-        </span> -->
+        <button 
+          *ngIf="messageService.connectedPeers.length === 0"
+          mat-button
+          mat-icon-button 
+          matSuffix
+          matTooltip="Add new peer from address"
+          color="primary"
+          (click)="openDialogAddPeer()">
+          <mat-icon>add</mat-icon>
+        </button>
+        <span *ngIf="messageService.connectedPeers.length === 0">Add Peer</span>
       </mat-card-actions>
     </mat-card>
   </div>
 
   <!-- Display & Send Messages to peer -->
   <div class="chat_card" 
-  *ngIf="this.messageService.connectedPeers.length > 0 
-  && this.messageService.selectedPeer.messageHistory.length > 0"
+  *ngIf="messageService.connectedPeers.length > 0 
+  && messageService.selectedPeer.messageHistory.length > 0"
   #scrollMe [scrollTop]="scrollMe.scrollHeight">
-    <ng-container *ngFor="let msg of this.messageService.selectedPeer.messageHistory">
+    <ng-container *ngFor="let msg of messageService.selectedPeer.messageHistory">
       <mat-card *ngIf="msg.user == 'You'" class='chat_message_card myMessage'>
         <mat-card-content style="display: flex;">
           <div>
@@ -84,7 +96,7 @@
     </ng-container>
   </div>
     
-  <div class="send_message_card" *ngIf="this.messageService.selectedPeer">
+  <div class="send_message_card" *ngIf="messageService.selectedPeer">
     <mat-card>
       <mat-form-field class="send_message_card">
         <input 
@@ -97,6 +109,7 @@
           mat-button
           mat-icon-button 
           matSuffix
+          matTooltip='Send message via AirSwap'
           color="primary"
           aria-label="Send"
           (click)="sendMessage()">
@@ -106,23 +119,3 @@
     </mat-card>
   </div>
 </div>
-
-
-
-<!-- 
-<div>
-  Send a message to a peer
-  <form>
-    <div class="form-group">
-      <label for="receiver">Receiver</label>
-      <input type="text" class="form-control" id="receiver" required  [(ngModel)]="receiver" name="receiver" [disabled]="!this.wsService.connectionEstablished">
-    </div>
-
-    <div class="form-group">
-      <label for="message">Message</label>
-      <input type="text" class="form-control" id="message" [(ngModel)]="message" name="message" [disabled]="!this.wsService.connectionEstablished">
-    </div>
-    
-    <button type="submit" class="btn btn-success" (click)="sendMessage()" [disabled]="!this.wsService.connectionEstablished">Send</button>
-  </form>
-</div> -->

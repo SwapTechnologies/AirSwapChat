@@ -5,6 +5,14 @@
   </div>
   <ng-template #enoughBalance>
     <div>
+
+      <button 
+      mat-icon-button 
+      color="primary"
+      matTooltip="Refresh the custom token list"
+      (click)="refreshTokens()">
+        <mat-icon>autorenew</mat-icon>
+      </button>
       <mat-form-field>
         <mat-select 
         placeholder="Add signal you sell" 
@@ -46,6 +54,7 @@
       <button 
         mat-icon-button 
         color="primary"
+        matTooltip="Add intent to indexer"
         (click)="addTokenPair()">
         <mat-icon>add</mat-icon>
       </button>

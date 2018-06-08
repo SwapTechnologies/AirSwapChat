@@ -10,14 +10,14 @@ export interface StoredMessage {
   timestamp: number;
 }
 
-export interface Peer {
-  address: string;
-  messageHistory: Message[];
-  hasUnreadMessages: boolean;
-  isOnline: boolean;
-  alias: string;
-  uid: string;
-}
+// export interface Peer {
+//   address: string;
+//   messageHistory: Message[];
+//   hasUnreadMessages: boolean;
+//   isOnline: boolean;
+//   alias: string;
+//   uid: string;
+// }
 
 export interface Token {
   address: string;

@@ -8,8 +8,16 @@
     <button 
       mat-icon-button 
       color="primary"
+      matTooltip="Add a new custom token"
       (click)="addToken()">
       <mat-icon>add</mat-icon>
+    </button>
+    <button 
+      mat-icon-button 
+      color="primary"
+      matTooltip="Refresh the custom token list"
+      (click)="refreshTokens()">
+      <mat-icon>autorenew</mat-icon>
     </button>
 
     
@@ -56,7 +64,8 @@
     <button 
       mat-icon-button 
       color="primary"
-      (click)="refresh()">
+      matTooltip="Refresh intents list from indexer"
+      (click)="refreshIntents()">
       <mat-icon>autorenew</mat-icon>
     </button>
   </div>
@@ -87,31 +96,25 @@
     
     <!-- Results -->
     <div *ngIf="foundIntents.length>0">
-      <!-- <div *ngIf="selectedRole === 'maker'"> -->
-      <!-- <p style='font-style: italic'>
-        Peers {{displayWords[selectedRole].peerAction}} <b>{{selectedToken.name}}</b>
-      </p> -->
-
       <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='320px'>
         <mat-grid-tile *ngFor="let intent of displayIntents">
-          <div *ngIf="intent.makerToken && intent.takerToken">
+          <div *ngIf="intent.makerToken && intent.takerToken && intent.peer">
             <mat-card class="peerCard">
               <mat-card-title>
                 <span *ngIf="selectedRole === 'maker'; else takerHeader">
-                  {{intent.alias}} wants {{intent.takerProps.symbol}}
+                  {{intent.peer.alias}} wants {{intent.takerProps.symbol}}
                 </span>
                 <ng-template #takerHeader>
-                  {{intent.alias}} sells {{intent.makerProps.symbol}}
+                  {{intent.peer.alias}} sells {{intent.makerProps.symbol}}
                 </ng-template>
-                <span *ngIf="intent.isOnline" class="onlineDot"></span>
-                <span *ngIf="!(intent.isOnline)" class="offlineDot"></span>  
+                <span *ngIf="intent.peer.online" class="onlineDot"></span>
+                <span *ngIf="!(intent.peer.online)" class="offlineDot"></span>  
               </mat-card-title>
               <mat-card-subtitle>
                   Address {{intent.address}}
               </mat-card-subtitle>
               <mat-card-subtitle>
                   Peer <b>sells {{intent.makerProps.name}}</b> to <b>buy {{intent.takerProps.name}}</b>
-
               </mat-card-subtitle>
               <mat-card-content>
                 <i>In peers wallet are:</i> 
@@ -148,12 +151,12 @@
               <mat-card-content>
                 <button mat-raised-button
                 (click)="message(intent)"
-                [disabled]="!intent.uid">
+                [disabled]="!intent.peer.uid">
                   MESSAGE
                 </button>
                 <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
                 (click)="openDialogGetOrder(intent)"
-                [disabled]="!intent.isOnline">
+                [disabled]="!intent.peer.online">
                   GET ORDER
                 </button>           
                 <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"

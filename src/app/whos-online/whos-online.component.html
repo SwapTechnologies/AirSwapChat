@@ -1,28 +1,39 @@
 <h1> Who is online? </h1>
 <p>
-  Refresh List (only every 60s)
   <button 
     mat-icon-button 
     color="primary"
+    matTooltip="Refresh List"
     (click)="refresh()">
       <mat-icon>autorenew</mat-icon>
   </button>
 </p>
-<mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='250px'>
-  <mat-grid-tile *ngFor="let user of firebaseService.whosOnlineList">  
-    <div class="peerCard">
-      <mat-card>
-        <mat-card-title>
-          {{user.alias}}
-        </mat-card-title>
-        <mat-card-subtitle>
-          Address {{user.address}}
-        </mat-card-subtitle>
-        <mat-card-content>
-          <button mat-raised-button
-          (click)="message(user)">MESSAGE</button>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </mat-grid-tile>
-</mat-grid-list>
+<div *ngIf="whosOnlineList.length > 0; else nobodyOnline">
+  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='250px'>
+    <mat-grid-tile *ngFor="let user of whosOnlineList | callback: onlyOnline">
+      <div class="peerCard">
+        <mat-card>
+          <mat-card-title>
+            {{user.alias}}
+          </mat-card-title>
+          <mat-card-subtitle>
+            Address {{user.address}}
+          </mat-card-subtitle>
+          <mat-card-content>
+            <button mat-raised-button
+            (click)="message(user)">MESSAGE</button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-grid-tile>
+  </mat-grid-list>
+  <mat-paginator 
+    [length]="whosOnlineList.length"
+    [pageSize]="pageSize"
+    (page)="page($event)"
+    hidePageSize="true">
+  </mat-paginator>
+</div>
+<ng-template #nobodyOnline>
+  You are the only one online at the moment.
+</ng-template>
