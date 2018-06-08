@@ -49,7 +49,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     if (this.messageService.selectedPeer) {
       this.messageService.setMessageRead();
     }
-    this.messageService.checkOnlineStatus();
+    // this.messageService.checkOnlineStatusOfPeerList();
   }
 
   openDialogAddPeer() {
@@ -59,10 +59,8 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (this.web3service.web3.utils.isAddress(result)) {
-        this.firebaseService.getUserDetailsFromAddress(result)
-        .then(userDetails => {
-          return this.messageService.getPeerAndAdd(result, userDetails);
-        }).then(peer => {
+        this.messageService.getPeerAndAddByAddress(result)
+        .then(peer => {
           this.messageService.selectedPeer = peer;
         });
       } else { console.log('Entered invalid address.'); }
@@ -74,6 +72,12 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
         && !this.messageService.sendingMessage) {
       this.messageService.sendMessage(this.message.trim());
       this.message = '';
+    }
+  }
+
+  addPeerAsFriend(): void {
+    if (this.messageService.selectedPeer && this.messageService.selectedPeer.uid) {
+      this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.uid);
     }
   }
 }

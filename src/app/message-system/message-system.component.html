@@ -5,7 +5,7 @@
     <mat-card>
       <mat-card-actions>
         <mat-form-field *ngIf="this.messageService.connectedPeers.length > 0"
-            style="width: 80%;">
+            style="width: 100%;">
           <mat-select placeholder="Select Peer" [(value)]="this.messageService.selectedPeer">
             <mat-option *ngFor="let peer of this.messageService.connectedPeers"
             [value]="peer"
@@ -16,18 +16,30 @@
               <span *ngIf="!(peer.isOnline)" class="offlineDot"></span>  
             </mat-option>
           </mat-select>
+          <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot" matSuffix></span>
+          <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot" matSuffix></span>
+          <button *ngIf="messageService.selectedPeer"
+          mat-button
+          mat-icon-button 
+          matSuffix
+          aria-label="Add Friend"
+          color="primary"
+          (click)="addPeerAsFriend()">
+            <mat-icon>person_add</mat-icon>
+          </button>
+          <button 
+            mat-button
+            mat-icon-button 
+            matSuffix
+            color="primary"
+            (click)="openDialogAddPeer()">
+            <mat-icon>add</mat-icon>
+          </button>  
         </mat-form-field>
         <span *ngIf="this.messageService.connectedPeers.length === 0">Add Peer</span>
-        <span *ngIf="this.messageService.selectedPeer">
-          <span *ngIf="this.messageService.selectedPeer.isOnline" class="onlineDot"></span>
-          <span *ngIf="!(this.messageService.selectedPeer.isOnline)" class="offlineDot"></span>  
-        </span>
-        <button 
-          mat-icon-button 
-          color="primary"
-          (click)="openDialogAddPeer()">
-          <mat-icon>add</mat-icon>
-        </button>
+        <!-- <span *ngIf="this.messageService.selectedPeer">
+          
+        </span> -->
       </mat-card-actions>
     </mat-card>
   </div>

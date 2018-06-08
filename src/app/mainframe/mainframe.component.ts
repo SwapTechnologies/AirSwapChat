@@ -40,8 +40,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public numWhosOnline = 0;
 
   public timer: any;
-  // public checkVerificationTimer: any;
-  public rareTimer: any;
 
   constructor(
     private afAuth: AngularFireAuth,
@@ -59,14 +57,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
 
   ngOnInit() {
-    this.authUser();
-    this.tokenService.getValidatedTokens();
-    this.tokenService.getCustomTokenList();
-
-    this.timer = TimerObservable.create(0, 2000)
-    .subscribe( () => this.updateNumbers());
-    this.rareTimer = TimerObservable.create(0, 60000)
-    .subscribe( () => this.updateRareNumbers());
+    this.authUser(); // check for log in of user to firebase
+    this.tokenService.getValidatedTokens(); // load the validated token list
   }
 
   ngOnDestroy() {
@@ -77,49 +69,48 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
   authUser(): void {
     // listen for auth of user
-    this.afAuth.auth.onAuthStateChanged((user) => {
-      if (user && user.uid) {
+    this.afAuth.auth.onAuthStateChanged((user) => { // triggers everytime the auth state changes
+      if (user && user.uid) { // is user logged in?
+        this.connectionService.firebaseConnected = true;
         this.connectionService.loggedInUser.alias = user.displayName;
         this.connectionService.loggedInUser.uid = user.uid;
-        this.connectionService.firebaseConnected = true;
-        if (this.connectionService.connected) {
+        if (this.connectionService.connected) { // all connections standing? start!
           this.connectionInitialized();
         }
       } else {
         this.connectionService.firebaseConnected = false;
-        this.firebaseService.stopReadWhosOnline();
       }
     });
   }
 
   connectWebsocket(): void {
-    this.wsService.initSocket()
-    .then((connected) => {
-      if (connected && this.connectionService.connected) {
+    // on button click
+    this.wsService.initSocket() // initiate handshake with websocket
+    .then((connected) => { // websocket succeeded
+      if (connected && this.connectionService.connected) { // websocket and firebase? start!
         this.connectionInitialized();
       }
     });
   }
 
   connectionInitialized(): void {
-    if (this.connectionService.connected && this.firebaseService.user.emailVerified) {
+    if (this.connectionService.connected
+    && this.firebaseService.user.emailVerified) {
       this.firebaseService.userIsVerified = true;
-      this.firebaseService.registerUser();
-      this.firebaseService.pingMe();
-      this.firebaseService.initReadWhosOnline();
-      this.messageService.startMessenger();
-    } else {
-      // this.checkVerificationTimer = TimerObservable.create(0, 2000)
-      // .subscribe( () => {
-      //   console.log('check.');
-      //   console.log(this.firebaseService.user);
-      //   if (this.firebaseService.user.emailVerified) {
-      //     this.checkVerificationTimer.unsubscribe();
-      //     this.connectionInitialized();
-      //   }
-      // });
-    }
 
+      // read number of unread messages & deals
+      this.timer = TimerObservable.create(0, 2000)
+      .subscribe( () => this.updateNumbers());
+
+      this.tokenService.getCustomTokenList(); // load custom token list from firebase
+      this.firebaseService.registerUser() // set user as online
+      .then(() => {
+        // check if I have unreceived messages
+        // and start listening for messages from others
+        this.messageService.startMessenger();
+        // this.firebaseService.readUserList();
+      });
+    }
   }
 
   toggleMessenger(): void {
@@ -139,12 +130,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
       this.setTitle('(' + sum_unread + ') AirSwapChat');
     } else {
       this.setTitle('AirSwapChat');
-    }
-  }
-
-  updateRareNumbers(): void {
-    if (this.connectionService.connected) {
-      this.firebaseService.pingMe();
     }
   }
 

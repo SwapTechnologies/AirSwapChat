@@ -70,7 +70,7 @@
       color="primary"
       (click)="refresh()">
       <mat-icon>autorenew</mat-icon>
-    </button>  
+    </button>
   </div>
 
   <div *ngIf="stillLoading" class="row">
@@ -145,7 +145,10 @@
                 </mat-card-content>
                 <mat-card-content>
                   <button mat-raised-button
-                  (click)="message(intent)">MESSAGE</button>
+                  (click)="message(intent)"
+                  [disabled]="!intent.uid">
+                    MESSAGE
+                  </button>
                   <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
                   (click)="openDialogGetOrder(intent)"
                   [disabled]="!intent.isOnline">

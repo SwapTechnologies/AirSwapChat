@@ -1,5 +1,13 @@
 <h1> Who is online? </h1>
-
+<p>
+  Refresh List (only every 60s)
+  <button 
+    mat-icon-button 
+    color="primary"
+    (click)="refresh()">
+      <mat-icon>autorenew</mat-icon>
+  </button>
+</p>
 <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='250px'>
   <mat-grid-tile *ngFor="let user of firebaseService.whosOnlineList">  
     <div class="peerCard">

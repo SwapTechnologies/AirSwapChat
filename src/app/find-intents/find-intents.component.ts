@@ -213,45 +213,39 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     const subscriptions = [];
 
     for (const intent of this.foundIntents) {
-      intent['isOnline'] = false;
+      const peerAddress = intent['address'];
+      let uid;
       PromiseList.push(
-        this.firebaseService.getUserDetailsFromAddress(intent.address)
-        .then(userDetails => {
-          if (userDetails) {
-            intent['alias'] = userDetails.alias;
+        this.firebaseService.getUserUid(peerAddress)
+        .then(userUid => {
+          uid = userUid;
+          intent['uid'] = uid;
+          if (uid) {
+            return this.firebaseService.getUserAlias(uid);
           } else {
-            intent['alias'] = intent.address.slice(2, 6);
+            return peerAddress.slice(2, 6);
           }
-          return new Promise((resolve, reject) => {
-            const peerAddress = intent['address'];
-            const uuid = this.wsService.pingPeer(peerAddress);
-            subscriptions.push(
-              this.wsService.websocketSubject
-              .subscribe(message => {
-                const parsedMessage = JSON.parse(message);
-                const parsedContent = JSON.parse(parsedMessage['message']);
-                const id = parsedContent['id'];
-                if (id === uuid) {
-                  const method = parsedContent['method'];
-                  if (method === 'pong') {
-                    intent['isOnline'] = true;
-                  }
-                  resolve(true);
-                }
-              })
-            );
-          });
+        }).then(alias => {
+          intent['alias'] = alias;
+          if (uid) {
+            return this.firebaseService.getUserOnline(uid);
+          } else {
+            return false;
+          }
+        }).then(isOnline => {
+          intent['isOnline'] = isOnline;
         })
       );
     }
 
-    const delayPromise = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(false);
-      }, 2000);
-    });
+    // const delayPromise = new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve(false);
+    //   }, 2000);
+    // });
 
-    Promise.race([Promise.all(PromiseList), delayPromise])
+    // Promise.race([Promise.all(PromiseList), delayPromise])
+    Promise.all(PromiseList)
     .then((onlineStatus) => {
       for (const subscription of subscriptions) {
         subscription.unsubscribe();
@@ -267,7 +261,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   message(intent: any): void {
-    this.messageService.getPeerAndAdd(intent.address)
+    this.messageService.getPeerAndAdd(intent.uid)
     .then(peer => {
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;
@@ -298,7 +292,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // console.log(result);
         this.refresh();
       }
     });

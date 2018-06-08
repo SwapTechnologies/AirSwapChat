@@ -269,6 +269,32 @@ export class WebsocketService {
     return uuid;
   }
 
+  pingAndListenForPong(peerAddress): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      let answered = false;
+      const uuid = this.pingPeer(peerAddress);
+      const subscription = this.websocketSubject
+      .subscribe(message => {
+        const parsedMessage = JSON.parse(message);
+        const parsedContent = JSON.parse(parsedMessage['message']);
+        const id = parsedContent['id'];
+        if (id === uuid) {
+          const method = parsedContent['method'];
+          if (method === 'pong') {
+            answered = true;
+            resolve(true);
+          }
+          resolve(true);
+        }
+      });
+      setTimeout(() => {
+        if (!answered) {
+          resolve(false);
+        }
+      }, 2000);
+    });
+  }
+
   // getMyIntents(): void {
   //   this.getIntents(this.web3service.connectedAccount);
   // }

@@ -20,13 +20,20 @@ export class WhosOnlineComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.refresh();
   }
 
   message(user: any) {
-    this.messageService.getPeerAndAdd(user.address)
+    this.messageService.getPeerAndAdd(user.uid)
     .then((peer) => {
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;
     });
+  }
+
+  refresh(): void {
+    if (Date.now() - this.firebaseService.lastTimeLoadedUserList > 60000) {
+      this.firebaseService.readUserList();
+    }
   }
 }

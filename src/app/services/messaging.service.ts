@@ -19,7 +19,7 @@ export class MessagingService {
   public connectedPeers: Peer[] = [];
   public selectedPeer: Peer;
 
-  private websocketSubscription: any;
+  private wsListenMessagesSubscription: any;
 
   public showMessenger = false;
   public gotMessagesFromDatabase = false;
@@ -65,19 +65,16 @@ export class MessagingService {
       for (const message of unreceivedMessages) {
         // get details of all message senders
         promiseList.push(
-          this.firebaseService.getUserDetails(message.uid)
-          .then((userDetails: OtherUser) => {
-            this.getPeerAndAdd(userDetails.address, userDetails)
-            .then(peer => {
-              this.addMessage(
-                peer,
-                peer.alias,
-                message.message,
-                message.timestamp
-              );
-              peer.hasUnreadMessages = true;
-              this.gotMessagesFromDatabase = true;
-            });
+          this.getPeerAndAdd(message.uid)
+          .then((peer) => {
+            this.addMessage(
+              peer,
+              peer.alias,
+              message.message,
+              message.timestamp
+            );
+            peer.hasUnreadMessages = true;
+            this.gotMessagesFromDatabase = true;
           })
         );
       }
@@ -86,7 +83,7 @@ export class MessagingService {
     Promise.all(promiseList)
     .then(() => {
       // start a listener that ears for messages
-      this.websocketSubscription = this.wsService.websocketSubject
+      this.wsListenMessagesSubscription = this.wsService.websocketSubject
       .subscribe(message => {
         const receivedMessage = JSON.parse(message);
         const content = JSON.parse(receivedMessage['message']);
@@ -111,16 +108,16 @@ export class MessagingService {
     });
   }
 
-  checkOnlineStatus(): void {
+  checkOnlineStatusOfPeerList(): void {
     for (const peer of this.connectedPeers) {
-      const onlinePeer = this.firebaseService.whosOnlineList.find(x =>
-        x.address === peer.address
-      );
-      if (onlinePeer) {
-        peer['isOnline'] = true;
-      } else {
-        peer['isOnline'] = false;
-      }
+      this.wsService.pingAndListenForPong(peer.address)
+      .then(onlinePeer => {
+        if (onlinePeer) {
+          peer['isOnline'] = true;
+        } else {
+          peer['isOnline'] = false;
+        }
+      });
     }
   }
 
@@ -161,33 +158,31 @@ export class MessagingService {
     // what if nobody answers? :-( put it to firebase!
     setTimeout(() => {
       if (!gotReponse) {
-        if (this.connectionService.web3Connected && this.connectionService.wsConnected) {
-          this.addMessage(this.selectedPeer, 'System', 'Peer is offline.', currentTime);
-
-          this.firebaseService.getUserDetailsFromAddress(messageReceiver)
-          .then(userDetails => {
-            if (userDetails && userDetails.uid) {
-              // connect to firebase and check my account
-              this.askToStore(message)
-              .then(response => {
-                if (response) {
-                  if (this.connectionService.connected) {
-                    this.firebaseService.storeMessageInFireBase(
-                      userDetails.uid, message
-                    ).then(fbResponse => {
-                      this.addMessage(this.selectedPeer,
-                        fbResponse.user, fbResponse.message, fbResponse.timestamp);
-                    });
-                  }
-                }
-              });
-            } else {
-              this.addMessage(this.selectedPeer, 'System',
-                'Can not find peer in database.', currentTime);
-            }
-          });
+        if (!this.connectionService.connected) {
+          this.addMessage(this.selectedPeer, 'System',
+          'You are offline.', currentTime);
         } else {
-          console.log('You are offline.');
+          this.addMessage(this.selectedPeer, 'System',
+          'Peer is offline.', currentTime);
+
+          if (this.selectedPeer.uid) {
+            this.askToStore(message) // check if user wants to send message
+            .then(response => {
+              if (response) {
+                if (this.connectionService.connected) { // still connected?
+                  this.firebaseService.storeMessage(
+                    this.selectedPeer.uid, message
+                  ).then(fbResponse => {
+                    this.addMessage(this.selectedPeer,
+                      fbResponse.user, fbResponse.message, fbResponse.timestamp);
+                  });
+                }
+              }
+            });
+          } else {
+            this.addMessage(this.selectedPeer, 'System',
+            'Peer unknown to database.', currentTime);
+          }
         }
       }
       this.sendingMessage = false;
@@ -208,71 +203,118 @@ export class MessagingService {
     });
   }
 
-  addPeer(address: string, userDetails?: OtherUser): Promise<boolean> {
+  addPeer(uid: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      const addressLC = address.toLowerCase();
-      if (!this.isAddressInPeerList(addressLC)) {
-        if (userDetails) {
-          this.connectedPeers.push({
-            address: addressLC,
-            messageHistory: [],
-            hasUnreadMessages: false,
-            isOnline: false,
-            alias: userDetails.alias,
-            uid: userDetails.uid
-          });
-          if (this.connectedPeers.length === 1) {
-            this.selectedPeer = this.connectedPeers[0];
-          }
-          resolve(true);
-        } else {
-          resolve(
-            this.firebaseService.getUserDetailsFromAddress(addressLC)
-            .then(dbUserDetails => {
-              let alias: string;
-              let uid: string;
-              if (dbUserDetails) {
-                alias = dbUserDetails.alias;
-                uid = dbUserDetails.uid;
-              } else {
-                alias = addressLC.slice(2, 6);
-                uid = null;
-              }
-              this.connectedPeers.push({
-                address: addressLC,
-                messageHistory: [],
-                hasUnreadMessages: false,
-                isOnline: false,
-                alias: alias,
-                uid: uid
-              });
-              if (this.connectedPeers.length === 1) {
-                this.selectedPeer = this.connectedPeers[0];
-              }
-              return true;
-            })
-          );
-        }
+      if (!this.isUidInPeerList(uid)) {
+        let address: string;
+        let alias: string;
+        resolve(
+          this.firebaseService.getUserAddress(uid)
+          .then(userAddress => {
+            address = userAddress;
+            return this.firebaseService.getUserAlias(uid);
+          }).then(userAlias => {
+            alias = userAlias;
+            return this.firebaseService.getUserOnline(uid);
+          }).then(isOnline => {
+            this.connectedPeers.push({
+              address: address,
+              messageHistory: [],
+              hasUnreadMessages: false,
+              isOnline: isOnline,
+              alias: alias,
+              uid: uid
+            });
+            if (this.connectedPeers.length === 1) {
+              this.selectedPeer = this.connectedPeers[0];
+            }
+            return true;
+          })
+        );
       } else {
         resolve(false);
       }
     });
   }
 
-  getPeerFromAddress(address: string): Peer {
-    return this.connectedPeers.find((peer) => {
-      return peer.address === address;
+  addPeerByAddress(address: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const addressLC = address.toLowerCase();
+      if (!this.isAddressInPeerList(addressLC)) {
+        let uid: string;
+        let alias: string;
+        resolve(
+          this.firebaseService.getUserUid(addressLC)
+          .then(userUID => {
+            uid = userUID;
+            if (userUID) {
+              return this.firebaseService.getUserAlias(uid);
+            } else {
+              return addressLC.slice(2, 6);
+            }
+          }).then(userAlias => {
+            alias = userAlias;
+            if (uid){
+              return this.firebaseService.getUserOnline(uid);
+            } else {
+              return false;
+            }
+          }).then(isOnline => {
+            this.connectedPeers.push({
+              address: addressLC,
+              messageHistory: [],
+              hasUnreadMessages: false,
+              isOnline: isOnline,
+              alias: alias,
+              uid: uid
+            });
+            if (this.connectedPeers.length === 1) {
+              this.selectedPeer = this.connectedPeers[0];
+            }
+            return true;
+          })
+        );
+      } else {
+        resolve(false);
+      }
     });
   }
 
-  getPeerAndAdd(address: string, userDetails?: OtherUser): Promise<Peer> {
-    return this.addPeer(address, userDetails)
+  // connected peers from address
+  getPeerAndAddByAddress(address: string): Promise<Peer> {
+    return this.addPeerByAddress(address)
     .then(added => {
-      return Promise.resolve(this.getPeerFromAddress(address.toLowerCase()));
+      return Promise.resolve(this.getConnectedPeerFromAddress(address));
+    });
+  }
+
+  getConnectedPeerFromAddress(address: string): Peer {
+    const addressLC = address.toLowerCase();
+    return this.connectedPeers.find((peer) => {
+      return peer.address === addressLC;
     });
   }
 
   isAddressInPeerList(address: string): boolean {
-    return (this.getPeerFromAddress(address) !== undefined);
+    return (this.getConnectedPeerFromAddress(address) !== undefined);
   }
+
+  // connected peers from uid
+  getPeerAndAdd(uid: string): Promise<Peer> {
+    return this.addPeer(uid)
+    .then(added => {
+      return Promise.resolve(this.getConnectedPeerFromUid(uid));
+    });
+  }
+
+  getConnectedPeerFromUid(uid: string): Peer {
+    return this.connectedPeers.find((peer) => {
+      return peer.uid === uid;
+    });
+  }
+
+  isUidInPeerList(uid: string): boolean {
+    return (this.getConnectedPeerFromAddress(uid) !== undefined);
+  }
+
 }

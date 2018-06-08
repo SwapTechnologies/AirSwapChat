@@ -58,13 +58,9 @@ export class GetOrderService {
             );
           }
         });
-        this.firebaseService.getUserDetailsFromAddress(signedOrder.makerAddress)
-        .then(userDetails => {
-          if (userDetails) {
-            signedOrder['alias'] = userDetails.alias;
-          } else {
-            signedOrder['alias'] = order.takerAddress.slice(2, 6);
-          }
+        this.firebaseService.getUserAliasFromAddress(signedOrder.makerAddress)
+        .then(alias => {
+          signedOrder['alias'] = alias;
           this.orderResponses.push(signedOrder);
           this.websocketSubscriptions[uuid].unsubscribe();
         });

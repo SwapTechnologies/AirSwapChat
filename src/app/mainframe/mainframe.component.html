@@ -52,13 +52,8 @@
       <a routerLink="./whosOnline">
         <button 
         mat-raised-button 
-        [disabled]="this.firebaseService.numWhosOnline===0"
         class="menu_button">
-          <mat-icon 
-          class='menu_icon' 
-          [matBadge]="this.firebaseService.numWhosOnline"
-          [matBadgeHidden]="this.firebaseService.numWhosOnline===0" 
-          matBadgePosition="above after">
+          <mat-icon class='menu_icon'>
             people
           </mat-icon>
           ONLINE

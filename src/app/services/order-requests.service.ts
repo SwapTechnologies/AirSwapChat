@@ -38,13 +38,9 @@ export class OrderRequestsService {
     const promiseList = [];
 
     promiseList.push(
-      this.firebaseService.getUserDetailsFromAddress(order.takerAddress)
-      .then(userDetails => {
-        if (userDetails) {
-          order['alias'] = userDetails.alias;
-        } else {
-          order['alias'] = order.takerAddress.slice(2, 6);
-        }
+      this.firebaseService.getUserAliasFromAddress(order.takerAddress)
+      .then(alias => {
+        order['alias'] = alias;
       })
     );
 

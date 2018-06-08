@@ -42,6 +42,7 @@ import { MessagingService } from './services/messaging.service';
 import { OrderRequestsService } from './services/order-requests.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
 import { TokenService } from './services/token.service';
+import { UserOnlineService } from './services/user-online.service';
 import { WebsocketService } from './services/websocket.service';
 
 // pipes
@@ -171,6 +172,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     OrderRequestsService,
     RouterWebsocketActivatedService,
     TokenService,
+    UserOnlineService,
     WebsocketService,
   ],
   entryComponents: [
