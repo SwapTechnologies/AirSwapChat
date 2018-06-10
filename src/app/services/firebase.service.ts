@@ -21,10 +21,11 @@ import { StoredMessage, OtherUser, Token } from '../types/types';
 export class FirebaseService {
 
   public observerWhosOnline: any;
-  public whosOnlineList: OtherUser[] = [];
-  public lastTimeLoadedWhosOnline = 0;
   public userIsVerified = false;
   public numOfFirebaseReads = 0;
+
+  public whosOnlineList = [];
+  public lastTimeLoadedWhosOnline = 0;
 
   constructor(
     private db: AngularFireDatabase,
@@ -107,47 +108,6 @@ export class FirebaseService {
     // const promiseList = [];
     this.lastTimeLoadedWhosOnline = Date.now();
     return this.getObjectFromDatabase('online');
-    // return new Promise((resolve, reject) => {
-    //   const subscriptionWhosOnline = this.db.object('online')
-    //   .valueChanges()
-    //   .subscribe(entries => {
-    //     console.log('get user list', entries);
-    //     subscriptionWhosOnline.unsubscribe();
-    //     this.whosOnlineList = [];
-    //     if (!entries) {
-    //       resolve();
-    //     } else {
-    //       for (const uid in entries) {
-    //         if (entries[uid]) {
-    //           let alias;
-    //           let address;
-    //           promiseList.push(
-    //             this.getUserAlias(uid)
-    //             .then((userAlias) => {
-    //               alias = userAlias;
-    //               return this.getUserAddress(uid);
-    //             }).then((userAddress) => {
-    //               address = userAddress;
-    //               const user: OtherUser = {
-    //                 address: address,
-    //                 alias: alias,
-    //                 uid: uid
-    //               };
-    //               this.whosOnlineList.push(user);
-    //             })
-    //           );
-    //         }
-    //       }
-    //       Promise.all(promiseList)
-    //       .then(() => {
-    //         this.whosOnlineList = this.whosOnlineList.filter(x => {
-    //           return x.uid !== this.connectionService.loggedInUser.uid;
-    //         });
-    //         resolve();
-    //       });
-    //     }
-    //   });
-    // });
   }
 
   getUserUid(address: string): Promise<any> {

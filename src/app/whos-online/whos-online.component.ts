@@ -4,6 +4,7 @@ import {MatTableDataSource} from '@angular/material';
 
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { MessagingService } from '../services/messaging.service';
+import { ConnectionService } from '../services/connection.service';
 import { FirebaseService } from '../services/firebase.service';
 import { UserOnlineService } from '../services/user-online.service';
 
@@ -16,6 +17,7 @@ export class WhosOnlineComponent implements OnInit {
 
   constructor(
     public columnSpaceObserver: ColumnSpaceObserverService,
+    public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
     private messageService: MessagingService,
     private userOnlineService: UserOnlineService,
@@ -24,8 +26,6 @@ export class WhosOnlineComponent implements OnInit {
   public pageSize = 6;
   public pageIndex = 0;
   public displayedPeople;
-
-  public whosOnlineList = [];
 
   ngOnInit() {
     this.refresh();
@@ -45,21 +45,24 @@ export class WhosOnlineComponent implements OnInit {
   }
 
   refresh(): void {
-    if (Date.now() - this.firebaseService.lastTimeLoadedWhosOnline > 60000) {
+    if (Date.now() - this.firebaseService.lastTimeLoadedWhosOnline > 10000) {
       const promiseList = [];
       this.firebaseService.readWhosOnline()
       .then(whosOnline => {
         for (const uid in whosOnline) {
           if (whosOnline[uid]) {
+            if (uid === this.connectionService.loggedInUser.uid) {
+              continue;
+            }
             promiseList.push(this.userOnlineService.addUserFromFirebase(uid));
           }
         }
         Promise.all(promiseList)
         .then(() => {
           const whosOnlineUids = Object.keys(this.userOnlineService.users);
-          this.whosOnlineList = [];
+          this.firebaseService.whosOnlineList = [];
           for (const uid of whosOnlineUids) {
-            this.whosOnlineList.push(this.userOnlineService.users[uid]);
+            this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
         });
       });
@@ -67,7 +70,7 @@ export class WhosOnlineComponent implements OnInit {
   }
 
   updateDisplayedPeople() {
-    this.displayedPeople = this.whosOnlineList.slice(
+    this.displayedPeople = this.firebaseService.whosOnlineList.slice(
       this.pageIndex * this.pageSize,
       (this.pageIndex + 1) * this.pageSize);
   }

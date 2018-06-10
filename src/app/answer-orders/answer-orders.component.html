@@ -62,8 +62,11 @@
           [disabled]="order.clickedOfferDeal">
         </mat-form-field>
         <div *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
-          <button mat-raised-button (click)="answerOrder(order)"
-          [disabled]="order.clickedOfferDeal">OFFER DEAL</button>
+          <button mat-button 
+          (click)="answerOrder(order)"
+          [disabled]="order.clickedOfferDeal">
+            OFFER DEAL
+          </button>
         </div>
       </mat-card-content>
       <mat-card-content *ngIf="order.clickedOfferDeal">
@@ -103,7 +106,12 @@
         Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
       </mat-card-content>
       <button 
-      mat-raised-button 
+      mat-button 
+      (click)="dealSealDetails(order)">
+        DETAILS
+      </button>
+      <button 
+      mat-button 
       (click)="sealDeal(order)"
       [disabled]="order.clickedDealSeal">
         SEAL THE DEAL

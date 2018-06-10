@@ -1,16 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
+import { MatDialog } from '@angular/material';
+
+import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
+
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
-import { ConnectionService } from '../services/connection.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { WebsocketService } from '../services/websocket.service';
 import { OrderRequestsService } from '../services/order-requests.service';
 import { GetOrderService } from '../services/get-order.service';
-import { EthereumTokensSN, getTokenByAddress } from '../services/tokens';
-
-import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 interface Order {
   makerAddress: string;
@@ -37,11 +37,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   constructor(
     private airswapDexService: AirswapdexService,
-    private connectionService: ConnectionService,
     public getOrderService: GetOrderService,
     public orderService: OrderRequestsService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
+    public dialog: MatDialog,
   ) { }
 
   ngOnInit() {
@@ -143,6 +143,13 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     }).catch(error => {
       console.log('Deal was not sealed.');
       order['clickedDealSeal'] = false;
+    });
+  }
+
+  dealSealDetails(order: any): void {
+    this.dialog.open(DialogInfoDealSealComponent, {
+      width: '700px',
+      data: order
     });
   }
 }

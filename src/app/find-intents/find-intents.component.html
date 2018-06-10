@@ -148,28 +148,28 @@
                     Warning: Trade contains unvalidated tokens. Don't get scammed.
                 </strong></span> 
               </mat-card-content>
-              <mat-card-content>
-                <button mat-raised-button
-                (click)="message(intent)"
-                [disabled]="!intent.peer.uid">
-                  MESSAGE
-                </button>
-                <button mat-raised-button *ngIf="intent.approvedTakerToken > 0"
-                (click)="openDialogGetOrder(intent)"
-                [disabled]="!intent.peer.online">
-                  GET ORDER
-                </button>           
-                <button mat-raised-button *ngIf="!(intent.approvedTakerToken > 0)"
-                [disabled]="clickedApprove[intent.takerToken]"
-                (click)="approveTaker(intent)">
-                  APPROVE {{intent.takerProps.symbol}}
-                </button>              
-              </mat-card-content>
               <mat-card-content *ngIf="intent.sentRequest">
                 <i>Sent request for an offer of 
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
               </mat-card-content>
+              <mat-card-actions>
+                <button mat-button
+                (click)="message(intent)"
+                [disabled]="!intent.peer.uid">
+                  MESSAGE
+                </button>
+                <button mat-button *ngIf="intent.approvedTakerToken > 0"
+                (click)="openDialogGetOrder(intent)"
+                [disabled]="!intent.peer.online">
+                  GET ORDER
+                </button>           
+                <button mat-button *ngIf="!(intent.approvedTakerToken > 0)"
+                [disabled]="clickedApprove[intent.takerToken]"
+                (click)="approveTaker(intent)">
+                  APPROVE {{intent.takerProps.symbol}}
+                </button>              
+              </mat-card-actions>
             </mat-card>
           </div>
         </mat-grid-tile>

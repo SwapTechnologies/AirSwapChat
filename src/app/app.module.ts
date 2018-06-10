@@ -52,6 +52,7 @@ import { CallbackPipe } from './pipes/callback';
 // dialogs
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
 import { DialogGetOrderComponent } from './dialogs/dialog-get-order/dialog-get-order.component';
+import { DialogInfoDealSealComponent } from './dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
 import { DialogSendOfflineComponent } from './message-system/dialog-send-offline/dialog-send-offline.component';
 
 import { environment } from '../environments/environment';
@@ -78,30 +79,30 @@ const appRoutes: Routes = [
 // { path: '', redirectTo: '/connect',  pathMatch: 'full' },
 
 
-const facebookCustomConfig: AuthProviderWithCustomConfig = {
-  provider: AuthProvider.Facebook,
-  customConfig: {
-    scopes: [
-      'public_profile',
-      'email',
-      'user_likes',
-      'user_friends'
-    ],
-    customParameters: {
-      // Forces password re-entry.
-      auth_type: 'reauthenticate'
-    }
-  }
-};
+// const facebookCustomConfig: AuthProviderWithCustomConfig = {
+//   provider: AuthProvider.Facebook,
+//   customConfig: {
+//     scopes: [
+//       'public_profile',
+//       'email',
+//       'user_likes',
+//       'user_friends'
+//     ],
+//     customParameters: {
+//       // Forces password re-entry.
+//       auth_type: 'reauthenticate'
+//     }
+//   }
+// };
 
-const googleCustomConfig: AuthProviderWithCustomConfig = {
-  provider: AuthProvider.Google,
-  customConfig: {
-    customParameters: {
-      prompt: 'select_account'
-    }
-  }
-};
+// const googleCustomConfig: AuthProviderWithCustomConfig = {
+//   provider: AuthProvider.Google,
+//   customConfig: {
+//     customParameters: {
+//       prompt: 'select_account'
+//     }
+//   }
+// };
 
 
 const emailCustomConfig: AuthProviderWithCustomConfig = {
@@ -146,6 +147,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     DialogAddTokenComponent,
     MyAccountComponent,
     VerifyUserComponent,
+    DialogInfoDealSealComponent,
   ],
   imports: [
     BrowserModule,
@@ -180,6 +182,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     DialogAddTokenComponent,
     DialogGetOrderComponent,
     DialogSendOfflineComponent,
+    DialogInfoDealSealComponent,
   ],
   bootstrap: [AppComponent]
 })

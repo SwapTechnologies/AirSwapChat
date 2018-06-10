@@ -1,4 +1,3 @@
-import { Lexer } from '@angular/compiler';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Subscription } from 'rxjs/Subscription';
@@ -15,11 +14,9 @@ import { TokenService, EtherAddress } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { MatDialog, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material';
+import { MatDialog } from '@angular/material';
 import { DialogGetOrderComponent } from '../dialogs/dialog-get-order/dialog-get-order.component';
 import { DialogAddTokenComponent } from '../dialogs/dialog-add-token/dialog-add-token.component';
-
-import {PageEvent} from '@angular/material';
 
 @Component({
   selector: 'app-find-intents',
