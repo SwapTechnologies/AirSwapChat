@@ -12,17 +12,13 @@ import { OrderRequestsService } from '../services/order-requests.service';
 import { TokenService } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
+import { MatDialog } from '@angular/material';
 
 // components
-import { AccountComponent } from '../account/account.component';
-import { SetIntentsComponent } from '../set-intents/set-intents.component';
-import { FindIntentsComponent } from '../find-intents/find-intents.component';
-import { GetOrderComponent } from '../get-order/get-order.component';
-import { AnswerOrdersComponent } from '../answer-orders/answer-orders.component';
-import { MessageSystemComponent } from '../message-system/message-system.component';
-import { InitialPageComponent } from '../initial-page/initial-page.component';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { Title } from '@angular/platform-browser';
+
+import {MatSnackBar} from '@angular/material';
 
 @Component({
   selector: 'app-mainframe',
@@ -55,6 +51,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
     private userOnlineService: UserOnlineService,
     public web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
+    public dialog: MatDialog,
+    public snackBar: MatSnackBar,
   ) {}
 
 
@@ -99,20 +97,44 @@ export class MainframeComponent implements OnInit, OnDestroy {
     if (this.connectionService.connected
     && this.firebaseService.user.emailVerified) {
       this.firebaseService.userIsVerified = true;
-
-      // read number of unread messages & deals
-      this.timer = TimerObservable.create(0, 2000)
-      .subscribe( () => this.updateNumbers());
-
-      this.tokenService.getCustomTokenListFromDB(); // load custom token list from firebase
-      this.firebaseService.registerUser() // set user as online
-      .then(() => {
-        // check if I have unreceived messages
-        // and start listening for messages from others
-        this.messageService.startMessenger();
-        // this.firebaseService.readUserList();
+      this.firebaseService.checkMyUidAndAddressMatch()
+      .then((match) => {
+        if (match.newAddress) { // uid not in database? -> new user.
+          this.firebaseService.registerNewUser()
+          .then(() => {
+            this.finalizeInitialization();
+          })
+          .catch((error) => {
+            this.firebaseService.logOffUser();
+            this.snackBar.open('Ethereum address is already registered with another account.');
+          });
+        } else { // uid in address found in database
+          if (match.addressChanged) { // current public address different than before?
+            this.firebaseService.logOffUser();
+            this.snackBar.open('Your e-mail is connected to the Ethereum account: ' +
+            match.databaseAddress + ' but you tried to connect with ' +
+            this.connectionService.loggedInUser.address +
+            '. Please set the correct account.', 'Ok.');
+          } else { // all fine
+            this.finalizeInitialization();
+          }
+        }
       });
     }
+  }
+
+  finalizeInitialization(): void {
+    // read number of unread messages & deals
+    this.timer = TimerObservable.create(0, 2000)
+    .subscribe( () => this.updateNumbers());
+
+    this.tokenService.getCustomTokenListFromDB(); // load custom token list from firebase
+
+    // check if I have unreceived messages
+    // and start listening for messages from others
+    this.firebaseService.setMeOnline().then(() => {
+      this.messageService.startMessenger();
+    });
   }
 
   toggleMessenger(): void {

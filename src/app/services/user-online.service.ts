@@ -6,6 +6,7 @@ import { FirebaseService } from './firebase.service';
 })
 export class UserOnlineService {
 
+  public myAccount: any;
   public users = {};
   public usersByAddress = {};
 

@@ -29,6 +29,7 @@
             ],
             "styles": [
               "src/styles.scss",
+              "src/customTheme.scss",
               "node_modules/firebaseui/dist/firebaseui.css"
             ],
             "scripts": []

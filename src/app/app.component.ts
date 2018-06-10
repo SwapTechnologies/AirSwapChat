@@ -1,5 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
+declare global {
+  interface Window {
+    web3: any;
+    AirSwap: any;
+   }
+}
 
 @Component({
   selector: 'app-root',

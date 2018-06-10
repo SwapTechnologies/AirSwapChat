@@ -34,22 +34,46 @@ export class FirebaseService {
     private afAuth: AngularFireAuth,
   ) { }
 
-  registerUser(): Promise<any> {
-    const user = this.connectionService.loggedInUser;
-    return this.db.object('registeredAddresses/' + user.address)
-    .set({ 'uid': user.uid })
-    .then(() => this.db.object('online/' + user.uid)
-    .set({ 'online': true }))
+
+  checkMyUidAndAddressMatch(): Promise<any> {
+    return this.getUserAddress(this.connectionService.loggedInUser.uid)
+    .then(myAddress => {
+      return {
+        newAddress: myAddress === null,
+        addressChanged: myAddress !== this.connectionService.loggedInUser.address,
+        databaseAddress: myAddress
+      };
+    });
+  }
+
+  registerNewUser(): Promise<any> {
+    return this.getObjectFromDatabase('registeredAddresses/' + this.connectionService.loggedInUser.address)
+    .then((uid) => {
+      if (uid) {
+        return Promise.reject('Address is already registered with another account.');
+      } else {
+        return this.db.object('registeredAddresses/' + this.connectionService.loggedInUser.address)
+        .set({ 'uid': this.connectionService.loggedInUser.uid });
+      }
+    })
+    .then(() => this.setMyAliasAndAddress());
+  }
+
+  setMyAliasAndAddress(): Promise<any> {
+    return this.db.object('users/' + this.connectionService.loggedInUser.uid)
+    .set({
+      'alias': this.connectionService.loggedInUser.alias,
+      'address': this.connectionService.loggedInUser.address,
+    });
+  }
+
+  setMeOnline(): Promise<any> {
+    return this.db.object('online/' + this.connectionService.loggedInUser.uid)
+    .set({ 'online': true })
     .then(() => {
-      database().ref().child('online/' + user.uid)
+      database().ref().child('online/' + this.connectionService.loggedInUser.uid)
       .onDisconnect()
       .remove();
-
-      return this.db.object('users/' + user.uid)
-      .set({
-        'alias': user.alias,
-        'address': user.address,
-      });
     });
   }
 
@@ -65,6 +89,7 @@ export class FirebaseService {
     .then(() => {
       this.userIsVerified = false;
       this.connectionService.loggedInUser.uid = '';
+      this.connectionService.firebaseConnected = false;
     });
   }
 
@@ -80,6 +105,7 @@ export class FirebaseService {
       this.db.object('registeredAddresses/' + address).remove();
       this.db.object('messaging/' + uid).remove();
       this.db.object('users/' + uid).remove();
+      this.logOffUser();
     });
   }
 

@@ -1,17 +1,8 @@
 <mat-card>
   <mat-card-title>
-    Verify your account
+    Please verify your account
   </mat-card-title>
   <mat-card-content>
-    <button 
-    mat-raised-button
-    (click)="sendVerificationMail()"
-    [disabled]=sendMail>
-      SEND VERIFICATION MAIL
-    </button>
+    <i>{{responseMessage}}</i>
   </mat-card-content>
 </mat-card>
-
-<p>
-  <i>{{responseMessage}}</i>
-</p>  

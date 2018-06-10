@@ -32,6 +32,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
 
   public clickedApprove: any = {};
   public errorMessage = '';
+  public showBuyButton = false;
+  public initialized = false;
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -42,32 +44,38 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-
-    this.erc20service.balance(this.tokenService.getTokenByName('AirSwap').address,
-      this.connectionService.loggedInUser.address)
-
-    .then(balance => {
-      this.astBalance = balance / 1e4;
-      this.balanceTooLow = this.astBalance < 250;
-    });
-
-    this.getMyIntents();
+    this.initialize();
   }
 
-  getMyIntents(): void {
+  initialize() {
+    this.getMyIntents()
+    .then(() => {
+      return this.erc20service.balance(
+        this.tokenService.getTokenByName('AirSwap').address,
+        this.connectionService.loggedInUser.address);
+    }).then(balance => {
+      this.astBalance = balance / 1e4;
+      this.balanceTooLow = this.astBalance - 250 * this.myIntents.length < 250;
+      this.initialized = true;
+    });
+  }
 
-    const uuid = this.wsService.getIntents(this.connectionService.loggedInUser.address);
-    const answerSubscription = this.wsService.websocketSubject
-    .subscribe(message => {
-      const parsedMessage = JSON.parse(message);
-      const parsedContent = JSON.parse(parsedMessage['message']);
-      const id = parsedContent['id'];
-      if (id === uuid) {
-        this.myIntents = parsedContent['result'];
-        this.intentsMarkedForRemoval = [];
-        this.checkApproval();
-        answerSubscription.unsubscribe();
-      }
+  getMyIntents(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const uuid = this.wsService.getIntents(this.connectionService.loggedInUser.address);
+      const answerSubscription = this.wsService.websocketSubject
+      .subscribe(message => {
+        const parsedMessage = JSON.parse(message);
+        const parsedContent = JSON.parse(parsedMessage['message']);
+        const id = parsedContent['id'];
+        if (id === uuid) {
+          this.myIntents = parsedContent['result'];
+          this.intentsMarkedForRemoval = [];
+          this.checkApproval();
+          answerSubscription.unsubscribe();
+          resolve();
+        }
+      });
     });
   }
 
@@ -149,15 +157,19 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       const parsedContent = JSON.parse(parsedMessage['message']);
       const id = parsedContent['id'];
       if (id === uuid) {
+        this.errorMessage = '';
         const response = parsedContent['result'];
         if (response === 'ok') {
-          this.getMyIntents();
+          // this.showBuyButton = false;
+          // this.getMyIntents();
         } else {
           if (parsedContent['error']) {
             this.myIntents.splice(-1, 1);
+            // this.showBuyButton = true;
             this.errorMessage = parsedContent['error']['message'];
           }
         }
+        this.initialize();
         this.websocketSubscription.unsubscribe();
       }
     });
@@ -201,4 +213,19 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   refreshTokens(): void {
     this.tokenService.getCustomTokenListFromDB();
   }
+
+  // buySwap(): void {
+  //   window.AirSwap.Trader.render({
+  //     env: 'sandbox',
+  //     mode: 'buy',
+  //     token: this.tokenService.getTokenByName('AirSwap').address,
+  //     amount: 2500000,
+  //     onCancel: () => {
+  //       console.log('Trade was canceled.');
+  //     },
+  //     onComplete: (transactionId) => {
+  //       this.initialize();
+  //     }
+  //   }, 'body');
+  // }
 }

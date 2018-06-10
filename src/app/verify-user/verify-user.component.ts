@@ -15,6 +15,7 @@ export class VerifyUserComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.sendVerificationMail();
   }
 
   sendVerificationMail(): void {
@@ -26,7 +27,7 @@ export class VerifyUserComponent implements OnInit {
 
     setTimeout(() => {
       this.firebaseService.logOffUser();
-    }, 5000);
+    }, 10000);
   }
 
 }

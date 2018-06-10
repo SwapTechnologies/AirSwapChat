@@ -5,9 +5,6 @@ import { ConnectionService } from './connection.service';
 declare var require: any;
 const Web3 = require('web3');
 
-declare global {
-  interface Window { web3: any; }
-}
 window.web3 = window.web3 || undefined;
 
 @Injectable()

@@ -63,7 +63,6 @@ import { FocusDirective } from './directives/focus.directive';
 import { DialogAddTokenComponent } from './dialogs/dialog-add-token/dialog-add-token.component';
 import { VerifyUserComponent } from './verify-user/verify-user.component';
 
-
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
   { path: 'intents', component: SetIntentsComponent, canActivate: [RouterWebsocketActivatedService] },

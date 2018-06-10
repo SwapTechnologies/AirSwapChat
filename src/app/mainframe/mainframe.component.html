@@ -130,9 +130,12 @@
       </div> 
     </div>
   </mat-sidenav-content>
-  <mat-sidenav #sidechat mode="side" [opened]="this.messageService.showMessenger" 
-               class="chat-side" position="end"
-               disableClose="true">
+  <mat-sidenav #sidechat 
+  mode="side" 
+  [opened]="this.connectionService.connected && this.messageService.showMessenger" 
+  class="chat-side" 
+  position="end"
+  disableClose="true">
     <app-message-system *ngIf="this.messageService.showMessenger"></app-message-system>
   </mat-sidenav>
 </mat-sidenav-container>

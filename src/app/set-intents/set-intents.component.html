@@ -1,11 +1,50 @@
 <div>
   <h2>Signal Your Intents to Trade on the Indexer</h2>
-  <div *ngIf="balanceTooLow; else enoughBalance">
-    <p>Your AST balance too low! You need 250 AST to interact with the Indexer.</p>
-  </div>
-  <ng-template #enoughBalance>
-    <div>
+  <p *ngIf="errorMessage" style='color:red;'>
+    <strong>Error returned: {{errorMessage}}</strong>
+  </p>
 
+  <div *ngIf="!initialized"
+  style="display:flex; flex-flow: row wrap; justify-content: center;">
+    <mat-progress-spinner
+    class="progress_spinner"
+    color="primary"
+    mode="indeterminate">
+    </mat-progress-spinner>
+  </div>
+  <!-- Start Show Buy Button -->
+  <div *ngIf="initialized && balanceTooLow">
+    <p>
+      Your AST balance is too low to add any more intents!
+    </p>
+    <p>
+      You need to hold 250 AST for each intent you add to the Indexer.
+    </p>
+    <p>
+      Current holdings: {{astBalance}} AST
+    </p>
+    <p style='font-style: italic'>
+      Find a peer <a routerLink="./findPeers">here</a> to sell you some AST to add more intents or go 
+      to <a href="https://airswap.io/trade" target="_blank">AirSwap.io/trade</a> and
+      get more AST tokens.
+    </p>
+    <button 
+    mat-icon-button 
+    color="primary"
+    matTooltip="Refresh my balance"
+    (click)="initialize()">
+      <mat-icon>autorenew</mat-icon>
+    </button>
+    <!-- <button mat-raised-button
+    (click)="buySwap()">
+      GO TO AIRSWAP TO BUY AST
+    </button> -->
+  </div>
+  <!-- End Show Buy Button -->
+
+  <div>
+    <!-- Start Show Set Intent -->
+    <div *ngIf="!balanceTooLow">
       <button 
       mat-icon-button 
       color="primary"
@@ -59,27 +98,33 @@
         <mat-icon>add</mat-icon>
       </button>
     </div>
-    
-    <div *ngIf="myIntents.length > 0" class="row">
-      <p><i>Your intents are</i></p>
-      <mat-selection-list 
-      [(ngModel)]="intentsMarkedForRemoval"
-      (ngModelChange)="changedList($event)">
-        <mat-list-option *ngFor="let intent of myIntents" 
-        [value]="intent">
-          You want to sell {{tokenSymbol(intent.makerToken)}} 
-          for {{tokenSymbol(intent.takerToken)}} 
-        </mat-list-option>
-      </mat-selection-list>
-    </div>
-  
-    <div *ngIf="markedIntents">
-      <button mat-raised-button (click)="removeMarkedIntents()">REMOVE MARKED INTENTS</button>
-    </div>
-    <p style='color:red;'>
-      <strong>{{this.errorMessage}}</strong>
-    </p>
+    <!-- End Show Set Intent -->
 
+    <!-- Start Show My Intents -->
+    <div *ngIf="myIntents.length > 0" class="row">
+      <div>
+        <p><i>Your intents are</i></p>
+        <mat-selection-list 
+        [(ngModel)]="intentsMarkedForRemoval"
+        (ngModelChange)="changedList($event)">
+          <mat-list-option *ngFor="let intent of myIntents" 
+          [value]="intent">
+            You want to sell {{tokenSymbol(intent.makerToken)}} 
+            for {{tokenSymbol(intent.takerToken)}} 
+          </mat-list-option>
+        </mat-selection-list>
+      </div>
+      <div *ngIf="markedIntents">
+        <button 
+        mat-raised-button 
+        (click)="removeMarkedIntents()">
+          REMOVE MARKED INTENTS
+        </button>
+      </div>
+    </div>
+    <!-- End Show My Intents -->
+
+    <!-- Start Show unapproved tokens that want to be traded -->
     <div style='color:red;' *ngIf="unapprovedTokens.length > 0">
       <strong>
         You want to trade unapproved tokens. 
@@ -99,5 +144,6 @@
         </mat-list>
       </div>
     </div>
-  </ng-template>
-</div>  
+    <!-- End Show unapproved tokens that want to be traded -->
+  </div>
+</div>

@@ -1,7 +1,9 @@
-$top-color: rgb(0, 117, 195);
+@import '~../../customTheme.scss';
+
+$top-color: $primary;// rgb(0, 117, 195);;
 $bottom-color: rgb(255, 255, 255);
 $text-color: black;
-
+//
 .main-container {
   position: absolute;
   top: 60px;
