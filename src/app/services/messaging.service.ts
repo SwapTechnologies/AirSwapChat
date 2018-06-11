@@ -67,7 +67,7 @@ export class MessagingService {
     console.log('running addPeerByAddress for address', address);
     const addressLC = address.toLowerCase();
     if (this.isAddressInPeerList(addressLC)) {
-      Promise.resolve(false);
+      return Promise.resolve(false);
     } else {
       console.log(addressLC, ' not in Peer List. Adding data from Firebase');
       return this.userOnlineService.addUserFromFirebaseByAddress(addressLC)
