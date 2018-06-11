@@ -1,6 +1,6 @@
 <div *ngIf='this.orderService.orderRequests.length > 0'>
   <h1> You have Open Requests For Offers </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='320px'>
+  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='400px'>
     <mat-grid-tile *ngFor="let order of this.orderService.orderRequests">
       <mat-card>
         <mat-card-title>
@@ -85,7 +85,7 @@
 
 <div *ngIf='this.getOrderService.orderResponses.length > 0'>
   <h1> You Can Close Deals </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='320px'>
+  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='400px'>
     <mat-grid-tile *ngFor="let order of getOrderService.orderResponses">
       <mat-card>
         <mat-card-title>
