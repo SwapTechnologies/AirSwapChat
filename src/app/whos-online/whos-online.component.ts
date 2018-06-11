@@ -32,8 +32,10 @@ export class WhosOnlineComponent implements OnInit {
   }
 
   message(user: any) {
+    console.log('trying to message', user);
     this.messageService.getPeerAndAdd(user.uid)
     .then((peer) => {
+      console.log('found peer', peer);
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;
     });
@@ -62,8 +64,14 @@ export class WhosOnlineComponent implements OnInit {
           const whosOnlineUids = Object.keys(this.userOnlineService.users);
           this.firebaseService.whosOnlineList = [];
           for (const uid of whosOnlineUids) {
+            console.log(uid);
+            if (uid === this.connectionService.loggedInUser.uid) {
+              continue;
+            }
             this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
+          this.updateDisplayedPeople();
+          console.log(this.firebaseService.whosOnlineList);
         });
       });
     }

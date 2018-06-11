@@ -46,7 +46,7 @@ export class MessagingService {
 
   addPeer(uid: string): Promise<boolean> {
     if (this.isUidInPeerList(uid)) {
-      Promise.resolve(false);
+      return Promise.resolve(false);
     } else {
       return this.userOnlineService.addUserFromFirebase(uid)
       .then(peerDetails => {
@@ -109,8 +109,11 @@ export class MessagingService {
 
   // connected peers from uid
   getPeerAndAdd(uid: string): Promise<any> {
+    console.log('trying to add peer with uid', uid)
     return this.addPeer(uid)
     .then(added => {
+      console.log('added:', added);
+      console.log(this.getConnectedPeer(uid));
       return Promise.resolve(this.getConnectedPeer(uid));
     });
   }
@@ -121,6 +124,7 @@ export class MessagingService {
     console.log('calling addPeerByAddress');
     return this.addPeerByAddress(address)
     .then(added => {
+      console.log('fine');
       return Promise.resolve(this.getConnectedPeerFromAddress(address));
     });
   }
