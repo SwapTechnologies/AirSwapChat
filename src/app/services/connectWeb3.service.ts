@@ -11,7 +11,7 @@ window.web3 = window.web3 || undefined;
 export class ConnectWeb3Service {
 
   private _web3: any;
-  public desiredNetwork = 'Rinkeby';
+  public desiredNetwork = 'Mainnet';
 
   public connected = false;
   public correctNetwork = false;

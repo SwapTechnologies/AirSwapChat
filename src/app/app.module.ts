@@ -1,6 +1,7 @@
 // modules
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +23,6 @@ import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
 import { AppComponent } from './app.component';
 import { ErrorComponent } from './error/error.component';
 import { FindIntentsComponent } from './find-intents/find-intents.component';
-import { GetOrderComponent } from './get-order/get-order.component';
 import { InitialPageComponent } from './initial-page/initial-page.component';
 import { MainframeComponent } from './mainframe/mainframe.component';
 import { MessageSystemComponent } from './message-system/message-system.component';
@@ -68,7 +68,6 @@ const appRoutes: Routes = [
   { path: 'intents', component: SetIntentsComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'findPeers', component: FindIntentsComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'message', component: MessageSystemComponent, canActivate: [RouterWebsocketActivatedService] },
-  { path: 'order', component: GetOrderComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'whosOnline', component: WhosOnlineComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'answer', component: AnswerOrdersComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'myAccount', component: MyAccountComponent, canActivate: [RouterWebsocketActivatedService] },
@@ -131,7 +130,6 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     MainframeComponent,
     SetIntentsComponent,
     FindIntentsComponent,
-    GetOrderComponent,
     AnswerOrdersComponent,
     MessageSystemComponent,
     RoundPipe,
@@ -151,6 +149,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    ReactiveFormsModule,
     FormsModule,
     FlexLayoutModule,
     NgMaterialModule,

@@ -132,7 +132,25 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
     // check if I have unreceived messages
     // and start listening for messages from others
-    this.firebaseService.setMeOnline().then(() => {
+    this.firebaseService.setMeOnline()
+    .then(() => this.firebaseService.getMyPeers()) // get your friend list
+    .then((peers) => {
+      const promiseList = [];
+      for (const peer in peers) {
+        if (peers[peer]) {
+          promiseList.push(
+            this.messageService.addPeer(peer)
+            .then((added) => {
+              if (added) {
+                this.userOnlineService.setPeerToFriend(peer);
+              }
+            })
+          );
+        }
+      }
+      return Promise.all(promiseList);
+    })
+    .then(() => {
       this.messageService.startMessenger();
     });
   }

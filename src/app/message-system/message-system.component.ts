@@ -1,16 +1,17 @@
-import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
-import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 // services
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
+import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
 import { MatDialog } from '@angular/material';
 import { DialogAddPeerComponent } from './dialog-add-peer/dialog-add-peer.component';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
+import {MatSnackBar} from '@angular/material';
 
 @Component({
   selector: 'app-message-system',
@@ -27,10 +28,11 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     private web3service: ConnectWeb3Service,
     public messageService: MessagingService,
     private firebaseService: FirebaseService,
+    private userOnlineService: UserOnlineService,
     public wsService: WebsocketService,
-    private zone: NgZone,
-    private db: AngularFireDatabase,
-    public dialog: MatDialog) { }
+    public dialog: MatDialog,
+    public snackBar: MatSnackBar,
+  ) { }
 
   ngOnInit() {
     this.timer = TimerObservable.create(0, 5000)
@@ -57,11 +59,22 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (this.web3service.web3.utils.isAddress(result)) {
-        this.messageService.getPeerAndAddByAddress(result)
-        .then(peer => {
-          this.messageService.selectedPeer = peer;
+        this.firebaseService.getUserUid(result)
+        .then((uid) => {
+          if (uid) {
+            this.messageService.getPeerAndAdd(uid)
+            .then(peer => {
+              this.messageService.selectedPeer = peer;
+            });
+          } else {
+            this.snackBar.open('Entered address ' +
+            result +
+            ' is not registered with AirSwapChat', 'Sad...', {duration: 5000});
+          }
         });
-      } else { console.log('Entered invalid address.'); }
+      } else {
+        this.snackBar.open('Entered invalid address', 'Oops.', {duration: 3000});
+      }
     });
   }
 
@@ -76,6 +89,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   addPeerAsFriend(): void {
     if (this.messageService.selectedPeer && this.messageService.selectedPeer.peerDetails.uid) {
       this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
+      this.userOnlineService.setPeerToFriend(this.messageService.selectedPeer.peerDetails.uid);
     }
   }
 }

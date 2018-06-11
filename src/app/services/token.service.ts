@@ -44,14 +44,16 @@ export class TokenService {
 
   getTokenByName(name: string): Token {
     let validToken = validatedTokens.find(x => {
-      return x.name === name;
+      return x.name.toLowerCase() === name.toLowerCase()
+             || x.symbol.toLowerCase() === name.toLowerCase();
     });
 
     if (validToken) {
       return validToken;
     } else {
       validToken = this.customTokens.find(x => {
-        return x.name === name;
+        return x.name.toLowerCase() === name.toLowerCase()
+               || x.symbol.toLowerCase() === name.toLowerCase();
       });
       if (validToken) {
         return validToken;
@@ -101,6 +103,9 @@ export class TokenService {
 
   getValidatedTokens(): Token[] {
     this.validatedTokens = validatedTokens;
+    for (const token of this.validatedTokens) {
+      token.address = token.address.toLowerCase();
+    }
     this.validatedTokens = this.validatedTokens.sort((a, b) => {
       if (a.name < b.name) { return -1; }
       if (a.name > b.name) { return 1; }

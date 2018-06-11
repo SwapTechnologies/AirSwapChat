@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
-import { EtherAddress } from './tokens';
+import { EtherAddress } from './token.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AirswapdexService {
 
-  // public airswapDexAddress = '0x2C40c44343214a0C81Ea8eEe6f5Ae75138062A0A'; // rinkeby
-  public airswapDexAddress = '0x08a1d43a218adaf6273f323a1f5a43d930f3d69e'; // rinkeby
+  // public airswapDexAddress = '0x08a1d43a218adaf6273f323a1f5a43d930f3d69e'; // rinkeby
 
-  // public airswapDex: string = '0x8fd3121013A07C57f0D69646E86E7a4880b467b7'; // mainnet
+  public airswapDexAddress = '0x8fd3121013A07C57f0D69646E86E7a4880b467b7'; // mainnet
   public airswapDexABI = [
     {
       'name': 'fill',

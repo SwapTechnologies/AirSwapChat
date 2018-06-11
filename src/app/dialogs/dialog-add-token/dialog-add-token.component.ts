@@ -1,13 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 import { ConnectWeb3Service } from '../../services/connectWeb3.service';
 import { Erc20Service } from '../../services/erc20.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { TokenService } from '../../services/token.service';
-import { getTokenByAddress } from '../../services/tokens';
-
-import { Token } from '../../types/types';
 
 @Component({
   selector: 'app-dialog-add-token',
@@ -46,14 +43,6 @@ export class DialogAddTokenComponent implements OnInit {
 
   onCloseCancel() {
     this.dialogRef.close(false);
-  }
-
-  getToken(token: string): number {
-    if (getTokenByAddress(token)) {
-      return getTokenByAddress(token);
-    } else {
-      return null;
-    }
   }
 
   addToken(): void {

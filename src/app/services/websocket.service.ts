@@ -15,8 +15,8 @@ export class WebsocketService {
   public websocketSubject: Subject<string>;
   private websocketSubscriptions: any = {};
 
-  private url = 'wss://sandbox.airswap-api.com/websocket'; // rinkeby
-  // private url = 'wss://connect.airswap-api.com/websocket'; // mainnet
+  // private url = 'wss://sandbox.airswap-api.com/websocket'; // rinkeby
+  private url = 'wss://connect.airswap-api.com/websocket'; // mainnet
   private indexerAddress = '0x0000000000000000000000000000000000000000';
   public performingHandshake = false;
   public infoMessage = '';
@@ -123,11 +123,12 @@ export class WebsocketService {
       // console.log('got message', receivedMessage);
       const content = JSON.parse(receivedMessage['message']);
       const method = content['method'];
-      if (method === 'ping') {
-        const uuid = content['id'];
-        const sender = receivedMessage['sender'];
-        this.pongPeer(sender, uuid);
-      }
+      console.log('received message', receivedMessage, content);
+      // if (method === 'ping') {
+      //   const uuid = content['id'];
+      //   const sender = receivedMessage['sender'];
+      //   this.pongPeer(sender, uuid);
+      // }
     });
   }
 
@@ -139,6 +140,7 @@ export class WebsocketService {
     };
     // console.log('sending', envelope);
     const request: string = JSON.stringify(envelope);
+    console.log('sending', request);
     this.send(request);
   }
 
@@ -248,52 +250,52 @@ export class WebsocketService {
     return uuid;
   }
 
-  pingPeer(receiver): string {
-    const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
-    const jsonrpc = {
-      'id': callId,
-      'jsonrpc': '2.0',
-      'method': 'ping'
-    };
-    this.sendRPC(jsonrpc, receiver);
-    return callId;
-  }
+  // pingPeer(receiver): string {
+  //   const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
+  //   const jsonrpc = {
+  //     'id': callId,
+  //     'jsonrpc': '2.0',
+  //     'method': 'ping'
+  //   };
+  //   this.sendRPC(jsonrpc, receiver);
+  //   return callId;
+  // }
 
-  pongPeer(receiver, uuid): string {
-    const jsonrpc = {
-      'id': uuid,
-      'jsonrpc': '2.0',
-      'method': 'pong'
-    };
-    this.sendRPC(jsonrpc, receiver);
-    return uuid;
-  }
+  // pongPeer(receiver, uuid): string {
+  //   const jsonrpc = {
+  //     'id': uuid,
+  //     'jsonrpc': '2.0',
+  //     'method': 'pong'
+  //   };
+  //   this.sendRPC(jsonrpc, receiver);
+  //   return uuid;
+  // }
 
-  pingAndListenForPong(peerAddress): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      let answered = false;
-      const uuid = this.pingPeer(peerAddress);
-      const subscription = this.websocketSubject
-      .subscribe(message => {
-        const parsedMessage = JSON.parse(message);
-        const parsedContent = JSON.parse(parsedMessage['message']);
-        const id = parsedContent['id'];
-        if (id === uuid) {
-          const method = parsedContent['method'];
-          if (method === 'pong') {
-            answered = true;
-            resolve(true);
-          }
-          resolve(true);
-        }
-      });
-      setTimeout(() => {
-        if (!answered) {
-          resolve(false);
-        }
-      }, 2000);
-    });
-  }
+  // pingAndListenForPong(peerAddress): Promise<boolean> {
+  //   return new Promise((resolve, reject) => {
+  //     let answered = false;
+  //     const uuid = this.pingPeer(peerAddress);
+  //     const subscription = this.websocketSubject
+  //     .subscribe(message => {
+  //       const parsedMessage = JSON.parse(message);
+  //       const parsedContent = JSON.parse(parsedMessage['message']);
+  //       const id = parsedContent['id'];
+  //       if (id === uuid) {
+  //         const method = parsedContent['method'];
+  //         if (method === 'pong') {
+  //           answered = true;
+  //           resolve(true);
+  //         }
+  //         resolve(true);
+  //       }
+  //     });
+  //     setTimeout(() => {
+  //       if (!answered) {
+  //         resolve(false);
+  //       }
+  //     }, 2000);
+  //   });
+  // }
 
   // getMyIntents(): void {
   //   this.getIntents(this.web3service.connectedAccount);

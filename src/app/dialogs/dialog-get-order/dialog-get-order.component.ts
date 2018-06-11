@@ -1,15 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ConnectWeb3Service } from '../../services/connectWeb3.service';
 import { GetOrderService } from '../../services/get-order.service';
+import { TokenService } from '../../services/token.service';
 import { WebsocketService } from '../../services/websocket.service';
-import { AirswapdexService } from '../../services/airswapdex.service';
 
-import { EthereumTokensSN, getTokenByAddress } from '../../services/tokens';
 
-import { Token } from '../../types/types';
 
 @Component({
   selector: 'app-dialog-get-order',
@@ -20,7 +18,6 @@ export class DialogGetOrderComponent implements OnInit {
   public receiver: string;
   public makerAmount: string;
 
-  public tokenList: any[] = EthereumTokensSN;
   public foundIntents: any[] = [];
   public orderResponses: any[] = [];
   public websocketSubscription: Subscription;
@@ -30,9 +27,9 @@ export class DialogGetOrderComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogGetOrderComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private getOrderService: GetOrderService,
+    private tokenService: TokenService,
     private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
-    private airswapDexService: AirswapdexService
   ) { }
 
   ngOnInit() {
@@ -40,39 +37,15 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   onNoClick(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 
-  onCloseConfirm(uuid: string) {
-    this.dialogRef.close(uuid);
+  onCloseConfirm(makerAmount) {
+    this.dialogRef.close(makerAmount);
   }
 
   onCloseCancel() {
-    this.dialogRef.close();
-  }
-
-  getTokenName(token: string): number {
-    if (getTokenByAddress(token)) {
-      return getTokenByAddress(token).name;
-    } else {
-      return null;
-    }
-  }
-
-  getTokenDecimals(token: string): number {
-    if (getTokenByAddress(token)) {
-      return 10 ** (getTokenByAddress(token).decimals);
-    } else {
-      return null;
-    }
-  }
-
-  getTokenSymbol(token: string): string {
-    if (getTokenByAddress(token)) {
-      return getTokenByAddress(token).symbol;
-    } else {
-      return null;
-    }
+    this.dialogRef.close(false);
   }
 
   stringIsValidNumber(x: string): boolean {
@@ -87,25 +60,7 @@ export class DialogGetOrderComponent implements OnInit {
   getOrder(): void {
     if (this.web3service.web3.utils.isAddress(this.receiver)
     && Number(this.makerAmount) >= 0 && this.makerHasEnough()) {
-
-      const makerProps = getTokenByAddress(this.data.makerToken);
-      const takerProps = getTokenByAddress(this.data.takerToken);
-
-      const makerDecimals = 10 ** makerProps.decimals;
-      const makerAmount = Math.floor(Number(this.makerAmount) * makerDecimals);
-      if (makerAmount < this.data.makerBalanceMakerToken) {
-        const uuid = this.getOrderService.sendGetOrder({
-          makerAddress: this.receiver,
-          takerAddress: this.web3service.connectedAccount.toLowerCase(),
-          makerAmount: makerAmount.toString(),
-          makerToken: this.data.makerToken,
-          takerToken: this.data.takerToken,
-          makerProps: makerProps,
-          takerProps: takerProps,
-          makerDecimals: makerDecimals,
-        });
-        this.onCloseConfirm(uuid);
-      }
+      this.onCloseConfirm(Math.round(parseFloat(this.makerAmount) * this.data.makerDecimals));
     }
   }
 }

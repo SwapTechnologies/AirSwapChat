@@ -182,6 +182,11 @@ export class FirebaseService {
     });
   }
 
+  getMyPeers(): Promise<any> {
+    return this.getObjectFromDatabase('users/' + this.connectionService.loggedInUser.uid +
+    '/peers');
+  }
+
 
   // getUserDetailsFromAddress(address: string): Promise<OtherUser> {
   //   return new Promise((resolve, reject) => {

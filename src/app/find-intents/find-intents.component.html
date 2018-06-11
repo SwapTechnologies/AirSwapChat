@@ -20,8 +20,36 @@
       <mat-icon>autorenew</mat-icon>
     </button>
 
+    <!-- [formControl]="selectedTokenNameControl"
+    (ngOnChanges)="showIntents()" -->
     
     <mat-form-field>
+      <input 
+      type="text" 
+      placeholder="Search Token" 
+      aria-label="Token" 
+      matInput 
+      [(ngModel)]='selectedTokenName'
+      (ngModelChange)='enteredTokenName()'
+      [matAutocomplete]="auto">
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option 
+        *ngFor="let token of filteredValidatedTokens | callback: filterEther" 
+        [value]="token.name">
+          {{ token.name }}
+        </mat-option>
+        <mat-optgroup label="User Added Tokens">
+          <mat-option 
+          *ngFor="let token of filteredCustomTokens" 
+          [value]="token.name">
+            {{ token.name }}
+          </mat-option>
+        </mat-optgroup>
+      </mat-autocomplete>
+      <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
+    </mat-form-field>
+  
+    <!-- <mat-form-field>
       <mat-select 
       placeholder="Search Token" 
       [(value)]="selectedToken"
@@ -50,7 +78,7 @@
         </mat-optgroup>
       </mat-select>
       <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
-    </mat-form-field>
+    </mat-form-field> -->
     
     <mat-form-field>
       <mat-select 
@@ -107,8 +135,8 @@
                 <ng-template #takerHeader>
                   {{intent.peer.alias}} sells {{intent.makerProps.symbol}}
                 </ng-template>
-                <span *ngIf="intent.peer.online" class="onlineDot"></span>
-                <span *ngIf="!(intent.peer.online)" class="offlineDot"></span>  
+                <span *ngIf="intent.peer.uid && intent.peer.online" class="onlineDot"></span>
+                <span *ngIf="intent.peer.uid && !(intent.peer.online)" class="offlineDot"></span>  
               </mat-card-title>
               <mat-card-subtitle>
                   Address {{intent.address}}
@@ -152,16 +180,22 @@
                 <i>Sent request for an offer of 
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerAmount / this.getOrderService.sentOrders[intent.sentRequest].makerDecimals}}
                 {{this.getOrderService.sentOrders[intent.sentRequest].makerProps.symbol}}</i>
+                <p
+                style='color:red'
+                *ngIf="getOrderService.errorOrders[intent.sentRequest]">
+                  <strong>{{getOrderService.errorOrders[intent.sentRequest]}}</strong>
+                </p>
               </mat-card-content>
               <mat-card-actions>
-                <button mat-button
-                (click)="message(intent)"
-                [disabled]="!intent.peer.uid">
+                <button 
+                *ngIf="intent.peer.uid"
+                mat-button
+                (click)="message(intent)">
                   MESSAGE
                 </button>
                 <button mat-button *ngIf="intent.approvedTakerToken > 0"
                 (click)="openDialogGetOrder(intent)"
-                [disabled]="!intent.peer.online">
+                [disabled]="intent.uid && !intent.peer.online">
                   GET ORDER
                 </button>           
                 <button mat-button *ngIf="!(intent.approvedTakerToken > 0)"

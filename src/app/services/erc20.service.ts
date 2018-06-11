@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ConnectWeb3Service } from './connectWeb3.service';
-import { EtherAddress } from './tokens';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Erc20Service {
+  public EtherAddress = '0x0000000000000000000000000000000000000000';
   public ABI = [
     {
       'constant': true,
@@ -154,7 +154,7 @@ export class Erc20Service {
   }
 
   balance(tokenAddress: any, address: string): Promise<number> {
-    if (tokenAddress === EtherAddress) {
+    if (tokenAddress === this.EtherAddress) {
       return this.web3service.getBalance(address);
     } else {
       const contract = this.getContract(tokenAddress);

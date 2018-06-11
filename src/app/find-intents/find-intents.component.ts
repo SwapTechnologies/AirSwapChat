@@ -1,6 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Subscription } from 'rxjs/Subscription';
+import { FormControl } from '@angular/forms';
+import { Observable } from 'rxjs/Observable';
+import { map, startWith } from 'rxjs/operators';
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
@@ -30,6 +33,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   public makerTokens: string[] = [];
   public takerTokens: string[] = [];
 
+  public selectedTokenName;
   public selectedToken: any;
   public selectedRole = 'maker';
 
@@ -42,6 +46,9 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   public pageSize = 6;
   public pageIndex = 0;
+
+  public filteredValidatedTokens;
+  public filteredCustomTokens;
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -59,11 +66,40 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     ) { }
 
   ngOnInit() {
+
+    // this.selectedTokenNameControl.valueChanges()
+    // .subscribe((value) => {
+    //   console.log('value');
+    // });
+    // this.filteredOptions = this.myControl.valueChanges
+    // .pipe(
+    //   startWith(''),
+    //   map(val => this.filter(val))
+    // );
+    this.filteredValidatedTokens = this.tokenService.validatedTokens;
+    this.filteredCustomTokens = this.tokenService.customTokens;
   }
 
   ngOnDestroy() {
     if (this.websocketSubscription) {
       this.websocketSubscription.unsubscribe();
+    }
+  }
+
+  enteredTokenName(): void {
+    this.filteredValidatedTokens = this.tokenService.validatedTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.selectedTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.selectedTokenName.toLowerCase());
+    });
+    this.filteredCustomTokens = this.tokenService.customTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.selectedTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.selectedTokenName.toLowerCase());
+    });
+
+    const token = this.tokenService.getTokenByName(this.selectedTokenName);
+    if (token) {
+      this.selectedToken = token;
+      this.showIntents();
     }
   }
 
@@ -128,7 +164,8 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   updateDisplayedIntents() {
     this.displayIntents = this.foundIntents.slice(
       this.pageIndex * this.pageSize,
-      (this.pageIndex + 1) * this.pageSize);
+      (this.pageIndex + 1) * this.pageSize); // get only the first pageSize intents to check
+
     this.getTokenProperties();
     this.checkAllApprovals();
     this.fetchBalances();
@@ -234,10 +271,11 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  checkPeerData(): void {
-    const checkedUser = {};
+  checkPeerData(): Promise<any> {
+    const checkedUser = {}; // users you are already checking async
     const promiseList = [];
-    const deferredIntents = [];
+    const deferredIntents = []; // multiple intents from checkedUser
+
     for (const intent of this.displayIntents) {
       const peerAddress = intent['address'];
       if (checkedUser[peerAddress]) {
@@ -255,7 +293,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
         })
       );
     }
-    Promise.all(promiseList)
+    return Promise.all(promiseList)
     .then(() => {
       for (const intent of deferredIntents) {
         const peerAddress = intent['address'];
@@ -281,14 +319,27 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   openDialogGetOrder(intent: any): void {
+    console.log('open dialog', intent);
     const dialogRef = this.dialog.open(DialogGetOrderComponent, {
       width: '500px',
       data: intent
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        intent['sentRequest'] = result;
+    dialogRef.afterClosed().subscribe(makerAmount => {
+      if (makerAmount) {
+        console.log(makerAmount, intent);
+
+        const uuid = this.getOrderService.sendGetOrder({
+          makerAddress: intent.address,
+          takerAddress: this.web3service.connectedAccount.toLowerCase(),
+          makerAmount: this.erc20services.toFixed(makerAmount),
+          makerToken: intent.makerToken,
+          takerToken: intent.takerToken,
+          makerProps: intent.makerProps,
+          takerProps: intent.takerProps,
+          makerDecimals: intent.makerDecimals,
+        });
+        intent['sentRequest'] = uuid;
       }
     });
   }

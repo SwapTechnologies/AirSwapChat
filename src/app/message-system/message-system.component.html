@@ -21,7 +21,7 @@
           </mat-select>
           <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
           <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
-          <button *ngIf="messageService.selectedPeer"
+          <button *ngIf="messageService.selectedPeer && !messageService.selectedPeer.peerDetails.inMyPeerList"
           mat-button
           mat-icon-button 
           matSuffix

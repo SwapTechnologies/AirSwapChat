@@ -21,7 +21,8 @@ export class UserOnlineService {
       const newUser = {
         alias: alias,
         address: address,
-        uid: uid
+        uid: uid,
+        inMyPeerList: false
       };
       this.users[uid] = newUser;
       this.usersByAddress[address] = newUser;
@@ -97,7 +98,7 @@ export class UserOnlineService {
       return this.firebaseService.getUserUid(address)
       .then(fbUid => {
         uid = fbUid;
-        if (uid) {
+        if (uid) { // only check further if uid was found
           return this.firebaseService.getUserAlias(uid);
         } else {
           return false;
@@ -123,6 +124,10 @@ export class UserOnlineService {
   setUserPropertyByAddress(address: string, propertyName: string, propertyValue: any) {
     this.usersByAddress[address][propertyName] = propertyValue;
     this.users[this.usersByAddress[address].uid][propertyName] = propertyValue;
+  }
+
+  setPeerToFriend(uid: string) {
+    this.setUserProperty(uid, 'inMyPeerList', true);
   }
 
   getUserByAddress(address: string): any {

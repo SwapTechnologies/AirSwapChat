@@ -7,7 +7,9 @@ import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/di
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
+import { ColumnSpaceObserverService } from '../services/column-space-observer.service'
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
+import { Erc20Service } from '../services/erc20.service';
 import { WebsocketService } from '../services/websocket.service';
 import { OrderRequestsService } from '../services/order-requests.service';
 import { GetOrderService } from '../services/get-order.service';
@@ -37,6 +39,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   constructor(
     private airswapDexService: AirswapdexService,
+    public columnSpaceObserver: ColumnSpaceObserverService,
+    private erc20Service: Erc20Service,
     public getOrderService: GetOrderService,
     public orderService: OrderRequestsService,
     private web3service: ConnectWeb3Service,
@@ -49,24 +53,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.websocketSubscription) { this.websocketSubscription.unsubscribe(); }
-  }
-
-  toFixed(x) {
-    if (Math.abs(x) < 1.0) {
-      const e = parseInt(x.toString().split('e-')[1], 10);
-      if (e) {
-          x *= Math.pow(10, e - 1);
-          x = '0.' + (new Array(e)).join('0') + x.toString().substring(2);
-      }
-    } else {
-      let e = parseInt(x.toString().split('+')[1], 10);
-      if (e > 20) {
-          e -= 20;
-          x /= Math.pow(10, e);
-          x += (new Array(e + 1)).join('0');
-      }
-    }
-    return x;
   }
 
   takerHasEnough(order: any): boolean {
@@ -108,8 +94,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     if (Number(this.takerAmount[order.id]) >= 0 && this.takerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
       order['takerAmount'] = (Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals'])).toString();
-      order['takerAmount'] = this.toFixed(order['takerAmount']);
-      order['makerAmount'] = this.toFixed(order['makerAmount']);
+      order['takerAmount'] = this.erc20Service.toFixed(order['takerAmount']);
+      order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
       const uuid = order.id;
       // delete order.id;
 

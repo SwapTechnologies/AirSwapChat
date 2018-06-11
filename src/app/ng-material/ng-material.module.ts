@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
+import { MatAutocompleteModule, MatBadgeModule, MatBottomSheetModule, MatButtonModule,
   MatCardModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule,
   MatGridListModule, MatIconModule, MatInputModule, MatListModule, MatProgressSpinnerModule,
   MatPaginatorModule, MatSelectModule, MatSidenavModule, MatSnackBarModule,
@@ -10,6 +10,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
 @NgModule({
   imports: [
     CommonModule,
+    MatAutocompleteModule,
     MatBadgeModule,
     MatBottomSheetModule,
     MatButtonModule,
@@ -32,6 +33,7 @@ import { MatBadgeModule, MatBottomSheetModule, MatButtonModule,
     MatTooltipModule,
   ],
   exports: [
+    MatAutocompleteModule,
     MatBadgeModule,
     MatBottomSheetModule,
     MatButtonModule,
