@@ -90,6 +90,7 @@ export class UserOnlineService {
    * returns whether user is in firebase database or not
    */
   addUserFromFirebaseByAddress(address: string): Promise<any> {
+    console.log('running addUserFromFirebaseByAddress for address', address);
     if (this.isUserListedByAddress(address)) {
       return Promise.resolve(this.getUserByAddress(address));
     } else {
@@ -105,6 +106,7 @@ export class UserOnlineService {
         }
       }).then(fbAlias => {
         alias = fbAlias;
+        console.log('found uid, alias:', uid, alias);
         if (alias) {
           this.addUser(uid, address, alias);
           return this.usersByAddress[address];
