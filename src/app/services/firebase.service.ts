@@ -171,7 +171,6 @@ export class FirebaseService {
       const subscription = this.db.object('online/' + uid)
       .valueChanges()
       .subscribe(online => {
-        console.log('check if user is online', online);
         subscription.unsubscribe();
         if (online) {
           resolve(true);
@@ -185,6 +184,13 @@ export class FirebaseService {
   getMyPeers(): Promise<any> {
     return this.getObjectFromDatabase('users/' + this.connectionService.loggedInUser.uid +
     '/peers');
+  }
+
+  deletePeerFromList(uid: string): Promise<any> {
+    return this.db.object(
+      'users/' +
+      this.connectionService.loggedInUser.uid +
+      '/peers/' + uid).remove();
   }
 
 
@@ -278,7 +284,6 @@ export class FirebaseService {
     return new Promise((resolve, reject) => {
       obsToken = dbToken.valueChanges()
       .subscribe(entry => {
-        // console.log('getting tokenlist', entry);
         obsToken.unsubscribe();
         const tokenList: Token[] = [];
         if (entry) {

@@ -1,12 +1,12 @@
 // modules
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgMaterialModule } from './ng-material/ng-material.module';
-import { RouterModule, Routes, CanActivate } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import {
   AuthMethods,
@@ -74,34 +74,6 @@ const appRoutes: Routes = [
   { path: 'error', component: ErrorComponent},
   { path: '**', redirectTo: '' }
 ];
-// { path: '', redirectTo: '/connect',  pathMatch: 'full' },
-
-
-// const facebookCustomConfig: AuthProviderWithCustomConfig = {
-//   provider: AuthProvider.Facebook,
-//   customConfig: {
-//     scopes: [
-//       'public_profile',
-//       'email',
-//       'user_likes',
-//       'user_friends'
-//     ],
-//     customParameters: {
-//       // Forces password re-entry.
-//       auth_type: 'reauthenticate'
-//     }
-//   }
-// };
-
-// const googleCustomConfig: AuthProviderWithCustomConfig = {
-//   provider: AuthProvider.Google,
-//   customConfig: {
-//     customParameters: {
-//       prompt: 'select_account'
-//     }
-//   }
-// };
-
 
 const emailCustomConfig: AuthProviderWithCustomConfig = {
   provider: AuthProvider.Password,
@@ -112,10 +84,7 @@ const emailCustomConfig: AuthProviderWithCustomConfig = {
 
 const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
   providers: [
-    // googleCustomConfig,
     emailCustomConfig,
-    // AuthProvider.Github,
-    // AuthProvider.Twitter,
   ],
   method: AuthMethods.Popup,
   tos: '<your-tos-link>',
@@ -149,7 +118,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    ReactiveFormsModule,
+    HttpClientModule,
     FormsModule,
     FlexLayoutModule,
     NgMaterialModule,

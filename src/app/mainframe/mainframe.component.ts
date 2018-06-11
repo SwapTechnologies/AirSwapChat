@@ -40,7 +40,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
   constructor(
     private afAuth: AngularFireAuth,
-    private columnSpaceObserver: ColumnSpaceObserverService,
+    public columnSpaceObserver: ColumnSpaceObserverService,
     private getOrderService: GetOrderService,
     private orderRequestsService: OrderRequestsService,
     private tokenService: TokenService,
@@ -143,6 +143,14 @@ export class MainframeComponent implements OnInit, OnDestroy {
             .then((added) => {
               if (added) {
                 this.userOnlineService.setPeerToFriend(peer);
+              } else {
+                // didn't add the peer,... why not? does he even exist?
+                this.firebaseService.getUserAddress(peer)
+                .then(userAddress => {
+                  if (!userAddress) {
+                    this.firebaseService.deletePeerFromList(peer);
+                  }
+                });
               }
             })
           );

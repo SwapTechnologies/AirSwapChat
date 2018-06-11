@@ -50,29 +50,30 @@ export class MessagingService {
     } else {
       return this.userOnlineService.addUserFromFirebase(uid)
       .then(peerDetails => {
-        this.connectedPeers.push({
-          peerDetails: peerDetails,
-          messageHistory: [],
-          hasUnreadMessages: false,
-        });
-        if (this.connectedPeers.length === 1) {
-          this.selectedPeer = this.connectedPeers[0];
+        if (peerDetails) {
+          this.connectedPeers.push({
+            peerDetails: peerDetails,
+            messageHistory: [],
+            hasUnreadMessages: false,
+          });
+          if (this.connectedPeers.length === 1) {
+            this.selectedPeer = this.connectedPeers[0];
+          }
+          return true;
+        } else {
+          return false;
         }
-        return true;
       });
     }
   }
 
   addPeerByAddress(address: string): Promise<boolean> {
-    console.log('running addPeerByAddress for address', address);
     const addressLC = address.toLowerCase();
     if (this.isAddressInPeerList(addressLC)) {
       return Promise.resolve(false);
     } else {
-      console.log(addressLC, ' not in Peer List. Adding data from Firebase');
       return this.userOnlineService.addUserFromFirebaseByAddress(addressLC)
       .then(peerDetails => {
-        console.log('peerDetails:', peerDetails);
         this.connectedPeers.push({
           peerDetails: peerDetails,
           messageHistory: [],
@@ -109,22 +110,16 @@ export class MessagingService {
 
   // connected peers from uid
   getPeerAndAdd(uid: string): Promise<any> {
-    console.log('trying to add peer with uid', uid)
     return this.addPeer(uid)
     .then(added => {
-      console.log('added:', added);
-      console.log(this.getConnectedPeer(uid));
       return Promise.resolve(this.getConnectedPeer(uid));
     });
   }
 
   // connected peers from address
   getPeerAndAddByAddress(address: string): Promise<any> {
-    console.log('running getPeerAndAddByAddress for address', address);
-    console.log('calling addPeerByAddress');
     return this.addPeerByAddress(address)
     .then(added => {
-      console.log('fine');
       return Promise.resolve(this.getConnectedPeerFromAddress(address));
     });
   }
@@ -156,7 +151,7 @@ export class MessagingService {
           .then((peer) => {
             this.addMessage(
               peer,
-              peer.alias,
+              peer.peerDetails.alias,
               message.message,
               message.timestamp
             );
@@ -178,17 +173,19 @@ export class MessagingService {
         if (method === 'message') { // message received!
           const sender = receivedMessage['sender'];
           // answer the reception
-          console.log('RECEIVED MESSAGE: receivedMessage, content, sender:', receivedMessage, content, sender);
           this.wsService.sendMessageAnswer(sender, content['id']);
           this.getPeerAndAddByAddress(sender)
           .then(peer => {
             this.addMessage(
               peer,
-              peer.alias,
+              peer.peerDetails.alias,
               content['params']['message'],
               parseInt(content['params']['timestamp'], 10)
             );
             peer.hasUnreadMessages = true;
+            if (!this.showMessenger) {
+              this.selectedPeer = peer;
+            }
           });
         }
       });
@@ -238,19 +235,26 @@ export class MessagingService {
         } else {
           this.addMessage(this.selectedPeer, 'System',
           'Peer is offline.', currentTime);
-
           if (this.selectedPeer.peerDetails.uid) {
-            this.askToStore(message) // check if user wants to send message
-            .then(response => {
-              if (response) {
-                if (this.connectionService.connected) { // still connected?
-                  this.firebaseService.storeMessage(
-                    this.selectedPeer.peerDetails.uid, message
-                  ).then(fbResponse => {
-                    this.addMessage(this.selectedPeer,
-                      'You', 'Offline Message: ' + message, currentTime);
-                  });
-                }
+            this.firebaseService.getUserAddress(this.selectedPeer.peerDetails.uid)
+            .then((userUid) => {
+              if (userUid) {
+                this.askToStore(message) // check if user wants to send message
+                .then(response => {
+                  if (response) {
+                    if (this.connectionService.connected) { // still connected?
+                      this.firebaseService.storeMessage(
+                        this.selectedPeer.peerDetails.uid, message
+                      ).then(fbResponse => {
+                        this.addMessage(this.selectedPeer,
+                          'You', 'Offline Message: ' + message, currentTime);
+                      });
+                    }
+                  }
+                });
+              } else {
+                this.addMessage(this.selectedPeer, 'System',
+                'Peer no longer in database.', currentTime);
               }
             });
           } else {

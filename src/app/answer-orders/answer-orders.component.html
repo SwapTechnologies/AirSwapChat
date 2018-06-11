@@ -108,17 +108,26 @@
         <mat-card-content>
           Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
         </mat-card-content>
-        <button 
-        mat-button 
-        (click)="dealSealDetails(order)">
-          DETAILS
-        </button>
-        <button 
-        mat-button 
-        (click)="sealDeal(order)"
-        [disabled]="order.clickedDealSeal">
-          SEAL THE DEAL
-        </button>
+        <mat-card-actions>
+          <button 
+          mat-button 
+          (click)="dealSealDetails(order)">
+            DETAILS
+          </button>
+          <button 
+          mat-button 
+          (click)="sealDeal(order)"
+          [disabled]="order.clickedDealSeal">
+            SEAL THE DEAL
+          </button>
+          <button 
+          mat-button 
+          (click)="rejectDeal(order)"
+          color='warn'
+          [disabled]="order.clickedDealSeal">
+            DECLINE DEAL
+          </button>
+        </mat-card-actions>
         <mat-card-content *ngIf="order.clickedDealSeal">
           <i>Send transaction in Metamask to seal the deal to trade peers
           {{order.makerAmount /order.makerDecimals}}

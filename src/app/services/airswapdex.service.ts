@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
+import { HttpClient } from '@angular/common/http';
 import { EtherAddress } from './token.service';
 
 @Injectable({
@@ -109,7 +110,10 @@ export class AirswapdexService {
       ],
     }];
 
-  constructor(private web3service: ConnectWeb3Service) { }
+  constructor(
+    private web3service: ConnectWeb3Service,
+    private http: HttpClient,
+  ) { }
 
   get airswapDexContract(): any {
     return new this.web3service.web3.eth.Contract(
@@ -137,7 +141,6 @@ export class AirswapdexService {
   fill(makerAddress: string, makerAmount: string, makerToken: string,
   takerAddress: string, takerAmount: string, takerToken: string,
   expiration: number,  nonce: number, v: string, r: string, s: string): Promise<any> {
-    const gasPrice = 10e9;
     const gas = 200000;
     let dataString = '0x1d4d691d';
     dataString = dataString + this.pad(makerAddress.slice(2), 64);
@@ -151,25 +154,32 @@ export class AirswapdexService {
     dataString = dataString + this.pad(this.toHex(v).slice(2), 64);
     dataString = dataString + this.pad(r.slice(2), 64);
     dataString = dataString + this.pad(s.slice(2), 64);
-
-    if (takerToken === EtherAddress) {
-      return this.web3service.web3.eth.sendTransaction({
-        from: this.web3service.connectedAccount,
-        to: this.airswapDexAddress,
-        value: takerAmount,
-        gas: gas,
-        gasPrice: 10e9,
-        data: dataString
-      });
-    } else {
-      return this.web3service.web3.eth.sendTransaction({
-        from: this.web3service.connectedAccount,
-        to: this.airswapDexAddress,
-        gas: gas,
-        gasPrice: 10e9,
-        data: dataString
-      });
-    }
+    return this.http.get('https://ethgasstation.info/json/ethgasAPI.json')
+    .toPromise()
+    .then(ethGasStationResult => {
+      let gasPrice = 10e9;
+      if (ethGasStationResult['average']) {
+        gasPrice = ethGasStationResult['average'] / 10 * 1e9;
+      }
+      if (takerToken === EtherAddress) {
+        return this.web3service.web3.eth.sendTransaction({
+          from: this.web3service.connectedAccount,
+          to: this.airswapDexAddress,
+          value: takerAmount,
+          gas: gas,
+          gasPrice: gasPrice,
+          data: dataString
+        });
+      } else {
+        return this.web3service.web3.eth.sendTransaction({
+          from: this.web3service.connectedAccount,
+          to: this.airswapDexAddress,
+          gas: gas,
+          gasPrice: gasPrice,
+          data: dataString
+        });
+      }
+    });
   }
 
 }

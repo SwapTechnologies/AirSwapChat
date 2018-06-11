@@ -64,6 +64,10 @@ export class WebsocketService {
     });
   }
 
+  closeConnection(): void {
+    this.ws.close();
+  }
+
   public send(message: string): void {
     this.ws.send(message);
   }

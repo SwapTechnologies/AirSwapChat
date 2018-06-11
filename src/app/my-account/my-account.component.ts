@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { ConnectionService } from '../services/connection.service';
 import { FirebaseService } from '../services/firebase.service';
+import { WebsocketService } from '../services/websocket.service';
 
 
 @Component({
@@ -20,6 +21,7 @@ export class MyAccountComponent implements OnInit {
   constructor(
     public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
+    private wsService: WebsocketService,
   ) { }
 
   ngOnInit() {
@@ -44,10 +46,14 @@ export class MyAccountComponent implements OnInit {
 
   logOut(): void {
     this.firebaseService.logOffUser();
+    this.wsService.closeConnection();
   }
 
   deleteMe(): void {
     this.firebaseService.deleteUser()
+    .then(() => {
+      this.wsService.closeConnection();
+    })
     .catch(error => {
       if (error.code && error.code === 'auth/requires-recent-login') {
         this.errorMessage = 'Your last login is too long back. ' +

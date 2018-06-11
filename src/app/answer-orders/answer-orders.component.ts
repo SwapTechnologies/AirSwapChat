@@ -138,6 +138,13 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       data: order
     });
   }
+
+  rejectDeal(order: any): void {
+    this.getOrderService.orderResponses =
+      this.getOrderService.orderResponses.filter(
+        x => x.id !== order.id
+      );
+  }
 }
 
 
