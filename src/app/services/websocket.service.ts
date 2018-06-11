@@ -51,7 +51,6 @@ export class WebsocketService {
             this.connectionService.loggedInUser.wsAddress = this.web3service.connectedAccount.toLowerCase();
             this.connectionService.wsConnected = true;
 
-            this.idleListening();
             this.listenForOrders();
             resolve(true);
 
@@ -114,23 +113,15 @@ export class WebsocketService {
     });
   }
 
-  idleListening(): void {
-    // let idle listening run in background
-    this.websocketSubscriptions['idleListening'] =
-    this.websocketSubject
-    .subscribe(message => {
-      const receivedMessage = JSON.parse(message);
-      // console.log('got message', receivedMessage);
-      const content = JSON.parse(receivedMessage['message']);
-      const method = content['method'];
-      console.log('received message', receivedMessage, content);
-      // if (method === 'ping') {
-      //   const uuid = content['id'];
-      //   const sender = receivedMessage['sender'];
-      //   this.pongPeer(sender, uuid);
-      // }
-    });
-  }
+  // idleListening(): void {
+  //   this.websocketSubscriptions['idleListening'] =
+  //   this.websocketSubject
+  //   .subscribe(message => {
+  //     const receivedMessage = JSON.parse(message);
+  //     const content = JSON.parse(receivedMessage['message']);
+  //     const method = content['method'];
+  //   });
+  // }
 
   sendRPC(jsonrpc, receiver): void {
     const envelope = {
@@ -138,9 +129,7 @@ export class WebsocketService {
       'receiver': receiver.toLowerCase(),
       'message': JSON.stringify(jsonrpc)
     };
-    // console.log('sending', envelope);
     const request: string = JSON.stringify(envelope);
-    console.log('sending', request);
     this.send(request);
   }
 

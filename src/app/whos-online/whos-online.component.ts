@@ -64,14 +64,12 @@ export class WhosOnlineComponent implements OnInit {
           const whosOnlineUids = Object.keys(this.userOnlineService.users);
           this.firebaseService.whosOnlineList = [];
           for (const uid of whosOnlineUids) {
-            console.log(uid);
             if (uid === this.connectionService.loggedInUser.uid) {
               continue;
             }
             this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
           this.updateDisplayedPeople();
-          console.log(this.firebaseService.whosOnlineList);
         });
       });
     }

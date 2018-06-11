@@ -180,7 +180,6 @@ export class MessagingService {
           // answer the reception
           console.log('RECEIVED MESSAGE: receivedMessage, content, sender:', receivedMessage, content, sender);
           this.wsService.sendMessageAnswer(sender, content['id']);
-          console.log('calling getPeerAndAddByAddress');
           this.getPeerAndAddByAddress(sender)
           .then(peer => {
             this.addMessage(

@@ -1,6 +1,5 @@
 @import '~../../customTheme.scss';
 
-$top-color: $primary;// rgb(0, 117, 195);;
 $bottom-color: rgb(255, 255, 255);
 $text-color: black;
 //
@@ -11,13 +10,14 @@ $text-color: black;
   left: 0;
   right: 0;
   background: white;
+  
 }
 // ;
 .main-header {
   display: flex;
   justify-content: flex-start;
   color: $text-color;
-  background: $top-color;
+  background: $primary;
 }
 
 .main-sidenav {
@@ -27,7 +27,7 @@ $text-color: black;
   width: 150px;
   padding-top: 42px;
   color: $text-color;
-  background: linear-gradient(to bottom, $top-color, $bottom-color);
+  background: linear-gradient(to bottom, $primary, $bottom-color);
 }
 
 .main-footer {
@@ -67,7 +67,7 @@ $text-color: black;
   height:100%;
   padding-bottom: 10px;
   color: black;
-  background: linear-gradient(to bottom, rgba(0, 117, 195, 1), rgb(255,255,255));
+  background: linear-gradient(to bottom, $primary, $bottom-color);
   overflow-x: hidden;
 }
 
