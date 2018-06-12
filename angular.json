@@ -25,12 +25,16 @@
             "assets": [
               "src/logo.svg",
               "src/assets",
-              "src/images"
+              "src/images",
+              {
+                "glob": "**/*",
+                "input": "../node_modules/ngx-auth-firebaseui/assets/",
+                "output": "./assets/"
+              }
             ],
             "styles": [
               "src/styles.scss",
-              "src/customTheme.scss",
-              "node_modules/firebaseui/dist/firebaseui.css"
+              "src/customTheme.scss"
             ],
             "scripts": []
           },

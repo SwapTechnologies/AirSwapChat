@@ -7,15 +7,21 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgMaterialModule } from './ng-material/ng-material.module';
 import { RouterModule, Routes } from '@angular/router';
-import { AngularFireAuthModule } from 'angularfire2/auth';
-import {
-  AuthMethods,
-  AuthProvider,
-  AuthProviderWithCustomConfig,
-  CredentialHelper,
-  FirebaseUIAuthConfig,
-  FirebaseUIModule
-} from 'firebaseui-angular';
+
+// Firebase
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireAuth, AngularFireAuthModule } from 'angularfire2/auth';
+import { NgxAuthFirebaseUIModule } from 'ngx-auth-firebaseui';
+
+// import {
+//   AuthMethods,
+//   AuthProvider,
+//   AuthProviderWithCustomConfig,
+//   CredentialHelper,
+//   FirebaseUIAuthConfig,
+//   FirebaseUIModule
+// } from 'firebaseui-angular';
 
 // app components
 import { AccountComponent } from './account/account.component';
@@ -31,10 +37,8 @@ import { SetIntentsComponent } from './set-intents/set-intents.component';
 import { WhosOnlineComponent } from './whos-online/whos-online.component';
 
 // services
-import { AngularFireModule } from 'angularfire2';
-import { AngularFireDatabase } from 'angularfire2/database';
-import { AngularFireAuth } from 'angularfire2/auth';
 import { ConnectWeb3Service } from './services/connectWeb3.service';
+import { ConnectionService } from './services/connection.service';
 import { ColumnSpaceObserverService } from './services/column-space-observer.service';
 import { FirebaseService } from './services/firebase.service';
 import { GetOrderService } from './services/get-order.service';
@@ -62,6 +66,9 @@ import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
 import { DialogAddTokenComponent } from './dialogs/dialog-add-token/dialog-add-token.component';
 import { VerifyUserComponent } from './verify-user/verify-user.component';
+import { TosComponent } from './tos/tos.component';
+import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
+import { GetOrderDirectComponent } from './get-order-direct/get-order-direct.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -71,26 +78,28 @@ const appRoutes: Routes = [
   { path: 'whosOnline', component: WhosOnlineComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'answer', component: AnswerOrdersComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'myAccount', component: MyAccountComponent, canActivate: [RouterWebsocketActivatedService] },
+  { path: 'getOrder', component: GetOrderDirectComponent, canActivate: [RouterWebsocketActivatedService] },
+  { path: 'tos', component: TosComponent},
   { path: 'error', component: ErrorComponent},
   { path: '**', redirectTo: '' }
 ];
 
-const emailCustomConfig: AuthProviderWithCustomConfig = {
-  provider: AuthProvider.Password,
-  customConfig: {
-    requireDisplayName: true
-  }
-};
+// const emailCustomConfig: AuthProviderWithCustomConfig = {
+//   provider: AuthProvider.Password,
+//   customConfig: {
+//     requireDisplayName: true
+//   }
+// };
 
-const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
-  providers: [
-    emailCustomConfig,
-  ],
-  method: AuthMethods.Popup,
-  tos: '<your-tos-link>',
-  credentialHelper: CredentialHelper.OneTap,
-};
+// const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
+//   providers: [
+//     emailCustomConfig,
+//   ],
+//   method: AuthMethods.Popup,
+//   credentialHelper: CredentialHelper.OneTap,
+// };
 
+// tos: 'tos',
 @NgModule({
   declarations: [
     AccountComponent,
@@ -114,6 +123,9 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     MyAccountComponent,
     VerifyUserComponent,
     DialogInfoDealSealComponent,
+    TosComponent,
+    DialogYesNoComponent,
+    GetOrderDirectComponent,
   ],
   imports: [
     BrowserModule,
@@ -122,19 +134,21 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     FormsModule,
     FlexLayoutModule,
     NgMaterialModule,
-    AngularFireModule.initializeApp(environment.firebase),
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: false } // <-- debugging purposes only
     ),
+    AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
-    FirebaseUIModule.forRoot(firebaseUiAuthConfig)
+    NgxAuthFirebaseUIModule.forRoot(environment.firebase),
+    // FirebaseUIModule.forRoot(firebaseUiAuthConfig)
   ],
   providers: [
     AngularFireDatabase,
     AngularFireAuth,
     ColumnSpaceObserverService,
     ConnectWeb3Service,
+    ConnectionService,
     FirebaseService,
     MessagingService,
     GetOrderService,
@@ -150,6 +164,7 @@ const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
     DialogGetOrderComponent,
     DialogSendOfflineComponent,
     DialogInfoDealSealComponent,
+    DialogYesNoComponent
   ],
   bootstrap: [AppComponent]
 })

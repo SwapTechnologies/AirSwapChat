@@ -1,0 +1,90 @@
+<div *ngIf="messagingService.selectedPeer; else notAllowed">
+  <h1>
+    Get Order From Your Peer
+  </h1>
+  <div class='container'>
+    <mat-card class='card'>
+      <mat-card-title>
+        Ask {{messagingService.selectedPeer.peerDetails.alias}} for an Order
+      </mat-card-title>
+      <mat-card-subtitle>
+        Address: {{messagingService.selectedPeer.peerDetails.address}}
+      </mat-card-subtitle>
+      <mat-card-content>
+        <mat-form-field>
+          <input 
+          type="text" 
+          placeholder="Sell me" 
+          aria-label="makerToken" 
+          matInput 
+          [(ngModel)]='makerTokenName'
+          (ngModelChange)='enteredMakerTokenName()'
+          [matAutocomplete]="autoMaker">
+          <mat-autocomplete #autoMaker="matAutocomplete">
+            <mat-option 
+            *ngFor="let token of filteredValidatedMakerTokens | callback: filterEther" 
+            [value]="token.name">
+              {{ token.name }}
+            </mat-option>
+            <mat-optgroup label="User Added Tokens">
+              <mat-option 
+              *ngFor="let token of filteredCustomMakerTokens" 
+              [value]="token.name">
+                {{ token.name }}
+              </mat-option>
+            </mat-optgroup>
+          </mat-autocomplete>
+          <mat-hint *ngIf="makerToken">{{makerToken.address.slice(0,14)}}...</mat-hint>
+        </mat-form-field>
+        <mat-form-field>
+          <input 
+          type="text" 
+          placeholder="And I'll give you" 
+          aria-label="takerToken" 
+          matInput 
+          [(ngModel)]='takerTokenName'
+          (ngModelChange)='enteredTakerTokenName()'
+          [matAutocomplete]="autoTaker">
+          <mat-autocomplete #autoTaker="matAutocomplete">
+            <mat-option 
+            *ngFor="let token of filteredValidatedTakerTokens" 
+            [value]="token.name">
+              {{ token.name }}
+            </mat-option>
+            <mat-optgroup label="User Added Tokens">
+              <mat-option 
+              *ngFor="let token of filteredCustomTakerTokens" 
+              [value]="token.name">
+                {{ token.name }}
+              </mat-option>
+            </mat-optgroup>
+          </mat-autocomplete>
+          <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
+        </mat-form-field>
+      </mat-card-content>
+
+    <mat-card-content>
+      <mat-form-field *ngIf="makerToken">
+        <input 
+        matInput 
+        number 
+        placeholder="Sell me following amount of  {{makerToken.symbol}}" 
+        [(ngModel)]="makerAmount">
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions>
+      <button *ngIf="messagingService.selectedPeer.peerDetails.address 
+      && makerToken && takerToken && stringIsValidNumber(makerAmount)"
+      mat-button 
+      (click)="getOrder()">
+      ASK FOR OFFER
+      </button>
+    </mat-card-actions>
+    
+    </mat-card>
+  </div>
+</div>
+
+<ng-template #notAllowed>
+  You do not know the way.
+</ng-template>

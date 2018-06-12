@@ -1,9 +1,40 @@
-<div *ngIf="this.web3service.connectionEstablished; else notConnected">
-  <mat-icon>check</mat-icon> Account: {{this.web3service.connectedAccount}}
-</div>
-<ng-template #notConnected>
-  Login with Metamask 
-  <span *ngIf="!this.web3service.correctNetwork">
-    to {{this.web3service.desiredNetwork}}
+<div>
+  <!-- Web3? -->
+  <span 
+  *ngIf="connectionService.web3Connected" 
+  class="onlineDot"
+  matTooltip="Connected to Web3"></span>
+  <span
+  *ngIf="!connectionService.web3Connected"
+  class="offlineDot"
+  matTooltip="Not connected to Web3. Check Metamask"></span>  
+  <!--  -->
+  <span 
+  *ngIf="connectionService.wsConnected" 
+  class="onlineDot"
+  matTooltip="Connected to AirSwap"></span>
+  <span
+  *ngIf="!connectionService.wsConnected"
+  class="offlineDot"
+  matTooltip="Not connected to AirSwap. You have to sign that you own the account."></span>  
+
+  <!-- Database ? -->
+  <span 
+  *ngIf="connectionService.firebaseConnected" 
+  class="onlineDot"
+  matTooltip="Connected to Database"></span>
+  <span
+  *ngIf="!connectionService.firebaseConnected"
+  class="offlineDot"
+  matTooltip="Not connected to Database. You need to login with your verified e-mail."></span>  
+
+  <span *ngIf="this.web3service.connectionEstablished; else notConnected">
+  Account: {{this.web3service.connectedAccount}}
   </span>
-</ng-template>
+  <ng-template #notConnected>
+    Login with Metamask 
+    <span *ngIf="!this.web3service.correctNetwork">
+      to {{this.web3service.desiredNetwork}}
+    </span>
+  </ng-template>
+</div>

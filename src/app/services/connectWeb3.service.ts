@@ -72,7 +72,10 @@ export class ConnectWeb3Service {
 
       // log whether connection to web3 is established
       this.connectionService.web3Connected = this.connectionEstablished;
-    }).catch((error) => {console.log('Error while checking connection.'); });
+    }).catch((error) => {
+      console.log('Error while checking connection.');
+      this.connectionService.web3Connected = this.connectionEstablished;
+    });
   }
 
   connectToNode(): void {

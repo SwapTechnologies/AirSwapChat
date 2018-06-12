@@ -35,6 +35,12 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   public showBuyButton = false;
   public initialized = false;
 
+  public makerTokenName;
+  public filteredValidatedMakerTokens;
+  public filteredCustomMakerTokens;
+  public takerTokenName;
+  public filteredValidatedTakerTokens;
+  public filteredCustomTakerTokens;
   constructor(
     private airswapDexService: AirswapdexService,
     private connectionService: ConnectionService,
@@ -44,6 +50,10 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.filteredValidatedMakerTokens = this.tokenService.validatedTokens;
+    this.filteredCustomMakerTokens = this.tokenService.customTokens;
+    this.filteredValidatedTakerTokens = this.tokenService.validatedTokens;
+    this.filteredCustomTakerTokens = this.tokenService.customTokens;
     this.initialize();
   }
 
@@ -58,6 +68,38 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
       this.balanceTooLow = this.astBalance - 250 * this.myIntents.length < 250;
       this.initialized = true;
     });
+  }
+
+  enteredMakerTokenName(): void {
+    this.filteredValidatedMakerTokens = this.tokenService.validatedTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.makerTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.makerTokenName.toLowerCase());
+    });
+    this.filteredCustomMakerTokens = this.tokenService.customTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.makerTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.makerTokenName.toLowerCase());
+    });
+
+    const token = this.tokenService.getTokenByName(this.makerTokenName);
+    if (token) {
+      this.makerToken = token;
+    }
+  }
+
+  enteredTakerTokenName(): void {
+    this.filteredValidatedTakerTokens = this.tokenService.validatedTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.takerTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.takerTokenName.toLowerCase());
+    });
+    this.filteredCustomTakerTokens = this.tokenService.customTokens.filter(x => {
+      return x.name.toLowerCase().includes(this.takerTokenName.toLowerCase())
+      || x.symbol.toLowerCase().includes(this.takerTokenName.toLowerCase());
+    });
+
+    const token = this.tokenService.getTokenByName(this.takerTokenName);
+    if (token) {
+      this.takerToken = token;
+    }
   }
 
   getMyIntents(): Promise<any> {

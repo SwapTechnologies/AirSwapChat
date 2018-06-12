@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-
 // services
 import { AngularFireAuth } from 'angularfire2/auth';
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
@@ -19,6 +18,7 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { Title } from '@angular/platform-browser';
 
 import {MatSnackBar} from '@angular/material';
+import { AuthProcessService } from 'ngx-auth-firebaseui';
 
 @Component({
   selector: 'app-mainframe',
@@ -53,6 +53,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
     public wsService: WebsocketService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
+    private authProcess: AuthProcessService
   ) {}
 
 
@@ -66,12 +67,20 @@ export class MainframeComponent implements OnInit, OnDestroy {
       this.timer.unsubscribe();
     }
   }
+  printUser(event) {
+    console.log('what', event);
+  }
+
+  printError(event) {
+    console.error('braaap', event);
+  }
 
   authUser(): void {
     // listen for auth of user
     this.afAuth.auth.onAuthStateChanged((user) => { // triggers everytime the auth state changes
       if (user && user.uid) { // is user logged in?
         this.connectionService.firebaseConnected = true;
+        this.authProcess.isLoading = false;
         this.connectionService.loggedInUser.alias = user.displayName;
         this.connectionService.loggedInUser.uid = user.uid;
         if (this.connectionService.connected) { // all connections standing? start!
@@ -106,7 +115,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
           })
           .catch((error) => {
             this.firebaseService.logOffUser();
-            this.snackBar.open('Ethereum address is already registered with another account.');
+            this.snackBar.open('Ethereum address is already registered with another registered account. ' +
+              'Select an unused Ethereum address to connect it with your account.');
           });
         } else { // uid in address found in database
           if (match.addressChanged) { // current public address different than before?

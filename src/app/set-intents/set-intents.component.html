@@ -53,41 +53,53 @@
         <mat-icon>autorenew</mat-icon>
       </button>
       <mat-form-field>
-        <mat-select 
+        <input 
+        type="text" 
         placeholder="Add signal you sell" 
-        [(value)]="makerToken">
+        aria-label="makerToken" 
+        matInput 
+        [(ngModel)]='makerTokenName'
+        (ngModelChange)='enteredMakerTokenName()'
+        [matAutocomplete]="autoMaker">
+        <mat-autocomplete #autoMaker="matAutocomplete">
           <mat-option 
-          *ngFor="let token of tokenService.validatedTokens | callback: filterEther" 
-          [value]='token'>
-            {{token.name}}
+          *ngFor="let token of filteredValidatedMakerTokens | callback: filterEther" 
+          [value]="token.name">
+            {{ token.name }}
           </mat-option>
           <mat-optgroup label="User Added Tokens">
             <mat-option 
-            *ngFor="let token of tokenService.customTokens" 
-            [value]="token">
+            *ngFor="let token of filteredCustomMakerTokens" 
+            [value]="token.name">
               {{ token.name }}
             </mat-option>
           </mat-optgroup>
-        </mat-select>
+        </mat-autocomplete>
         <mat-hint *ngIf="makerToken">{{makerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <mat-form-field>
-        <mat-select 
+        <input 
+        type="text" 
         placeholder="when others give you" 
-        [(value)]="takerToken">
+        aria-label="takerToken" 
+        matInput 
+        [(ngModel)]='takerTokenName'
+        (ngModelChange)='enteredTakerTokenName()'
+        [matAutocomplete]="autoTaker">
+        <mat-autocomplete #autoTaker="matAutocomplete">
           <mat-option 
-          *ngFor="let token of tokenService.validatedTokens" 
-          [value]='token'>
-            {{token.name}}
+          *ngFor="let token of filteredValidatedTakerTokens" 
+          [value]="token.name">
+            {{ token.name }}
           </mat-option>
           <mat-optgroup label="User Added Tokens">
             <mat-option 
-            *ngFor="let token of tokenService.customTokens" 
-            [value]="token">
+            *ngFor="let token of filteredCustomTakerTokens" 
+            [value]="token.name">
               {{ token.name }}
             </mat-option>
           </mat-optgroup>
-        </mat-select>
+        </mat-autocomplete>
         <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <button 

@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 
 // services
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
@@ -32,6 +33,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     public wsService: WebsocketService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
+    private router: Router,
   ) { }
 
   ngOnInit() {
@@ -91,5 +93,9 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
       this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
       this.userOnlineService.setPeerToFriend(this.messageService.selectedPeer.peerDetails.uid);
     }
+  }
+
+  initGetOrderWithSelectedPeer(): void {
+    this.router.navigate(['getOrder']);
   }
 }

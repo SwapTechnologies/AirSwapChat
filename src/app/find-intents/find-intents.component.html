@@ -20,9 +20,6 @@
       <mat-icon>autorenew</mat-icon>
     </button>
 
-    <!-- [formControl]="selectedTokenNameControl"
-    (ngOnChanges)="showIntents()" -->
-    
     <mat-form-field>
       <input 
       type="text" 
@@ -33,11 +30,20 @@
       (ngModelChange)='enteredTokenName()'
       [matAutocomplete]="auto">
       <mat-autocomplete #auto="matAutocomplete">
-        <mat-option 
-        *ngFor="let token of filteredValidatedTokens | callback: filterEther" 
-        [value]="token.name">
-          {{ token.name }}
-        </mat-option>
+        <span *ngIf="selectedRole === 'maker'; else takerSearch">
+          <mat-option 
+          *ngFor="let token of filteredValidatedTokens | callback: filterEther" 
+          [value]="token.name">
+            {{ token.name }}
+          </mat-option>
+        </span>
+        <ng-template #takerSearch>
+          <mat-option
+          *ngFor="let token of filteredValidatedTokens" 
+          [value]='token.name'>
+            {{token.name}}
+          </mat-option>
+        </ng-template>
         <mat-optgroup label="User Added Tokens">
           <mat-option 
           *ngFor="let token of filteredCustomTokens" 
@@ -48,37 +54,6 @@
       </mat-autocomplete>
       <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
     </mat-form-field>
-  
-    <!-- <mat-form-field>
-      <mat-select 
-      placeholder="Search Token" 
-      [(value)]="selectedToken"
-      (selectionChange)="showIntents()">
-        <span *ngIf="selectedRole === 'maker'; else takerSearch">
-          <mat-option
-          *ngFor="let token of tokenService.validatedTokens | callback: filterEther"
-          [value]='token'>
-          {{token.name}}
-          </mat-option>
-        </span>
-        <ng-template #takerSearch>
-          <mat-option
-          *ngFor="let token of tokenService.validatedTokens" 
-          [value]='token'>
-            {{token.name}}
-          </mat-option>
-        </ng-template>
-
-        <mat-optgroup label="User Added Tokens">
-          <mat-option 
-          *ngFor="let token of tokenService.customTokens" 
-          [value]="token">
-            {{ token.name }}
-          </mat-option>
-        </mat-optgroup>
-      </mat-select>
-      <mat-hint *ngIf="selectedToken">{{selectedToken.address.slice(0,14)}}...</mat-hint>
-    </mat-form-field> -->
     
     <mat-form-field>
       <mat-select 

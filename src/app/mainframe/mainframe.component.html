@@ -119,11 +119,18 @@
             </button>
           </div>
           
-          <div *ngIf="connectionService.web3Connected
-                  && connectionService.wsConnected
-                  && !connectionService.firebaseConnected"
+          <div 
+          *ngIf="connectionService.web3Connected
+          && connectionService.wsConnected
+          && !(connectionService.firebaseConnected)"
           class="firebase_auth_container">
-            <firebase-ui class="firebase_auth"></firebase-ui>
+            <ngx-auth-firebaseui 
+            [providers]="[]"
+            [guestEnabled]="false"
+            (onSuccess)="printUser($event)"
+            (onError)="printError($event)"
+            >
+            </ngx-auth-firebaseui>
           </div>
           <div class="firebase_auth_container"
           *ngIf="this.connectionService.connected && !firebaseService.userIsVerified">

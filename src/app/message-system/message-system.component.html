@@ -5,7 +5,7 @@
     <mat-card>
       <mat-card-actions>
         <mat-form-field *ngIf="messageService.selectedPeer && messageService.connectedPeers.length > 0"
-            style="width: 100%;">
+            >
           <mat-select 
           placeholder="Select Peer" 
           [disabled]="messageService.sendingMessage"
@@ -19,6 +19,7 @@
               <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>  
             </mat-option>
           </mat-select>
+        </mat-form-field>
           <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
           <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
           <button *ngIf="messageService.selectedPeer && !messageService.selectedPeer.peerDetails.inMyPeerList"
@@ -31,6 +32,15 @@
           (click)="addPeerAsFriend()">
             <mat-icon>person_add</mat-icon>
           </button>
+          <button *ngIf="messageService.selectedPeer && messageService.selectedPeer.peerDetails.online"
+            mat-button
+            mat-icon-button 
+            matSuffix
+            matTooltip="Get Order From {{messageService.selectedPeer.peerDetails.alias}}"
+            color="primary"
+            (click)="initGetOrderWithSelectedPeer()">
+            <mat-icon>attach_money</mat-icon>
+          </button>
           <button 
             mat-button
             mat-icon-button 
@@ -40,7 +50,6 @@
             (click)="openDialogAddPeer()">
             <mat-icon>add</mat-icon>
           </button>
-        </mat-form-field>
         <button 
           *ngIf="messageService.connectedPeers.length === 0"
           mat-button

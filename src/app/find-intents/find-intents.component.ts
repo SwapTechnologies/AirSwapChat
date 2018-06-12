@@ -1,9 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Subscription } from 'rxjs/Subscription';
-import { FormControl } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
-import { map, startWith } from 'rxjs/operators';
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
