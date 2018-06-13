@@ -26,7 +26,7 @@
             [value]="token.name">
               {{ token.name }}
             </mat-option>
-            <mat-optgroup label="User Added Tokens">
+            <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomMakerTokens && filteredCustomMakerTokens.length > 0">
               <mat-option 
               *ngFor="let token of filteredCustomMakerTokens" 
               [value]="token.name">
@@ -51,7 +51,7 @@
             [value]="token.name">
               {{ token.name }}
             </mat-option>
-            <mat-optgroup label="User Added Tokens">
+            <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomTakerTokens && filteredCustomTakerTokens.length > 0">
               <mat-option 
               *ngFor="let token of filteredCustomTakerTokens" 
               [value]="token.name">
@@ -63,6 +63,20 @@
         </mat-form-field>
       </mat-card-content>
 
+    
+    <mat-card-content *ngIf="makerToken && takerToken">
+      <i>In peers wallet are:</i> 
+      {{makerBalanceMakerToken / makerDecimals}}
+      {{makerToken.symbol}},
+      {{makerBalanceTakerToken / takerDecimals}}
+      {{takerToken.symbol}}
+      <br/>
+      <i>In your wallet are:</i> 
+      {{takerBalanceTakerToken / takerDecimals}}
+      {{takerToken.symbol}},
+      {{takerBalanceMakerToken / makerDecimals}}
+      {{makerToken.symbol}}
+    </mat-card-content>
     <mat-card-content>
       <mat-form-field *ngIf="makerToken">
         <input 
@@ -73,14 +87,24 @@
       </mat-form-field>
     </mat-card-content>
     <mat-card-actions>
-      <button *ngIf="messagingService.selectedPeer.peerDetails.address 
-      && makerToken && takerToken && stringIsValidNumber(makerAmount)"
+      <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
+      makerToken && takerToken && stringIsValidNumber(makerAmount) &&
+      takerTakerTokenApproval > 0"
       mat-button 
       (click)="getOrder()">
       ASK FOR OFFER
       </button>
+      <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
+      takerToken && takerTakerTokenApproval == 0"
+      mat-button 
+      (click)="approveTakerToken()">
+      APPROVE {{this.takerToken.symbol}}
+      </button>
+        
     </mat-card-actions>
-    
+    <mat-card-content>
+      <i>{{responseMessage}}</i>
+    </mat-card-content>
     </mat-card>
   </div>
 </div>

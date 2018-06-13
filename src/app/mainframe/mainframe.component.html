@@ -122,18 +122,20 @@
           <div 
           *ngIf="connectionService.web3Connected
           && connectionService.wsConnected
-          && !(connectionService.firebaseConnected)"
+          && !(registrationCompleted)"
           class="firebase_auth_container">
             <ngx-auth-firebaseui 
             [providers]="[]"
             [guestEnabled]="false"
-            (onSuccess)="printUser($event)"
-            (onError)="printError($event)"
+            (onSuccess)="loggedIn($event)"
+            (onError)="signInError($event)"
             >
             </ngx-auth-firebaseui>
           </div>
           <div class="firebase_auth_container"
-          *ngIf="this.connectionService.connected && !firebaseService.userIsVerified">
+          *ngIf="this.connectionService.connected
+                && registrationCompleted
+                && !firebaseService.userIsVerified">
             <app-verify-user class="firebase_auth"></app-verify-user>
           </div>
       </ng-template>

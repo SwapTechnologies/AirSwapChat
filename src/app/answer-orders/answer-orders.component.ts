@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
 import { MatDialog } from '@angular/material';
 
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
@@ -59,6 +58,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return (this.takerAmount[order.id] <=
       (order.takerBalanceTakerToken / order.takerDecimals));
   }
+
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();

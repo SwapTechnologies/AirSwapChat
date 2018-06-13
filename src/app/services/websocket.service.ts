@@ -31,8 +31,16 @@ export class WebsocketService {
     this.ws = new WebSocket(this.url);
     this.websocketSubject = new Subject<string>();
     this.ws.onmessage = (event) => this.websocketSubject.next(event.data);
-    this.ws.onerror = (event) => this.websocketSubject.error(event);
-    this.ws.onclose = (event) => this.websocketSubject.complete();
+    this.ws.onerror = (event) => {
+      console.log('Websocket has thrown an error.');
+      this.connectionService.wsConnected = false;
+      this.websocketSubject.error(event);
+    };
+    this.ws.onclose = (event) => {
+      console.log('Websocket connection has closed.');
+      this.connectionService.wsConnected = false;
+      this.websocketSubject.complete();
+    };
 
     // handshake
     return new Promise((resolve, reject) => {

@@ -5,7 +5,7 @@ import { ConnectWeb3Service } from './connectWeb3.service';
 import { TokenService, EtherAddress } from './token.service';
 import { Erc20Service } from './erc20.service';
 import { FirebaseService } from './firebase.service';
-
+import { PriceInfoService } from './price-info.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -15,6 +15,7 @@ export class OrderRequestsService {
   constructor(
     private erc20service: Erc20Service,
     private firebaseService: FirebaseService,
+    private priceInfoService: PriceInfoService,
     private web3service: ConnectWeb3Service,
     private tokenService: TokenService
   ) { }
@@ -34,6 +35,17 @@ export class OrderRequestsService {
     order['bothTokensValid'] = helper_maker.isValid && helper_taker.isValid;
     order['makerDecimals'] = 10 ** order.makerProps.decimals;
     order['takerDecimals'] = 10 ** order.takerProps.decimals;
+
+    this.priceInfoService.getPriceOfToken(
+      helper_maker.token.symbol + ',' + helper_taker.token.symbol)
+    .then(priceResult => {
+      if (priceResult) {
+        order['UsdPrices'] = {
+          makerToken: priceResult[helper_maker.token.symbol]['USD'],
+          takerToken: priceResult[helper_taker.token.symbol]['USD']
+        };
+      }
+    });
 
     const promiseList = [];
 

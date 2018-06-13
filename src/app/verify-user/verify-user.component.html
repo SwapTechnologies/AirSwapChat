@@ -3,6 +3,14 @@
     Please verify your account
   </mat-card-title>
   <mat-card-content>
-    <i>{{responseMessage}}</i>
+    <i>Follow the link that we sent to {{this.firebaseService.user.email}} and 
+      then log in again</i>
   </mat-card-content>
+  <mat-card-actions>
+    <button mat-button 
+    (click)="sendVerificationMail()"
+    [disabled]="sendMail">
+      SEND MAIL AGAIN
+    </button>
+  </mat-card-actions>
 </mat-card>

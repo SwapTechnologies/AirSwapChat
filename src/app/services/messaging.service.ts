@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
 
 // services
-import { ConnectWeb3Service } from './connectWeb3.service';
 import { ConnectionService } from './connection.service';
 import { FirebaseService } from './firebase.service';
 import { UserOnlineService } from './user-online.service';
 import { WebsocketService } from './websocket.service';
-
-import { Message, StoredMessage, OtherUser } from '../types/types';
 
 import { MatDialog } from '@angular/material';
 import { DialogSendOfflineComponent } from '../message-system/dialog-send-offline/dialog-send-offline.component';
@@ -20,7 +17,7 @@ export class MessagingService {
   public connectedPeers: any[] = [];
   public selectedPeer: any;
 
-  private wsListenMessagesSubscription: any;
+  private wsListenMessagesSubscription;
 
   public showMessenger = false;
   public gotMessagesFromDatabase = false;
@@ -28,7 +25,6 @@ export class MessagingService {
 
 
   constructor(
-    private web3service: ConnectWeb3Service,
     private wsService: WebsocketService,
     private connectionService: ConnectionService,
     private firebaseService: FirebaseService,
@@ -140,6 +136,7 @@ export class MessagingService {
 
   startMessenger(): void {
     console.log('Starting the messenger.');
+    console.log('Looking for offline messages.');
     // check firebase for unread messages
     const promiseList = [];
     this.firebaseService.getUnreceivedMessages()
@@ -164,6 +161,7 @@ export class MessagingService {
 
     Promise.all(promiseList)
     .then(() => {
+      console.log('Start listening for new messages.');
       // start a listener that ears for messages
       this.wsListenMessagesSubscription = this.wsService.websocketSubject
       .subscribe(message => {

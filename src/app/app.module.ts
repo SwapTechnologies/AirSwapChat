@@ -44,6 +44,7 @@ import { FirebaseService } from './services/firebase.service';
 import { GetOrderService } from './services/get-order.service';
 import { MessagingService } from './services/messaging.service';
 import { OrderRequestsService } from './services/order-requests.service';
+import { PriceInfoService } from './services/price-info.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
 import { TokenService } from './services/token.service';
 import { UserOnlineService } from './services/user-online.service';
@@ -69,6 +70,7 @@ import { VerifyUserComponent } from './verify-user/verify-user.component';
 import { TosComponent } from './tos/tos.component';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
 import { GetOrderDirectComponent } from './get-order-direct/get-order-direct.component';
+import { DialogReauthenticateComponent } from './dialogs/dialog-reauthenticate/dialog-reauthenticate.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -126,6 +128,7 @@ const appRoutes: Routes = [
     TosComponent,
     DialogYesNoComponent,
     GetOrderDirectComponent,
+    DialogReauthenticateComponent,
   ],
   imports: [
     BrowserModule,
@@ -153,6 +156,7 @@ const appRoutes: Routes = [
     MessagingService,
     GetOrderService,
     OrderRequestsService,
+    PriceInfoService,
     RouterWebsocketActivatedService,
     TokenService,
     UserOnlineService,
@@ -164,7 +168,8 @@ const appRoutes: Routes = [
     DialogGetOrderComponent,
     DialogSendOfflineComponent,
     DialogInfoDealSealComponent,
-    DialogYesNoComponent
+    DialogYesNoComponent,
+    DialogReauthenticateComponent,
   ],
   bootstrap: [AppComponent]
 })

@@ -5,7 +5,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { WebsocketService } from '../services/websocket.service';
 
 import { MatDialog } from '@angular/material';
-import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.component';
+import { DialogReauthenticateComponent } from '../dialogs/dialog-reauthenticate/dialog-reauthenticate.component';
 
 @Component({
   selector: 'app-my-account',
@@ -55,22 +55,21 @@ export class MyAccountComponent implements OnInit {
   }
 
   deleteMe(): void {
-    const dialogRef = this.dialog.open(DialogYesNoComponent, {
+    const dialogRef = this.dialog.open(DialogReauthenticateComponent, {
       width: '400px',
       data: {
-        text: 'This will erase you permanently from the database and your peer list will be lost afterwards. Are you sure?',
-        yes: 'DELETE ME',
-        no: 'CANCEL',
-        yesColor: 'warn',
-        noColor: 'primary'
+        text: 'This will erase you permanently from the database and your peer list will be lost afterwards. ' +
+              'Enter your password again to proceed.',
       }
     });
 
-    dialogRef.afterClosed().subscribe(isSure => {
-      if (isSure) {
-        this.firebaseService.deleteUser()
+    dialogRef.afterClosed().subscribe(credentials => {
+      if (credentials) {
+        this.firebaseService.deleteUser(credentials)
         .then(() => {
-          this.wsService.closeConnection();
+          if (!this.connectionService.firebaseConnected) {
+            this.wsService.closeConnection();
+          }
         })
         .catch(error => {
           if (error.code && error.code === 'auth/requires-recent-login') {

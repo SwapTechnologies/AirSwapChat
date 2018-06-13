@@ -4,25 +4,25 @@
   <div class="select_peer_card">
     <mat-card>
       <mat-card-actions>
-        <mat-form-field *ngIf="messageService.selectedPeer && messageService.connectedPeers.length > 0"
-            >
-          <mat-select 
-          placeholder="Select Peer" 
-          [disabled]="messageService.sendingMessage"
-          [(value)]="messageService.selectedPeer">
-            <mat-option *ngFor="let peer of messageService.connectedPeers"
-            [value]="peer"
-            style="width: 100%;">
-              {{peer.peerDetails.alias}}
-              <span *ngIf="peer.hasUnreadMessages" class="unreadMessagesDot"></span>
-              <span *ngIf="peer.peerDetails.online" class="onlineDot"></span>
-              <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>  
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <span *ngIf="messageService.selectedPeer">
+          <mat-form-field *ngIf="messageService.connectedPeers.length > 0">
+            <mat-select 
+            placeholder="Select Peer" 
+            [disabled]="messageService.sendingMessage"
+            [(value)]="messageService.selectedPeer">
+              <mat-option *ngFor="let peer of messageService.connectedPeers"
+              [value]="peer"
+              style="width: 100%;">
+                {{peer.peerDetails.alias}}
+                <span *ngIf="peer.hasUnreadMessages" class="unreadMessagesDot"></span>
+                <span *ngIf="peer.peerDetails.online" class="onlineDot"></span>
+                <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>  
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
           <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
           <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
-          <button *ngIf="messageService.selectedPeer && !messageService.selectedPeer.peerDetails.inMyPeerList"
+          <button *ngIf="!messageService.selectedPeer.peerDetails.inMyPeerList"
           mat-button
           mat-icon-button 
           matSuffix
@@ -32,7 +32,7 @@
           (click)="addPeerAsFriend()">
             <mat-icon>person_add</mat-icon>
           </button>
-          <button *ngIf="messageService.selectedPeer && messageService.selectedPeer.peerDetails.online"
+          <button *ngIf="messageService.selectedPeer.peerDetails.online"
             mat-button
             mat-icon-button 
             matSuffix
@@ -41,17 +41,8 @@
             (click)="initGetOrderWithSelectedPeer()">
             <mat-icon>attach_money</mat-icon>
           </button>
-          <button 
-            mat-button
-            mat-icon-button 
-            matSuffix
-            matTooltip="Add new peer from address"
-            color="primary"
-            (click)="openDialogAddPeer()">
-            <mat-icon>add</mat-icon>
-          </button>
+        </span>
         <button 
-          *ngIf="messageService.connectedPeers.length === 0"
           mat-button
           mat-icon-button 
           matSuffix

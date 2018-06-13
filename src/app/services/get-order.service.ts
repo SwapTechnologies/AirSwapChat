@@ -5,6 +5,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { TokenService } from '../services/token.service';
 import { WebsocketService } from './websocket.service';
 
+import { PriceInfoService } from './price-info.service';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Injectable({
@@ -19,6 +20,7 @@ export class GetOrderService {
 
   constructor(
     private firebaseService: FirebaseService,
+    private priceInfoService: PriceInfoService,
     private tokenService: TokenService,
     private wsService: WebsocketService,
   ) { }
@@ -50,6 +52,17 @@ export class GetOrderService {
           signedOrder['takerProps'] = this.tokenService.getToken(signedOrder['takerToken']);
           signedOrder['makerDecimals'] = 10 ** signedOrder['makerProps'].decimals;
           signedOrder['takerDecimals'] = 10 ** signedOrder['takerProps'].decimals;
+
+          this.priceInfoService.getPriceOfToken(
+            signedOrder.makerProps.symbol + ',' + signedOrder.takerProps.symbol)
+          .then(priceResult => {
+            if (priceResult) {
+              order['UsdPrices'] = {
+                makerToken: priceResult[signedOrder.makerProps.symbol]['USD'],
+                takerToken: priceResult[signedOrder.takerProps.symbol]['USD']
+              };
+            }
+          });
 
           signedOrder['timedOut'] = false;
           signedOrder['timer'] = TimerObservable.create(0, 1000)

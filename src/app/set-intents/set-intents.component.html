@@ -67,7 +67,7 @@
           [value]="token.name">
             {{ token.name }}
           </mat-option>
-          <mat-optgroup label="User Added Tokens">
+          <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomMakerTokens && filteredCustomMakerTokens.length > 0">
             <mat-option 
             *ngFor="let token of filteredCustomMakerTokens" 
             [value]="token.name">
@@ -92,7 +92,7 @@
           [value]="token.name">
             {{ token.name }}
           </mat-option>
-          <mat-optgroup label="User Added Tokens">
+          <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomTakerTokens && filteredCustomTakerTokens.length > 0">
             <mat-option 
             *ngFor="let token of filteredCustomTakerTokens" 
             [value]="token.name">

@@ -37,6 +37,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public numWhosOnline = 0;
 
   public timer: any;
+  public registrationCompleted = false;
 
   constructor(
     private afAuth: AngularFireAuth,
@@ -103,6 +104,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   connectionInitialized(): void {
+    // triggered either when a firebase connection is established or a websocket connection
+    // if both are available -> access page
     if (this.connectionService.connected
     && this.firebaseService.user.emailVerified) {
       this.firebaseService.userIsVerified = true;
@@ -134,6 +137,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   finalizeInitialization(): void {
+    console.log('logged in User', this.firebaseService.user);
     // read number of unread messages & deals
     this.timer = TimerObservable.create(0, 2000)
     .subscribe( () => this.updateNumbers());
@@ -195,5 +199,20 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
   setTitle(newTitle: string) {
     this.titleService.setTitle( newTitle );
+  }
+
+  loggedIn(event) {
+    console.log('You are logged in now.');
+    this.registrationCompleted = true;
+    setTimeout(() => {
+      this.firebaseService.logOffUser();
+      this.registrationCompleted = false;
+    }, 10000);
+    // this.firebaseService.logOffUser();
+    // this.connectionInitialized();
+  }
+
+  signInError(event) {
+
   }
 }

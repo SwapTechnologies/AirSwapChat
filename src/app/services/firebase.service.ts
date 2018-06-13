@@ -1,10 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
+import { MatSnackBar } from '@angular/material';
+
 // firebase
+import { AngularFirestore,  AngularFirestoreDocument } from 'angularfire2/firestore';
 import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { auth, User, database } from 'firebase/app';
+import { UserInfo } from 'firebase';
 
 // services
 import { Erc20Service } from './erc20.service';
@@ -32,6 +36,8 @@ export class FirebaseService {
     private connectionService: ConnectionService,
     private erc20Service: Erc20Service,
     private afAuth: AngularFireAuth,
+    private afs: AngularFirestore,
+    private snackbar: MatSnackBar
   ) { }
 
 
@@ -88,7 +94,7 @@ export class FirebaseService {
     .then(() => this.afAuth.auth.signOut())
     .then(() => {
       this.userIsVerified = false;
-      this.connectionService.loggedInUser.uid = '';
+      this.connectionService.loggedInUser.uid = null;
       this.connectionService.firebaseConnected = false;
     });
   }
@@ -97,15 +103,27 @@ export class FirebaseService {
     return this.afAuth.auth.currentUser;
   }
 
-  deleteUser(): Promise<any> {
-    return this.afAuth.auth.currentUser.delete()
-    .then(() => {
-      const uid = this.connectionService.loggedInUser.uid;
-      const address = this.connectionService.loggedInUser.address;
+  deleteUser(credentials): Promise<any> {
+    const uid = this.connectionService.loggedInUser.uid;
+    const address = this.connectionService.loggedInUser.address;
+
+    return this.user.reauthenticateAndRetrieveDataWithCredential(credentials)
+    .then(fulfilled => {
+      return this.afs.collection('users').doc(uid).delete();
+    }).then(() => {
+      return this.afAuth.auth.currentUser.delete();
+    }).then(() => {
       this.db.object('registeredAddresses/' + address).remove();
       this.db.object('messaging/' + uid).remove();
       this.db.object('users/' + uid).remove();
+      console.log('Deleted ', uid);
       this.logOffUser();
+    }).catch ((error) => {
+      if (error.code && error.code === 'auth/wrong-password') {
+        this.snackbar.open('Invalid Password.', 'Ok', { duration: 3000 });
+      } else {
+        console.log('Unexpected error while delete user\'s account', error);
+      }
     });
   }
 

@@ -44,7 +44,7 @@
             {{token.name}}
           </mat-option>
         </ng-template>
-        <mat-optgroup label="User Added Tokens">
+        <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomTokens && filteredCustomTokens.length > 0">
           <mat-option 
           *ngFor="let token of filteredCustomTokens" 
           [value]="token.name">

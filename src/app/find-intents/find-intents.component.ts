@@ -7,7 +7,6 @@ import { AirswapdexService } from '../services/airswapdex.service';
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectionService } from '../services/connection.service';
 import { Erc20Service } from '../services/erc20.service';
-import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
 import { GetOrderService } from '../services/get-order.service';
 import { TokenService, EtherAddress } from '../services/token.service';
@@ -44,15 +43,14 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   public pageSize = 6;
   public pageIndex = 0;
 
-  public filteredValidatedTokens;
-  public filteredCustomTokens;
+  public filteredValidatedTokens = [];
+  public filteredCustomTokens = [];
 
   constructor(
     private airswapDexService: AirswapdexService,
     public columnSpaceObserver: ColumnSpaceObserverService,
     private connectionService: ConnectionService,
     private erc20services: Erc20Service,
-    private firebaseService: FirebaseService,
     private messageService: MessagingService,
     public getOrderService: GetOrderService,
     public tokenService: TokenService,
@@ -63,16 +61,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     ) { }
 
   ngOnInit() {
-
-    // this.selectedTokenNameControl.valueChanges()
-    // .subscribe((value) => {
-    //   console.log('value');
-    // });
-    // this.filteredOptions = this.myControl.valueChanges
-    // .pipe(
-    //   startWith(''),
-    //   map(val => this.filter(val))
-    // );
     this.filteredValidatedTokens = this.tokenService.validatedTokens;
     this.filteredCustomTokens = this.tokenService.customTokens;
   }
