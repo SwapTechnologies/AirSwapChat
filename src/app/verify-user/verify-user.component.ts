@@ -10,7 +10,7 @@ export class VerifyUserComponent implements OnInit {
 
   public sendMail = false;
   constructor(
-    private firebaseService: FirebaseService,
+    public firebaseService: FirebaseService,
   ) { }
 
   ngOnInit() {

@@ -4,10 +4,11 @@ node_js:
 cache: pip
 before_install:
 - npm i -g npm@latest
+- npm install -g @angular/cli
 install:
 - npm i
 script:
-- npm run build
+- ng build --prod --aot --vendor-chunk --common-chunk --delete-output-path --build-optimizer
 before_deploy:
 - pip install awscli --user
 deploy:
