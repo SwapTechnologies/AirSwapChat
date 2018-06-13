@@ -8,7 +8,7 @@ before_install:
 install:
 - npm i
 script:
-- ng build --prod --aot --vendor-chunk --common-chunk --delete-output-path --build-optimizer
+- ng build --prod --aot --build-optimizer
 before_deploy:
 - pip install awscli --user
 deploy:
