@@ -1,0 +1,57 @@
+<div>
+    <h1 mat-dialog-title>
+      Details of the Offer
+    </h1>
+    <p>
+      By signing you, you accept the following trade details
+    </p>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Maker Address (You)"
+      readonly='true'
+      [(ngModel)]="data.makerAddress">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Maker Token ({{data.makerProps.name}})"
+      readonly='true'
+      [(ngModel)]="data.makerToken">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Maker Amount (Decimals: {{data.makerProps.decimals}})"
+      readonly='true'
+      [(ngModel)]="data.makerAmount">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Taker Address ({{data.takerAddress}})"
+      readonly='true'
+      [(ngModel)]="data.takerAddress">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Taker Token ({{data.takerProps.name}})"
+      readonly='true'
+      [(ngModel)]="data.takerToken">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Taker Amount (Decimals: {{data.takerProps.decimals}})"
+      readonly='true'
+      [(ngModel)]="data.takerAmount">
+    </mat-form-field>
+    <mat-form-field style="width: 100%;">
+      <input
+      matInput
+      placeholder="Expiration of order in minutes after signature"
+      readonly='true'
+      [(ngModel)]="data.expirationMinutes">
+    </mat-form-field>
+  </div>

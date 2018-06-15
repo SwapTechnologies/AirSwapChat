@@ -3,10 +3,11 @@ import { Subscription } from 'rxjs/Subscription';
 import { MatDialog } from '@angular/material';
 
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
+import { DialogInfoOrderOfferComponent } from '../dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
-import { ColumnSpaceObserverService } from '../services/column-space-observer.service'
+import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Erc20Service } from '../services/erc20.service';
 import { WebsocketService } from '../services/websocket.service';
@@ -93,8 +94,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   answerOrder(order: any): void {
     if (Number(this.takerAmount[order.id]) >= 0 && this.takerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
-      order['takerAmount'] = (Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals'])).toString();
-      order['takerAmount'] = this.erc20Service.toFixed(order['takerAmount']);
+      order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
       order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
       const uuid = order.id;
       // delete order.id;
@@ -144,6 +144,21 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.getOrderService.orderResponses.filter(
         x => x.id !== order.id
       );
+  }
+
+  detailsForOrderOffer(order): void {
+    order['expirationMinutes'] = this.expiration;
+    order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
+    console.log(order);
+    this.dialog.open(DialogInfoOrderOfferComponent, {
+      width: '700px',
+      data: order
+    });
+  }
+
+  rejectToOffer(order): void {
+    this.orderService.orderRequests = this.orderService.orderRequests.filter(
+      x => x.id !== order.id);
   }
 }
 

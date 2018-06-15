@@ -29,6 +29,7 @@ import { AnswerOrdersComponent } from './answer-orders/answer-orders.component';
 import { AppComponent } from './app.component';
 import { ErrorComponent } from './error/error.component';
 import { FindIntentsComponent } from './find-intents/find-intents.component';
+import { GetOrderDirectComponent } from './get-order-direct/get-order-direct.component';
 import { InitialPageComponent } from './initial-page/initial-page.component';
 import { MainframeComponent } from './mainframe/mainframe.component';
 import { MessageSystemComponent } from './message-system/message-system.component';
@@ -56,21 +57,21 @@ import { CallbackPipe } from './pipes/callback';
 
 // dialogs
 import { DialogAddPeerComponent } from './message-system/dialog-add-peer/dialog-add-peer.component';
+import { DialogAddTokenComponent } from './dialogs/dialog-add-token/dialog-add-token.component';
 import { DialogGetOrderComponent } from './dialogs/dialog-get-order/dialog-get-order.component';
 import { DialogInfoDealSealComponent } from './dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
+import { DialogInfoOrderOfferComponent } from './dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
+import { DialogReauthenticateComponent } from './dialogs/dialog-reauthenticate/dialog-reauthenticate.component';
 import { DialogSendOfflineComponent } from './message-system/dialog-send-offline/dialog-send-offline.component';
+import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
 
 import { environment } from '../environments/environment';
 
 // directives
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
-import { DialogAddTokenComponent } from './dialogs/dialog-add-token/dialog-add-token.component';
-import { VerifyUserComponent } from './verify-user/verify-user.component';
 import { TosComponent } from './tos/tos.component';
-import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
-import { GetOrderDirectComponent } from './get-order-direct/get-order-direct.component';
-import { DialogReauthenticateComponent } from './dialogs/dialog-reauthenticate/dialog-reauthenticate.component';
+import { VerifyUserComponent } from './verify-user/verify-user.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -129,6 +130,7 @@ const appRoutes: Routes = [
     DialogYesNoComponent,
     GetOrderDirectComponent,
     DialogReauthenticateComponent,
+    DialogInfoOrderOfferComponent,
   ],
   imports: [
     BrowserModule,
@@ -170,6 +172,7 @@ const appRoutes: Routes = [
     DialogInfoDealSealComponent,
     DialogYesNoComponent,
     DialogReauthenticateComponent,
+    DialogInfoOrderOfferComponent,
   ],
   bootstrap: [AppComponent]
 })

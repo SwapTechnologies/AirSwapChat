@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ConnectWeb3Service } from './connectWeb3.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -123,6 +124,7 @@ export class Erc20Service {
 
   constructor(
     private web3service: ConnectWeb3Service,
+    private http: HttpClient
   ) { }
 
   getContract(address): any {
@@ -189,9 +191,16 @@ export class Erc20Service {
 
   approve(contract: any, spender: string): Promise<any> {
     let approveMethod;
+    let gasPrice = 10e9;
 
-    return this.decimals(contract)
-    .then(decimals => {
+    return this.http.get('https://ethgasstation.info/json/ethgasAPI.json')
+    .toPromise()
+    .then(ethGasStationResult => {
+      if (ethGasStationResult['average']) {
+        gasPrice = ethGasStationResult['average'] / 10 * 1e9;
+      }
+      return this.decimals(contract);
+    }).then(decimals => {
       const largeApproval = this.toFixed(1e21 * 10 ** decimals);
       approveMethod = contract.methods
       .approve(spender, largeApproval);
@@ -200,7 +209,7 @@ export class Erc20Service {
       return approveMethod.send({
         from: this.web3service.connectedAccount,
         gas: Math.round(estimatedGas * 1.1),
-        gasPrice: 10e9
+        gasPrice: gasPrice
       });
     });
   }

@@ -1,6 +1,6 @@
 <div *ngIf='this.orderService.orderRequests.length > 0'>
   <h1> You have Open Requests For Offers </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='500px'>
+  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='600px'>
     <mat-grid-tile *ngFor="let order of this.orderService.orderRequests">
       <mat-card>
         <mat-card-title>
@@ -10,85 +10,103 @@
           Address: {{order.takerAddress}}
         </mat-card-subtitle>
         <mat-card-subtitle>
-          Wants to <b>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}} of yours for his 
+          Wants to <b>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}} of yours for his
             {{order.takerProps.symbol}}</b>
         </mat-card-subtitle>
         <mat-card-content>
-          Peer has {{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}} and 
-          {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
-        </mat-card-content>
-        <mat-card-content *ngIf="!order.makerValid">
-          <span style='color:red'>
-            <strong>
-              {{order.makerProps.symbol}}: {{order.makerProps.address}}
-            </strong>
-          </span> 
-        </mat-card-content>
-        <mat-card-content *ngIf="!order.takerValid">
-          <span style='color:red'>
-            <strong>
-              {{order.takerProps.symbol}}: {{order.takerProps.address}}
-            </strong>
-          </span> 
-        </mat-card-content>
-        <mat-card-content *ngIf="!order.bothTokensValid">
-          <span style='color:red'><strong>
-              Warning: Trade contains unvalidated tokens. Don't get scammed.
-          </strong></span> 
-        </mat-card-content> 
-        <mat-card-content>
-          <p>
-            <i>How many {{order.takerProps.symbol}} do you want for this deal?</i> 
-          </p>
-          <mat-form-field style="width: 100%;">
-            <input 
-            matInput
-            type="number"
-            placeholder="Offer the deal for {{order.takerProps.symbol}}" 
-            (keydown.enter)="answerOrder(order)"
-            [(ngModel)]="takerAmount[order.id]"
-            [disabled]="order.clickedOfferDeal">
-          </mat-form-field>
-        </mat-card-content>
-        <mat-card-content *ngIf="order['UsdPrices']">
           <div>
-            Current prices according to cryptocompare.com: 
-            {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $, 
-            {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $
+            Peer has {{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}} and
+            {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
+          </div>
+          <div *ngIf="!order.makerValid">
+            <span style='color:red'>
+              <strong>
+                {{order.makerProps.symbol}}: {{order.makerProps.address}}
+              </strong>
+            </span>
+          </div>
+          <div *ngIf="!order.takerValid">
+            <span style='color:red'>
+              <strong>
+                {{order.takerProps.symbol}}: {{order.takerProps.address}}
+              </strong>
+            </span>
+          </div>
+          <div *ngIf="!order.bothTokensValid">
+            <span style='color:red'><strong>
+                Warning: Trade contains unvalidated tokens. Don't get scammed.
+            </strong></span>
           </div>
           <div>
-            Suggested amount to ask for: 
-            {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}} 
-            {{ order.takerProps.symbol }}
+            <p>
+              <i>How many {{order.takerProps.symbol}} do you want for this deal?</i>
+            </p>
+            <div *ngIf="order['UsdPrices']">
+              <div>
+                Current prices according to cryptocompare.com:
+                {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
+                {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $
+              </div>
+              <div>
+                Suggested amount to ask for:
+                {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}}
+                {{ order.takerProps.symbol }}
+              </div>
+            </div>
+            <mat-form-field style="width: 100%;">
+              <input
+              matInput
+              type="number"
+              placeholder="Offer the deal for {{order.takerProps.symbol}}"
+              (keydown.enter)="answerOrder(order)"
+              [(ngModel)]="takerAmount[order.id]"
+              [disabled]="order.clickedOfferDeal">
+            </mat-form-field>
+          </div>
+          <div>
+            <p>
+              <i>How many minutes should the order be open for the counterparty to seal?</i>
+            </p>
+            <mat-form-field style="width: 100%;">
+              <input
+              matInput
+              type="number"
+              placeholder="Minutes after the order should expire"
+              [(ngModel)]="expiration"
+              [disabled]="order.clickedOfferDeal">
+            </mat-form-field>
           </div>
         </mat-card-content>
-        <mat-card-content>
-          <p>
-            <i>How many minutes should the order be open for the counterparty to seal?</i> 
-          </p>
-          <mat-form-field style="width: 100%;">
-            <input 
-            matInput
-            type="number"
-            placeholder="Minutes after the order should expire" 
-            [(ngModel)]="expiration"
+        <mat-card-actions>
+          <span *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
+            <button mat-button
+            (click)="detailsForOrderOffer(order)"
             [disabled]="order.clickedOfferDeal">
-          </mat-form-field>
-          <div *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
-            <button mat-button 
+              DETAILS
+            </button>
+            <button mat-button
             (click)="answerOrder(order)"
             [disabled]="order.clickedOfferDeal">
               OFFER DEAL
             </button>
+          </span>
+          <button
+          mat-button
+          (click)="rejectToOffer(order)"
+          color='warn'
+          [disabled]="order.clickedOfferDeal">
+            DECLINE TO OFFER
+          </button>
+        </mat-card-actions>
+        <mat-card-content>
+          <div *ngIf="order.clickedOfferDeal">
+            <i>Sign in Metamask that you accept a deal of your
+            {{order.makerAmount / order.makerDecimals}}
+            {{order.makerProps.symbol}} for peers
+            {{order.takerAmount / order.takerDecimals}}
+            {{order.takerProps.symbol}}
+            </i>
           </div>
-        </mat-card-content>
-        <mat-card-content *ngIf="order.clickedOfferDeal">
-          <i>Sign in Metamask that you accept a deal of your 
-          {{order.makerAmount / order.makerDecimals}}
-          {{order.makerProps.symbol}} for peers
-          {{order.takerAmount / order.takerDecimals}}
-          {{order.takerProps.symbol}}
-          </i>
         </mat-card-content>
       </mat-card>
     </mat-grid-tile>
@@ -97,7 +115,7 @@
 
 <div *ngIf='this.getOrderService.orderResponses.length > 0'>
   <h1> You Can Close Deals </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='500px'>
+  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='600px'>
     <mat-grid-tile *ngFor="let order of getOrderService.orderResponses">
       <mat-card>
         <mat-card-title>
@@ -109,46 +127,48 @@
 
         <mat-card-content>
           <div>
-            He signed the deal to give you 
-            {{order.makerAmount / order.makerDecimals}}
-            {{order.makerProps.symbol}}
-            for {{order.takerAmount / order.takerDecimals}} 
-            {{order.takerProps.symbol}}
-          </div>
-          <div>
-            That is a price of {{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}} 
-            {{order.takerProps.symbol}} / {{order.makerProps.symbol}}
-          </div>
-        </mat-card-content>
-        <mat-card-content *ngIf="order['UsdPrices']">
             <div>
-              Current prices according to cryptocompare.com: 
-              {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $, 
+              He signed the deal to give you
+              {{order.makerAmount / order.makerDecimals}}
+              {{order.makerProps.symbol}}
+              for {{order.takerAmount / order.takerDecimals}}
+              {{order.takerProps.symbol}}
+            </div>
+            <div>
+              That is a price of {{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}}
+              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}
+            </div>
+          </div>
+          <div *ngIf="order['UsdPrices']">
+            <div>
+              Current prices according to cryptocompare.com:
+              {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
               {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $
             </div>
             <div>
-              Suggested price according to this would be : 
-              {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}} 
+              Suggested price according to this would be :
+              {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
               {{order.takerProps.symbol}} / {{order.makerProps.symbol}}
             </div>
-          </mat-card-content>
-        <mat-card-content>
-          Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
+          </div>
+          <div>
+            Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
+          </div>
         </mat-card-content>
         <mat-card-actions>
-          <button 
-          mat-button 
+          <button
+          mat-button
           (click)="dealSealDetails(order)">
             DETAILS
           </button>
-          <button 
-          mat-button 
+          <button
+          mat-button
           (click)="sealDeal(order)"
           [disabled]="order.clickedDealSeal">
             SEAL THE DEAL
           </button>
-          <button 
-          mat-button 
+          <button
+          mat-button
           (click)="rejectDeal(order)"
           color='warn'
           [disabled]="order.clickedDealSeal">

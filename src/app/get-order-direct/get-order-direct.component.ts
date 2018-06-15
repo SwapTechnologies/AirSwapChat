@@ -104,9 +104,11 @@ export class GetOrderDirectComponent implements OnInit {
   filterEther(token: any) {
     return token.address !== EtherAddress;
   }
+
   stringIsValidNumber(makerAmount): boolean {
-    return Number(this.makerAmount) >= this.makerBalanceMakerToken / this.makerDecimals;
+    return Number(this.makerAmount) <= this.makerBalanceMakerToken / this.makerDecimals;
   }
+
   getOrder() {
     if (Number(this.makerAmount) >= 0 && this.makerToken && this.takerToken) {
 
