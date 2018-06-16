@@ -4,11 +4,11 @@ import { Subscription } from 'rxjs/Subscription';
 import { MatSnackBar } from '@angular/material';
 
 // firebase
-import { AngularFirestore,  AngularFirestoreDocument } from 'angularfire2/firestore';
-import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
+import { AngularFirestore } from 'angularfire2/firestore';
+import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { auth, User, database } from 'firebase/app';
-import { UserInfo } from 'firebase';
+import { UserInfo } from 'firebase/app';
 
 // services
 import { Erc20Service } from './erc20.service';
@@ -63,6 +63,17 @@ export class FirebaseService {
       }
     })
     .then(() => this.setMyAliasAndAddress());
+  }
+
+  setConsent(): Promise<any> {
+    return this.afs.collection('users')
+    .doc(this.connectionService.loggedInUser.uid).update({
+      'consentToSAndStorage': true
+    });
+  }
+
+  isConsent(): Promise<any> {
+    return this.getObjectFromFirestore('users', 'consentToSAndStorage');
   }
 
   setMyAliasAndAddress(): Promise<any> {
@@ -140,6 +151,17 @@ export class FirebaseService {
   getObjectFromDatabase(path: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const subscription = this.db.object(path).valueChanges()
+      .subscribe(result => {
+        subscription.unsubscribe();
+        this.numOfFirebaseReads += 1;
+        resolve(result);
+      });
+    });
+  }
+
+  getObjectFromFirestore(collection: string, doc: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const subscription = this.afs.collection(collection).doc(doc).valueChanges()
       .subscribe(result => {
         subscription.unsubscribe();
         this.numOfFirebaseReads += 1;
@@ -295,12 +317,8 @@ export class FirebaseService {
   }
 
   getTokenListFromDatabase(): Promise<Token[]> {
-    let dbToken: AngularFireObject<any>;
-    let obsToken: Subscription;
-    dbToken = this.db.object('tokens');
-
     return new Promise((resolve, reject) => {
-      obsToken = dbToken.valueChanges()
+      const obsToken = this.afs.collection('tokens').valueChanges()
       .subscribe(entry => {
         obsToken.unsubscribe();
         const tokenList: Token[] = [];
@@ -308,7 +326,7 @@ export class FirebaseService {
           for (const token in entry) {
             if (entry[token]) {
               const newToken = {
-                address: token,
+                address: entry[token]['address'],
                 name: entry[token]['name'],
                 symbol: entry[token]['symbol'],
                 decimals: entry[token]['decimals']
@@ -327,7 +345,7 @@ export class FirebaseService {
    * @param tokenAddress Token you want to check
    */
   getTokenFromDatabase(tokenAddress): Promise<Token> {
-    return this.getObjectFromDatabase('tokens/' + tokenAddress.toLowerCase());
+    return this.getObjectFromFirestore('tokens', tokenAddress.toLowerCase());
   }
 
   addToken(tokenAddress, tokenName, tokenSymbol, tokenDecimals): Promise<boolean> {
@@ -353,8 +371,11 @@ export class FirebaseService {
     return Promise.all(promiseList)
     .then(() => {
       if (validToken) {
-        this.db.object('tokens/' + tokenAddress.toLowerCase())
-        .update({
+        // this.db.object('tokens/' + tokenAddress.toLowerCase())
+        // .update({
+        this.afs.collection('tokens').doc(tokenAddress.toLowerCase())
+        .set({
+          'address': tokenAddress.toLowerCase(),
           'name': tokenName,
           'symbol': tokenSymbol,
           'decimals': tokenDecimals,

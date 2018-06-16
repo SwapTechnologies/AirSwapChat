@@ -3,9 +3,10 @@
 </mat-toolbar>
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
-  <mat-sidenav 
-  #sidenav mode="side" 
-  [opened]="this.connectionService.connected && firebaseService.userIsVerified" 
+  <!-- Start Define the Left Sidenav -->
+  <mat-sidenav
+  #sidenav mode="side"
+  [opened]="this.connectionService.connected && firebaseService.userIsVerified"
   class="main-sidenav"
   [fixedInViewport]="false" [fixedTopGap]="0"
   [fixedBottomGap]="0">
@@ -18,14 +19,14 @@
       </a>
 
       <button mat-raised-button class="menu_button" (click)="toggleMessenger()">
-        <mat-icon 
-        class='menu_icon' 
+        <mat-icon
+        class='menu_icon'
         [matBadge]="numUnreadMessages"
-        [matBadgeHidden]="!this.showMessageBadge" 
+        [matBadgeHidden]="!this.showMessageBadge"
         matBadgePosition="above after">chat</mat-icon>
         MESSAGE
       </button>
-        
+
       <a routerLink="./intents">
         <button mat-raised-button class="menu_button">
           <mat-icon class='menu_icon'>create</mat-icon>
@@ -34,14 +35,14 @@
       </a>
 
       <a routerLink="./answer">
-        <button 
-        mat-raised-button 
+        <button
+        mat-raised-button
         [disabled]="!showAnswerBadge"
         class="menu_button">
-          <mat-icon 
-          class='menu_icon' 
+          <mat-icon
+          class='menu_icon'
           [matBadge]="numUnreadAnswers"
-          [matBadgeHidden]="!showAnswerBadge" 
+          [matBadgeHidden]="!showAnswerBadge"
           matBadgePosition="above after">
             mail
           </mat-icon>
@@ -50,8 +51,8 @@
       </a>
 
       <a routerLink="./whosOnline">
-        <button 
-        mat-raised-button 
+        <button
+        mat-raised-button
         class="menu_button">
           <mat-icon class='menu_icon'>
             people
@@ -59,12 +60,12 @@
           ONLINE
         </button>
       </a>
-      
+
       <a routerLink="./myAccount">
-        <button 
-        mat-raised-button 
+        <button
+        mat-raised-button
         class="menu_button">
-          <mat-icon 
+          <mat-icon
           class='menu_icon'>
             person
           </mat-icon>
@@ -80,74 +81,71 @@
           SwapWatch
         </button>
       </a>
-    </mat-nav-list>  
+    </mat-nav-list>
   </mat-sidenav>
+  <!-- End Define the Left Sidenav -->
 
+  <!-- Start Define The main center container -->
   <mat-sidenav-content>
     <div class="content">
       <div *ngIf="connectionService.connected && firebaseService.userIsVerified; else initialPage">
         <router-outlet></router-outlet>
       </div>
       <ng-template #initialPage>
-          <div>
-            <h1>
-              Peer-to-Peer Trading based on AirSwap
-            </h1>
-            <p>
-              <i> Make yourself visible, find peers, connect, trade</i>
-            </p>
-            <p>
-              <i>
-                No need for order books. Negotiate privately & buy/sell every ERC20 token for any ERC20 token at the price that you and your counterparty agree upon.
-              </i>
-            </p>
-            <p style='color: red'>
-              <strong>
-                Warning: This page is still under construction. For testing purpose it is set to mainnet at the moment. Usage at own discretion!
-              </strong>
-            </p>
-          </div>
-          
-          <div 
-          *ngIf="connectionService.web3Connected && !connectionService.wsConnected"
-          class="container">
-            <p>{{wsService.infoMessage}}</p>
-            <button mat-raised-button
-              (click)="connectWebsocket()" 
-              *ngIf="!wsService.performingHandshake && !connectionService.wsConnected">
-              Click to Connect with AirSwap
-            </button>
-          </div>
-          
-          <div 
-          *ngIf="connectionService.web3Connected
-          && connectionService.wsConnected
-          && !(registrationCompleted)"
-          class="firebase_auth_container">
-            <ngx-auth-firebaseui 
-            [providers]="[]"
-            [guestEnabled]="false"
-            (onSuccess)="loggedIn($event)"
-            (onError)="signInError($event)"
-            >
-            </ngx-auth-firebaseui>
-          </div>
-          <div class="firebase_auth_container"
-          *ngIf="this.connectionService.connected
-                && registrationCompleted
-                && !firebaseService.userIsVerified">
-            <app-verify-user class="firebase_auth"></app-verify-user>
-          </div>
+        <div>
+          <h1>
+            Peer-to-Peer Trading based on AirSwap
+          </h1>
+          <p>
+            <i> Make yourself visible, find peers, connect, trade</i>
+          </p>
+          <p>
+            <i>
+              No need for order books. Negotiate privately & buy/sell every ERC20 token for any ERC20 token at the price that you and your counterparty agree upon.
+            </i>
+          </p>
+          <p style='color: red'>
+            <strong>
+              Page is still under construction & development.
+            </strong>
+          </p>
+        </div>
+
+        <div
+        *ngIf="connectionService.web3Connected && !connectionService.wsConnected"
+        class="container">
+          <p>{{wsService.infoMessage}}</p>
+          <button mat-raised-button
+            (click)="connectWebsocket()"
+            *ngIf="!wsService.performingHandshake && !connectionService.wsConnected">
+            Click to Connect with AirSwap
+          </button>
+        </div>
+
+        <div
+        *ngIf="connectionService.web3Connected && connectionService.wsConnected
+                && !firebaseService.userIsVerified"
+        class="firebase_auth_container">
+          <ngx-auth-firebaseui
+          [providers]="[]"
+          [guestEnabled]="false"
+          (onSuccess)="loggedIn($event)"
+          (onError)="signInError($event)"
+          >
+          </ngx-auth-firebaseui>
+        </div>
       </ng-template>
       <div *ngIf="!connectionService.web3Connected">
-        <span style="color:red"><b>Login to Metamask to access the platform</b></span>
-      </div> 
+        <span style="color:red">
+          <b>Login to Metamask to access the platform</b>
+        </span>
+      </div>
     </div>
   </mat-sidenav-content>
-  <mat-sidenav #sidechat 
-  mode="side" 
-  [opened]="this.connectionService.connected && this.messageService.showMessenger" 
-  class="chat-side" 
+  <mat-sidenav #sidechat
+  mode="side"
+  [opened]="this.connectionService.connected && this.messageService.showMessenger"
+  class="chat-side"
   position="end"
   disableClose="true">
     <app-message-system *ngIf="this.messageService.showMessenger"></app-message-system>
@@ -156,8 +154,20 @@
 
 <mat-toolbar class="main-footer">
   <div>
-    <app-account></app-account> <!-- Connection to web3 -->
+    <app-account></app-account> <!-- Shows connections -->
   </div>
   <div>
+    <button mat-icon-button [matMenuTriggerFor]="appMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #appMenu="matMenu">
+      <button mat-menu-item>About</button>
+      <button mat-menu-item>Donate</button>
+      <button 
+      mat-menu-item
+      (click)='openDisclaimer()'>
+        Disclaimer
+      </button>
+    </mat-menu>
   </div>
 </mat-toolbar>

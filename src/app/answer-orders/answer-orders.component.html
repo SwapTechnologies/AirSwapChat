@@ -1,6 +1,6 @@
 <div *ngIf='this.orderService.orderRequests.length > 0'>
   <h1> You have Open Requests For Offers </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='600px'>
+  <mat-grid-list [cols]='columnNumber' rowHeight='600px'>
     <mat-grid-tile *ngFor="let order of this.orderService.orderRequests">
       <mat-card>
         <mat-card-title>
@@ -43,14 +43,14 @@
             </p>
             <div *ngIf="order['UsdPrices']">
               <div>
-                Current prices according to cryptocompare.com:
-                {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
-                {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $
+                Current prices according to cryptocompare.com:<br>
+                <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
+                {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
               </div>
               <div>
-                Suggested amount to ask for:
-                {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}}
-                {{ order.takerProps.symbol }}
+                Suggested amount to ask for:<br>
+                <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}}
+                {{ order.takerProps.symbol }}</strong>
               </div>
             </div>
             <mat-form-field style="width: 100%;">
@@ -115,7 +115,7 @@
 
 <div *ngIf='this.getOrderService.orderResponses.length > 0'>
   <h1> You Can Close Deals </h1>
-  <mat-grid-list [cols]='columnSpaceObserver.columnNum' rowHeight='600px'>
+  <mat-grid-list [cols]='columnNumber2' rowHeight='600px'>
     <mat-grid-tile *ngFor="let order of getOrderService.orderResponses">
       <mat-card>
         <mat-card-title>
@@ -141,14 +141,14 @@
           </div>
           <div *ngIf="order['UsdPrices']">
             <div>
-              Current prices according to cryptocompare.com:
-              {{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
-              {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $
+              Current prices according to cryptocompare.com:<br>
+              <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
+              {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
             </div>
             <div>
-              Suggested price according to this would be :
-              {{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
-              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}
+              Suggested price according to this would be :<br>
+              <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
+              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
             </div>
           </div>
           <div>

@@ -25,10 +25,15 @@ export class WhosOnlineComponent implements OnInit {
 
   public pageSize = 6;
   public pageIndex = 0;
-  public displayedPeople;
+  public displayedPeople = [];
+  public loadedInitially = false;
 
   ngOnInit() {
     this.refresh();
+  }
+
+  get columnNumber(): number {
+    return this.displayedPeople.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
   }
 
   message(user: any) {
@@ -70,6 +75,7 @@ export class WhosOnlineComponent implements OnInit {
             this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
           this.updateDisplayedPeople();
+          this.loadedInitially = true;
         });
       });
     }

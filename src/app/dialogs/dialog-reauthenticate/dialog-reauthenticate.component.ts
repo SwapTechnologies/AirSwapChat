@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FirebaseService } from '../../services/firebase.service';
 import { AngularFireAuth } from 'angularfire2/auth';
-import { auth } from 'firebase';
+import { auth } from 'firebase/app';
 @Component({
   selector: 'app-dialog-reauthenticate',
   templateUrl: './dialog-reauthenticate.component.html',

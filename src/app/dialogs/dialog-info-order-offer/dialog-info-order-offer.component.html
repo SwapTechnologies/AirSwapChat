@@ -3,7 +3,7 @@
       Details of the Offer
     </h1>
     <p>
-      By signing you, you accept the following trade details
+      By signing, you accept the following trade details
     </p>
     <mat-form-field style="width: 100%;">
       <input
@@ -54,4 +54,17 @@
       readonly='true'
       [(ngModel)]="data.expirationMinutes">
     </mat-form-field>
+    <div mat-dialog-actions>
+      <button
+      mat-button
+      (click)="onNoClick()">
+        CANCEL
+      </button>
+      <button
+      mat-button
+      color='warn'
+      (click)="onCloseConfirm()">
+        SIGN
+      </button>
+    </div>
   </div>
