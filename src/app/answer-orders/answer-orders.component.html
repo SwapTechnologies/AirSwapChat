@@ -135,8 +135,8 @@
               {{order.takerProps.symbol}}
             </div>
             <div>
-              That is a price of {{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}}
-              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}
+              That is a price of <strong>{{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}}
+              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
             </div>
           </div>
           <div *ngIf="order['UsdPrices']">

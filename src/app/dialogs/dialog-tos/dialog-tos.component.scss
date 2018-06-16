@@ -1,14 +1,17 @@
 @import '~../../../customTheme.scss';
 
-::-webkit-scrollbar {
-  width: 3px;
-  height: 5px;
-  background: $primary;
-}
-
 .centeredContainer {
   display: flex;
-  flex-flow: column wrap;
+  flex-flow: row wrap;
   justify-content: center;
   align-items: center;
+}
+
+.tosContainer {
+  // overflow-y: auto;
+}
+
+.readThis {
+  color:red;
+  font-style: italic;
 }

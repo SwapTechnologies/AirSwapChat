@@ -3,15 +3,13 @@ import { Injectable } from '@angular/core';
 import { ConnectWeb3Service } from './connectWeb3.service';
 import { HttpClient } from '@angular/common/http';
 import { EtherAddress } from './token.service';
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class AirswapdexService {
 
-  // public airswapDexAddress = '0x08a1d43a218adaf6273f323a1f5a43d930f3d69e'; // rinkeby
-
-  public airswapDexAddress = '0x8fd3121013A07C57f0D69646E86E7a4880b467b7'; // mainnet
+  public airswapDexAddress = environment.ethereumNetwork.airswapDexAddress;
   public airswapDexABI = [
     {
       'name': 'fill',

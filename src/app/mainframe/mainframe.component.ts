@@ -17,6 +17,8 @@ import { MatDialog } from '@angular/material';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { Title } from '@angular/platform-browser';
 import { DialogTosComponent } from '../dialogs/dialog-tos/dialog-tos.component';
+import { AboutComponent } from '../about/about.component';
+import { DonateComponent } from '../donate/donate.component';
 
 import {MatSnackBar} from '@angular/material';
 
@@ -218,8 +220,20 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   openDisclaimer() {
-    this.dialog.open(DialogTosComponent, {
+    const dialogRef = this.dialog.open(DialogTosComponent, {
         data: { showConsent: false }
+    });
+    // dialogRef.updatePosition({ top: '50px', left: '50px' });
+
+  }
+
+  openDonate() {
+    this.dialog.open(DonateComponent, {
+    });
+  }
+
+  openAbout() {
+    this.dialog.open(AboutComponent, {
     });
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-import { Subscription } from 'rxjs/Subscription';
+import { environment } from '../../environments/environment';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
 import { OrderRequestsService } from '../services/order-requests.service';
@@ -15,8 +15,7 @@ export class WebsocketService {
   public websocketSubject: Subject<string>;
   private websocketSubscriptions: any = {};
 
-  // private url = 'wss://sandbox.airswap-api.com/websocket'; // rinkeby
-  private url = 'wss://connect.airswap-api.com/websocket'; // mainnet
+  private url = environment.ethereumNetwork.websocketUrl;
   private indexerAddress = '0x0000000000000000000000000000000000000000';
   public performingHandshake = false;
   public infoMessage = '';

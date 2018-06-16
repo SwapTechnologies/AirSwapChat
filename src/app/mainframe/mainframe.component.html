@@ -92,24 +92,7 @@
         <router-outlet></router-outlet>
       </div>
       <ng-template #initialPage>
-        <div>
-          <h1>
-            Peer-to-Peer Trading based on AirSwap
-          </h1>
-          <p>
-            <i> Make yourself visible, find peers, connect, trade</i>
-          </p>
-          <p>
-            <i>
-              No need for order books. Negotiate privately & buy/sell every ERC20 token for any ERC20 token at the price that you and your counterparty agree upon.
-            </i>
-          </p>
-          <p style='color: red'>
-            <strong>
-              Page is still under construction & development.
-            </strong>
-          </p>
-        </div>
+        <app-initial-page></app-initial-page>
 
         <div
         *ngIf="connectionService.web3Connected && !connectionService.wsConnected"
@@ -137,7 +120,8 @@
       </ng-template>
       <div *ngIf="!connectionService.web3Connected">
         <span style="color:red">
-          <b>Login to Metamask to access the platform</b>
+          <b>Login to Metamask <span *ngIf="!web3service.correctNetwork">on {{web3service.desiredNetwork}}</span> to access the platform
+          </b>
         </span>
       </div>
     </div>
@@ -161,9 +145,17 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #appMenu="matMenu">
-      <button mat-menu-item>About</button>
-      <button mat-menu-item>Donate</button>
-      <button 
+      <button
+      mat-menu-item
+      (click)='openAbout()'>
+        About
+      </button>
+      <button
+      mat-menu-item
+      (click)='openDonate()'>
+        Donate
+      </button>
+      <button
       mat-menu-item
       (click)='openDisclaimer()'>
         Disclaimer
