@@ -1,12 +1,13 @@
-import {Component, Inject, Input, OnDestroy, OnInit, Output, PLATFORM_ID} from '@angular/core';
-import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {DomSanitizer} from '@angular/platform-browser';
-import {MatIconRegistry} from '@angular/material';
-import {AngularFireAuth} from 'angularfire2/auth';
-import {AuthProcessService, AuthProvider} from '../../services/auth-process.service';
-import {isPlatformBrowser} from '@angular/common';
-import {Subscription} from 'rxjs/internal/Subscription';
-
+import { Component, Inject, Input, OnDestroy, OnInit, Output, PLATFORM_ID } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material';
+import { AngularFireAuth } from 'angularfire2/auth';
+import { AuthProcessService, AuthProvider } from '../../services/auth-process.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { DialogTosComponent } from '../../../dialogs/dialog-tos/dialog-tos.component';
+import { MatSnackBar, MatDialog } from '@angular/material';
 
 export const EMAIL_REGEX = new RegExp(['^(([^<>()[\\]\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\.,;:\\s@\"]+)*)',
   '|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.',
@@ -64,6 +65,8 @@ export class AuthComponent implements OnInit, OnDestroy {
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
               public auth: AngularFireAuth,
               public authProcess: AuthProcessService,
+              private _dialog: MatDialog,
+              private _snackBar: MatSnackBar,
               private _formBuilder: FormBuilder,
               private _iconRegistry: MatIconRegistry,
               private _sanitizer: DomSanitizer) {
@@ -156,5 +159,23 @@ export class AuthComponent implements OnInit, OnDestroy {
           Validators.pattern(EMAIL_REGEX)
         ])
     });
+  }
+
+  public pressRegister(name, email, password): Promise<any> {
+    const dialogRef = this._dialog.open(DialogTosComponent, {
+      // height: '70vh',
+      disableClose: true,
+      data: { showConsent: true }
+    });
+    return dialogRef.afterClosed().toPromise()
+    .then((accepts) => {
+      if (!accepts) {
+        throw new Error('Aborted registration.');
+      }
+      this.authProcess.signUp(name, email, password);
+    }).catch(err => {
+      this._snackBar.open(err.message, 'OK', {duration: 5000});
+    });
+
   }
 }

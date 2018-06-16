@@ -1,11 +1,9 @@
 import { EventEmitter, Injectable, SecurityContext } from '@angular/core';
-import { MatSnackBar, MatDialog } from '@angular/material';
-import { DomSanitizer } from '@angular/platform-browser';
+import { MatSnackBar } from '@angular/material';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { ISignInProcess, ISignUpProcess } from '../interfaces/main.interface';
 import { FirestoreSyncService } from './firestore-sync.service';
 import { auth, User } from 'firebase/app';
-import { DialogTosComponent } from '../../dialogs/dialog-tos/dialog-tos.component';
 
 export enum AuthProvider {
   EmailAndPassword = 'firebase',
@@ -23,9 +21,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
   // tslint:disable-next-line:no-shadowed-variable
   constructor(public auth: AngularFireAuth,
               private _fireStoreService: FirestoreSyncService,
-              private _snackBar: MatSnackBar,
-              private _dialog: MatDialog,
-              private _dom: DomSanitizer) {
+              private _snackBar: MatSnackBar) {
   }
 
   /**
@@ -88,16 +84,6 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
   public async signUp(name: string, email: string, password: string) {
     try {
       this.isLoading = true;
-
-      const dialogRef = this._dialog.open(DialogTosComponent, {
-        data: { showConsent: true }
-      });
-      await dialogRef.afterClosed().toPromise()
-      .then((accepts) => {
-        if (!accepts) {
-          throw new Error('Aborted registration.');
-        }
-      });
 
       const userCredential: auth.UserCredential = await this.auth.auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;

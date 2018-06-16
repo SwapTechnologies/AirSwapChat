@@ -56,6 +56,8 @@ import { DialogReauthenticateComponent } from './dialogs/dialog-reauthenticate/d
 import { DialogSendOfflineComponent } from './message-system/dialog-send-offline/dialog-send-offline.component';
 import { DialogTosComponent } from './dialogs/dialog-tos/dialog-tos.component';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
+import { DonateComponent } from './donate/donate.component';
+import { AboutComponent } from './about/about.component';
 
 import { environment } from '../environments/environment';
 
@@ -119,6 +121,8 @@ const appRoutes: Routes = [
     DialogReauthenticateComponent,
     DialogInfoOrderOfferComponent,
     DialogTosComponent,
+    AboutComponent,
+    DonateComponent,
   ],
   imports: [
     BrowserModule,
@@ -161,6 +165,8 @@ const appRoutes: Routes = [
     DialogSendOfflineComponent,
     DialogTosComponent,
     DialogYesNoComponent,
+    DonateComponent,
+    AboutComponent
   ],
   bootstrap: [AppComponent]
 })

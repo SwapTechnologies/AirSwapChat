@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { ConnectionService } from './connection.service';
+import { environment } from '../../environments/environment';
 
 declare var require: any;
 const Web3 = require('web3');
@@ -11,7 +12,7 @@ window.web3 = window.web3 || undefined;
 export class ConnectWeb3Service {
 
   private _web3: any;
-  public desiredNetwork = 'Mainnet';
+  public desiredNetwork = environment.ethereumNetwork.desiredNetwork;
 
   public connected = false;
   public correctNetwork = false;
