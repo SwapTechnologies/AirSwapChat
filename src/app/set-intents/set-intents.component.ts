@@ -28,6 +28,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   public websocketSubscription: Subscription;
 
   public astBalance = 0;
+  public remainingIntents: number;
   public balanceTooLow = true;
 
   public clickedApprove: any = {};
@@ -41,6 +42,13 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   public takerTokenName;
   public filteredValidatedTakerTokens;
   public filteredCustomTakerTokens;
+
+  public makerDecimals: number;
+  public takerDecimals: number;
+
+  public balanceMakerToken: number;
+  public balanceTakerToken: number;
+
   constructor(
     private airswapDexService: AirswapdexService,
     private connectionService: ConnectionService,
@@ -66,6 +74,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     }).then(balance => {
       this.astBalance = balance / 1e4;
       this.balanceTooLow = this.astBalance - 250 * this.myIntents.length < 250;
+      this.remainingIntents = Math.floor((this.astBalance - 250 * this.myIntents.length) / 250);
       this.initialized = true;
     });
   }
@@ -83,6 +92,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     const token = this.tokenService.getTokenByName(this.makerTokenName);
     if (token) {
       this.makerToken = token;
+      this.makerDecimals = 10 ** this.makerToken.decimals;
+      this.getMakerTokenBalance();
     }
   }
 
@@ -99,6 +110,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     const token = this.tokenService.getTokenByName(this.takerTokenName);
     if (token) {
       this.takerToken = token;
+      this.takerDecimals = 10 ** this.takerToken.decimals;
+      this.getTakerTokenBalance();
     }
   }
 
@@ -256,6 +269,29 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     this.tokenService.getCustomTokenListFromDB();
   }
 
+  getMakerTokenBalance(): void {
+    this.erc20service.balance(this.makerToken.address, this.connectionService.loggedInUser.address)
+    .then(balance => {
+      this.balanceMakerToken = balance;
+    })
+    .catch(error =>
+      console.log('Error fetching the balance of ' + this.connectionService.loggedInUser.address +
+        ' for contract ' + this.makerToken.address)
+    );
+  }
+
+  getTakerTokenBalance(): void {
+    this.erc20service.balance(this.takerToken.address, this.connectionService.loggedInUser.address)
+    .then(balance => {
+      this.balanceTakerToken = balance;
+    })
+    .catch(error =>
+      console.log('Error fetching the balance of ' + this.connectionService.loggedInUser.address +
+        ' for contract ' + this.takerToken.address)
+    );
+  }
+}
+
   // buySwap(): void {
   //   window.AirSwap.Trader.render({
   //     env: 'sandbox',
@@ -270,4 +306,3 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   //     }
   //   }, 'body');
   // }
-}

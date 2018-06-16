@@ -24,12 +24,12 @@
       Current holdings: {{astBalance}} AST
     </p>
     <p style='font-style: italic'>
-      Find a peer <a routerLink="./findPeers">here</a> to sell you some AST to add more intents or go 
+      Find a peer <a routerLink="./findPeers">here</a> to sell you some AST to add more intents or go
       to <a href="https://airswap.io/trade" target="_blank">AirSwap.io/trade</a> and
       get more AST tokens.
     </p>
-    <button 
-    mat-icon-button 
+    <button
+    mat-icon-button
     color="primary"
     matTooltip="Refresh my balance"
     (click)="initialize()">
@@ -45,31 +45,34 @@
   <div>
     <!-- Start Show Set Intent -->
     <div *ngIf="!balanceTooLow">
-      <button 
-      mat-icon-button 
+      <div>
+        <i>Your account holds {{astBalance}} AST and can set {{remainingIntents}} more intents</i>
+      </div>
+      <button
+      mat-icon-button
       color="primary"
       matTooltip="Refresh the custom token list"
       (click)="refreshTokens()">
         <mat-icon>autorenew</mat-icon>
       </button>
       <mat-form-field>
-        <input 
-        type="text" 
-        placeholder="Add signal you sell" 
-        aria-label="makerToken" 
-        matInput 
+        <input
+        type="text"
+        placeholder="Add signal you sell"
+        aria-label="makerToken"
+        matInput
         [(ngModel)]='makerTokenName'
         (ngModelChange)='enteredMakerTokenName()'
         [matAutocomplete]="autoMaker">
         <mat-autocomplete #autoMaker="matAutocomplete">
-          <mat-option 
-          *ngFor="let token of filteredValidatedMakerTokens | callback: filterEther" 
+          <mat-option
+          *ngFor="let token of filteredValidatedMakerTokens | callback: filterEther"
           [value]="token.name">
             {{ token.name }}
           </mat-option>
           <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomMakerTokens && filteredCustomMakerTokens.length > 0">
-            <mat-option 
-            *ngFor="let token of filteredCustomMakerTokens" 
+            <mat-option
+            *ngFor="let token of filteredCustomMakerTokens"
             [value]="token.name">
               {{ token.name }}
             </mat-option>
@@ -78,23 +81,23 @@
         <mat-hint *ngIf="makerToken">{{makerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
       <mat-form-field>
-        <input 
-        type="text" 
-        placeholder="when others give you" 
-        aria-label="takerToken" 
-        matInput 
+        <input
+        type="text"
+        placeholder="when others give you"
+        aria-label="takerToken"
+        matInput
         [(ngModel)]='takerTokenName'
         (ngModelChange)='enteredTakerTokenName()'
         [matAutocomplete]="autoTaker">
         <mat-autocomplete #autoTaker="matAutocomplete">
-          <mat-option 
-          *ngFor="let token of filteredValidatedTakerTokens" 
+          <mat-option
+          *ngFor="let token of filteredValidatedTakerTokens"
           [value]="token.name">
             {{ token.name }}
           </mat-option>
           <mat-optgroup label="User Added Tokens" *ngIf="filteredCustomTakerTokens && filteredCustomTakerTokens.length > 0">
-            <mat-option 
-            *ngFor="let token of filteredCustomTakerTokens" 
+            <mat-option
+            *ngFor="let token of filteredCustomTakerTokens"
             [value]="token.name">
               {{ token.name }}
             </mat-option>
@@ -102,8 +105,8 @@
         </mat-autocomplete>
         <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
       </mat-form-field>
-      <button 
-        mat-icon-button 
+      <button
+        mat-icon-button
         color="primary"
         matTooltip="Add intent to indexer"
         (click)="addTokenPair()">
@@ -111,24 +114,39 @@
       </button>
     </div>
     <!-- End Show Set Intent -->
-
+    <div *ngIf="makerToken || takerToken">
+      <div>
+        <i>In your wallet are:</i><br>
+        <span *ngIf="balanceMakerToken">
+          <strong>{{balanceMakerToken / makerDecimals}}
+          {{makerToken.symbol}}</strong>
+        </span>
+        <span *ngIf="balanceTakerToken">
+          {{balanceTakerToken / takerDecimals}}
+          {{takerToken.symbol}}
+        </span>
+      </div>
+      <div *ngIf="balanceMakerToken && balanceMakerToken == 0">
+        <i><strong style="color: red">You do not hold any of the tokens you want to sell. This intent does not make a lot of sense.</strong></i>
+      </div>
+    </div>
     <!-- Start Show My Intents -->
     <div *ngIf="myIntents.length > 0" class="row">
       <div>
         <p><i>Your intents are</i></p>
-        <mat-selection-list 
+        <mat-selection-list
         [(ngModel)]="intentsMarkedForRemoval"
         (ngModelChange)="changedList($event)">
-          <mat-list-option *ngFor="let intent of myIntents" 
+          <mat-list-option *ngFor="let intent of myIntents"
           [value]="intent">
-            You want to sell {{tokenSymbol(intent.makerToken)}} 
-            for {{tokenSymbol(intent.takerToken)}} 
+            You want to sell {{tokenSymbol(intent.makerToken)}}
+            for {{tokenSymbol(intent.takerToken)}}
           </mat-list-option>
         </mat-selection-list>
       </div>
       <div *ngIf="markedIntents">
-        <button 
-        mat-raised-button 
+        <button
+        mat-raised-button
         (click)="removeMarkedIntents()">
           REMOVE MARKED INTENTS
         </button>
@@ -139,19 +157,19 @@
     <!-- Start Show unapproved tokens that want to be traded -->
     <div style='color:red;' *ngIf="unapprovedTokens.length > 0">
       <strong>
-        You want to trade unapproved tokens. 
+        You want to trade unapproved tokens.
       </strong>
       <p>
         You have to approve them or the AirSwap smart contract is not able to swap the token for you.
       </p>
       <div class="row">
         <mat-list>
-          <mat-list-item *ngFor="let token of unapprovedTokens"> 
+          <mat-list-item *ngFor="let token of unapprovedTokens">
             <button mat-raised-button
             [disabled]="clickedApprove[token]"
             (click)="approveMaker(token)">
-              APPROVE {{tokenSymbol(token)}} 
-            </button>        
+              APPROVE {{tokenSymbol(token)}}
+            </button>
           </mat-list-item>
         </mat-list>
       </div>
