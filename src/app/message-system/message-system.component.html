@@ -102,6 +102,7 @@
         <input
           matInput
           type="text"
+          maxlength="200"
           (keydown.enter)="sendMessage()"
           placeholder="Send message"
           [(ngModel)]="message"/>
@@ -115,6 +116,7 @@
           (click)="sendMessage()">
           <mat-icon>send</mat-icon>
         </button>
+        <mat-hint>{{message.length}} / 200</mat-hint>
       </mat-form-field>
     </mat-card>
   </div>
