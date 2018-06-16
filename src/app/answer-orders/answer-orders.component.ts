@@ -62,11 +62,15 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get columnNumber(): number {
-    return this.orderService.orderRequests.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+    const columnNum = this.columnSpaceObserver.columnNum;
+    const numMessages = this.orderService.orderRequests.length;
+    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
   get columnNumber2(): number {
-    return this.getOrderService.orderResponses.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+    const columnNum = this.columnSpaceObserver.columnNum;
+    const numMessages = this.getOrderService.orderResponses.length;
+    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
   sign_order(order): Promise<any> {

@@ -33,7 +33,9 @@ export class WhosOnlineComponent implements OnInit {
   }
 
   get columnNumber(): number {
-    return this.displayedPeople.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+    const columnNum = this.columnSpaceObserver.columnNum;
+    const numMessages = this.displayedPeople.length;
+    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
   message(user: any) {
