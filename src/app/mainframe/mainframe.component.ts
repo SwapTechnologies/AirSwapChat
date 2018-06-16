@@ -12,6 +12,7 @@ import { TokenService } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 import { MatDialog } from '@angular/material';
+import { Erc20Service } from '../services/erc20.service';
 
 // components
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
@@ -56,14 +57,64 @@ export class MainframeComponent implements OnInit, OnDestroy {
     public wsService: WebsocketService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
+    private erc20Service: Erc20Service,
   ) {}
 
 
   ngOnInit() {
     this.authUser(); // check for log in of user to firebase
     this.tokenService.getValidatedTokens(); // load the validated token list
+    // this.web3service.getAccount()
+    // .then(account => {
+    //   this.checkTokens();
+    // });
   }
+  // async checkTokens() {
+  //   for (const token of this.tokenService.validatedTokens) {
+  //     const tokenAddress = token.address;
+  //     const contract = this.erc20Service.getContract(tokenAddress);
+  //     // console.log('Checking ', token.name);
+  //     let contractName;
+  //     let contractDecimals;
+  //     let contractSymbol;
 
+  //     await this.erc20Service.name(contract)
+  //     .then(name => {
+  //       contractName = name;
+  //     }).catch(err => {
+  //       console.log('Name check error for ', token.name, tokenAddress);
+  //     });
+  //     await this.erc20Service.symbol(contract)
+  //     .then(symbol => {
+  //       contractSymbol = symbol;
+  //     }).catch(err => {
+  //       console.log('symbol check error for ', token.symbol, tokenAddress);
+  //     });
+  //     await this.erc20Service.decimals(contract)
+  //     .then(decimals => {
+  //       contractDecimals = Number(decimals);
+  //     }).catch(err => {
+  //       console.log('decimals check error for ', token.decimals, tokenAddress);
+  //     });
+  //     const validName = contractName === token.name;
+  //     const validSymbol = contractSymbol === token.symbol;
+  //     const validDecimals = contractDecimals === token.decimals;
+
+  //     if (validName && validSymbol && validDecimals) {
+  //       continue;
+  //     }
+
+  //     if (!validName) {
+  //       console.log('Name off: ', contractName, token.name);
+  //     }
+  //     if (!validSymbol) {
+  //       console.log('Symbol off: ', contractSymbol, token.symbol);
+  //     }
+  //     if (!validDecimals) {
+  //       console.log('Decimals off: ', contractDecimals, token.decimals);
+  //     }
+  //   }
+  // }
   ngOnDestroy() {
     if (this.timer) {
       this.timer.unsubscribe();
