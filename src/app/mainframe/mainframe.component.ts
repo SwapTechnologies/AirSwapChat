@@ -69,13 +69,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
       this.timer.unsubscribe();
     }
   }
-  printUser(event) {
-    console.log('what', event);
-  }
-
-  printError(event) {
-    console.error('braaap', event);
-  }
 
   authUser(): void {
     // listen for auth of user

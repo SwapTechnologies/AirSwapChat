@@ -119,7 +119,6 @@ export class GetOrderDirectComponent implements OnInit {
         takerToken: this.takerToken.address,
         takerAddress: this.connectionService.loggedInUser.address
       };
-      console.log('sending', order);
       const uuid = this.getOrderService.sendGetOrder(order);
       this.responseMessage = 'Asking peer how much ' + this.takerToken.symbol +
                   ' he wants for ' + this.makerAmount + ' ' + this.makerToken.symbol;

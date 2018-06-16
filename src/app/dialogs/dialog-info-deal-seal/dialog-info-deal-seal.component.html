@@ -91,6 +91,7 @@
     <button
     mat-button
     color='warn'
+    [disabled]="order.clickedDealSeal"
     (click)="onCloseConfirm()">
       SIGN
     </button>

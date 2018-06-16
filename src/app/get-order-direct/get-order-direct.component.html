@@ -65,8 +65,8 @@
         </div>
         <div *ngIf="makerToken && takerToken">
           <i>In peers wallet are:</i>
-          {{makerBalanceMakerToken / makerDecimals}}
-          {{makerToken.symbol}},
+          <strong> {{makerBalanceMakerToken / makerDecimals}}
+          {{makerToken.symbol}}</strong>,
           {{makerBalanceTakerToken / takerDecimals}}
           {{takerToken.symbol}}
           <br/>

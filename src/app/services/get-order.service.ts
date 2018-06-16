@@ -26,6 +26,8 @@ export class GetOrderService {
   ) { }
 
   sendGetOrder(order: any): string {
+
+    // send it away
     const uuid = this.wsService.getOrder(
       order.makerAddress,
       order.makerAmount,
@@ -35,12 +37,12 @@ export class GetOrderService {
     );
     this.sentOrders[uuid] = order;
 
+    // look for an answer
     this.websocketSubscriptions[uuid] = this.wsService.websocketSubject
     .subscribe(message => {
       const parsedMessage = JSON.parse(message);
       const parsedContent = JSON.parse(parsedMessage['message']);
       const id = parsedContent['id'];
-      console.log(message, uuid === id);
       if (id === uuid) {
         this.websocketSubscriptions[uuid].unsubscribe();
 
