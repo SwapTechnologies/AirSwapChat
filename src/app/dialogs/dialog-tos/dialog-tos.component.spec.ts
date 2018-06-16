@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VerifyUserComponent } from './verify-user.component';
+import { DialogTosComponent } from './dialog-tos.component';
 
-describe('VerifyUserComponent', () => {
-  let component: VerifyUserComponent;
-  let fixture: ComponentFixture<VerifyUserComponent>;
+describe('DialogTosComponent', () => {
+  let component: DialogTosComponent;
+  let fixture: ComponentFixture<DialogTosComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ VerifyUserComponent ]
+      declarations: [ DialogTosComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(VerifyUserComponent);
+    fixture = TestBed.createComponent(DialogTosComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

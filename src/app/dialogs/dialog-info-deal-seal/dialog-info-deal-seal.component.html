@@ -6,80 +6,93 @@
     Following details will be sent to the AirSwap smart contract to finalize the swap
   </p>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Maker Address ({{data.alias}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.makerAddress">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Maker Token ({{data.makerProps.name}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.makerToken">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Maker Amount (Decimals: {{data.makerProps.decimals}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.makerAmount">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Taker Address (You)"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.takerAddress">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Taker Token ({{data.takerProps.name}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.takerToken">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Taker Amount (Decimals: {{data.takerProps.decimals}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.takerAmount">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Expiration ({{data.expiration*1000 | date: 'medium'}})"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.expiration">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="Nonce"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.nonce">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="v"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.v">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="r"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.r">
   </mat-form-field>
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     placeholder="s"
-    readonly='true' 
+    readonly='true'
     [(ngModel)]="data.s">
   </mat-form-field>
+  <div mat-dialog-actions>
+    <button
+    mat-button
+    (click)="onNoClick()">
+      CANCEL
+    </button>
+    <button
+    mat-button
+    color='warn'
+    (click)="onCloseConfirm()">
+      SIGN
+    </button>
+  </div>
 </div>

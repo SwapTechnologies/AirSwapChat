@@ -62,13 +62,20 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredValidatedTokens = this.tokenService.validatedTokens;
-    this.filteredCustomTokens = this.tokenService.customTokens;
+    this.tokenService.getCustomTokenListFromDB()
+    .then(tokenList => {
+      this.filteredCustomTokens = tokenList;
+    });
   }
 
   ngOnDestroy() {
     if (this.websocketSubscription) {
       this.websocketSubscription.unsubscribe();
     }
+  }
+
+  get columnNumber(): number {
+    return this.displayIntents.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
   }
 
   enteredTokenName(): void {

@@ -107,11 +107,11 @@ export class TokenService {
       token.address = token.address.toLowerCase();
     }
     this.validatedTokens = this.validatedTokens.sort((a, b) => {
-      if (a.name < b.name) { return -1; }
-      if (a.name > b.name) { return 1; }
+      if (a.name.toLowerCase() < b.name.toLowerCase()) { return -1; }
+      if (a.name.toLowerCase() > b.name.toLowerCase()) { return 1; }
       return 0;
     });
-    return validatedTokens;
+    return this.validatedTokens;
   }
 
   getCustomTokenListFromDB(): Promise<Token[]> {
@@ -120,11 +120,11 @@ export class TokenService {
       return this.firebaseService.getTokenListFromDatabase()
       .then((customTokens) => {
         this.customTokens = customTokens.sort((a, b) => {
-          if (a.name < b.name) { return -1; }
-          if (a.name > b.name) { return 1; }
+          if (a.name.toLowerCase() < b.name.toLowerCase()) { return -1; }
+          if (a.name.toLowerCase() > b.name.toLowerCase()) { return 1; }
           return 0;
         });
-        return customTokens;
+        return this.customTokens;
       });
     } else {
       return Promise.resolve(this.customTokens);

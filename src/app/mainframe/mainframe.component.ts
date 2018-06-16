@@ -16,9 +16,9 @@ import { MatDialog } from '@angular/material';
 // components
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { Title } from '@angular/platform-browser';
+import { DialogTosComponent } from '../dialogs/dialog-tos/dialog-tos.component';
 
 import {MatSnackBar} from '@angular/material';
-import { AuthProcessService } from 'ngx-auth-firebaseui';
 
 @Component({
   selector: 'app-mainframe',
@@ -54,7 +54,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
     public wsService: WebsocketService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
-    private authProcess: AuthProcessService
   ) {}
 
 
@@ -81,14 +80,20 @@ export class MainframeComponent implements OnInit, OnDestroy {
     this.afAuth.auth.onAuthStateChanged((user) => { // triggers everytime the auth state changes
       if (user && user.uid) { // is user logged in?
         this.connectionService.firebaseConnected = true;
-        this.authProcess.isLoading = false;
         this.connectionService.loggedInUser.alias = user.displayName;
         this.connectionService.loggedInUser.uid = user.uid;
+        this.firebaseService.userIsVerified = user.emailVerified;
         if (this.connectionService.connected) { // all connections standing? start!
           this.connectionInitialized();
         }
       } else {
         this.connectionService.firebaseConnected = false;
+      }
+    });
+
+    this.afAuth.authState.subscribe(authState => {
+      if (authState) {
+        this.firebaseService.userIsVerified = authState.emailVerified;
       }
     });
   }
@@ -106,9 +111,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   connectionInitialized(): void {
     // triggered either when a firebase connection is established or a websocket connection
     // if both are available -> access page
-    if (this.connectionService.connected
-    && this.firebaseService.user.emailVerified) {
-      this.firebaseService.userIsVerified = true;
+    if (this.connectionService.connected && this.firebaseService.userIsVerified) {
       this.firebaseService.checkMyUidAndAddressMatch()
       .then((match) => {
         if (match.newAddress) { // uid not in database? -> new user.
@@ -137,7 +140,6 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   finalizeInitialization(): void {
-    console.log('logged in User', this.firebaseService.user);
     // read number of unread messages & deals
     this.timer = TimerObservable.create(0, 2000)
     .subscribe( () => this.updateNumbers());
@@ -202,17 +204,22 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   loggedIn(event) {
-    console.log('You are logged in now.');
-    this.registrationCompleted = true;
-    setTimeout(() => {
-      this.firebaseService.logOffUser();
-      this.registrationCompleted = false;
-    }, 10000);
-    // this.firebaseService.logOffUser();
-    // this.connectionInitialized();
+    // always triggered when somebody logs in
+    if (this.firebaseService.user.uid && !this.firebaseService.userIsVerified) {
+      const snackBarRef = this.snackBar.open('Please verify your mail.', 'Send mail again.', {duration: 3000});
+      snackBarRef.onAction().subscribe(() => {
+        this.firebaseService.user.sendEmailVerification();
+      });
+    }
   }
 
   signInError(event) {
 
+  }
+
+  openDisclaimer() {
+    this.dialog.open(DialogTosComponent, {
+        data: { showConsent: false }
+    });
   }
 }

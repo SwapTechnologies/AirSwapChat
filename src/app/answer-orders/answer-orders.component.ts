@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material';
 
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
 import { DialogInfoOrderOfferComponent } from '../dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
+import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.component';
 
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
@@ -60,34 +61,58 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       (order.takerBalanceTakerToken / order.takerDecimals));
   }
 
+  get columnNumber(): number {
+    return this.orderService.orderRequests.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+  }
+
+  get columnNumber2(): number {
+    return this.getOrderService.orderResponses.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+  }
 
   sign_order(order): Promise<any> {
-    order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
-    order['expiration'] = Math.round(Date.now() / 1000 + this.expiration * 60).toString();
+    const dialogRef = this.dialog.open(DialogYesNoComponent, {
+      width: '700px',
+      data: {
+        text: 'Are you sure you want to sign this deal of your ' +
+        order.makerAmount / order.makerDecimals  + ' ' + order.makerProps.symbol +
+        ' for peers ' + order.takerAmount / order.takerDecimals  + ' ' + order.takerProps.symbol +
+        '? ' +
+        'Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal.',
+        yes: 'DO IT',
+        no: 'CANCEL'
+      }
+    });
+    return dialogRef.afterClosed().toPromise()
+    .then(result => {
+      if (result) {
+        order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
+        order['expiration'] = Math.round(Date.now() / 1000 + this.expiration * 60).toString();
 
-    const hashV = this.web3service.web3.utils.soliditySha3(
-      order['makerAddress'],
-      order['makerAmount'],
-      order['makerToken'],
-      order['takerAddress'],
-      order['takerAmount'],
-      order['takerToken'],
-      order['expiration'],
-      order['nonce']
-    );
-    const prefixedHash =
-      this.web3service.web3.eth.accounts.hashMessage(hashV);
+        const hashV = this.web3service.web3.utils.soliditySha3(
+          order['makerAddress'],
+          order['makerAmount'],
+          order['makerToken'],
+          order['takerAddress'],
+          order['takerAmount'],
+          order['takerToken'],
+          order['expiration'],
+          order['nonce']
+        );
+        const prefixedHash =
+          this.web3service.web3.eth.accounts.hashMessage(hashV);
 
-    return this.web3service.web3.eth.sign(prefixedHash, this.web3service.connectedAccount)
-    .then((signedMessage) => {
-      let v, r, s;
-      r = signedMessage.slice(0, 66);
-      s = '0x' + signedMessage.slice(66, 130);
-      v = this.web3service.web3.utils.hexToNumber('0x' + signedMessage.slice(130, 132));
-      order['v'] = v;
-      order['r'] = r;
-      order['s'] = s;
-      return order;
+        return this.web3service.web3.eth.sign(prefixedHash, this.web3service.connectedAccount)
+        .then((signedMessage) => {
+          let v, r, s;
+          r = signedMessage.slice(0, 66);
+          s = '0x' + signedMessage.slice(66, 130);
+          v = this.web3service.web3.utils.hexToNumber('0x' + signedMessage.slice(130, 132));
+          order['v'] = v;
+          order['r'] = r;
+          order['s'] = s;
+          return order;
+        });
+      }
     });
   }
 
@@ -116,26 +141,44 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   sealDeal(order: any): void {
-    order['clickedDealSeal'] = true;
-    this.airswapDexService.fill(
-    order['makerAddress'], order['makerAmount'], order['makerToken'],
-    order['takerAddress'],  order['takerAmount'], order['takerToken'],
-    order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
-    .then(() => {
-      this.getOrderService.orderResponses =
-      this.getOrderService.orderResponses.filter(
-        x => x.id !== order.id
-      );
-    }).catch(error => {
-      console.log('Deal was not sealed.');
-      order['clickedDealSeal'] = false;
+    const dialogRef = this.dialog.open(DialogYesNoComponent, {
+      width: '700px',
+      data: {
+        text: 'Are you sure you want to agree to this deal? ' +
+        'Once the transaction is sent it can not be reverted.',
+        yes: 'DO IT',
+        no: 'CANCEL'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        order['clickedDealSeal'] = true;
+        this.airswapDexService.fill(
+        order['makerAddress'], order['makerAmount'], order['makerToken'],
+        order['takerAddress'],  order['takerAmount'], order['takerToken'],
+        order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
+        .then(() => {
+          this.getOrderService.orderResponses =
+          this.getOrderService.orderResponses.filter(
+            x => x.id !== order.id
+          );
+        }).catch(error => {
+          console.log('Deal was not sealed.');
+          order['clickedDealSeal'] = false;
+        });
+      }
     });
   }
 
   dealSealDetails(order: any): void {
-    this.dialog.open(DialogInfoDealSealComponent, {
+    const dialogRef = this.dialog.open(DialogInfoDealSealComponent, {
       width: '700px',
       data: order
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.sealDeal(order);
+      }
     });
   }
 
@@ -150,9 +193,14 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     order['expirationMinutes'] = this.expiration;
     order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
     console.log(order);
-    this.dialog.open(DialogInfoOrderOfferComponent, {
+    const dialogRef = this.dialog.open(DialogInfoOrderOfferComponent, {
       width: '700px',
       data: order
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.answerOrder(order);
+      }
     });
   }
 

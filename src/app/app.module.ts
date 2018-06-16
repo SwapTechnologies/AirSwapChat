@@ -12,16 +12,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth, AngularFireAuthModule } from 'angularfire2/auth';
-import { NgxAuthFirebaseUIModule } from 'ngx-auth-firebaseui';
-
-// import {
-//   AuthMethods,
-//   AuthProvider,
-//   AuthProviderWithCustomConfig,
-//   CredentialHelper,
-//   FirebaseUIAuthConfig,
-//   FirebaseUIModule
-// } from 'firebaseui-angular';
+import { NgxAuthFirebaseUIModule } from './ngx-auth-firebaseui/ngx-auth-firebase-u-i.module';
 
 // app components
 import { AccountComponent } from './account/account.component';
@@ -63,6 +54,7 @@ import { DialogInfoDealSealComponent } from './dialogs/dialog-info-deal-seal/dia
 import { DialogInfoOrderOfferComponent } from './dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
 import { DialogReauthenticateComponent } from './dialogs/dialog-reauthenticate/dialog-reauthenticate.component';
 import { DialogSendOfflineComponent } from './message-system/dialog-send-offline/dialog-send-offline.component';
+import { DialogTosComponent } from './dialogs/dialog-tos/dialog-tos.component';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
 
 import { environment } from '../environments/environment';
@@ -71,7 +63,6 @@ import { environment } from '../environments/environment';
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
 import { TosComponent } from './tos/tos.component';
-import { VerifyUserComponent } from './verify-user/verify-user.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -124,13 +115,13 @@ const appRoutes: Routes = [
     ErrorComponent,
     DialogAddTokenComponent,
     MyAccountComponent,
-    VerifyUserComponent,
     DialogInfoDealSealComponent,
     TosComponent,
     DialogYesNoComponent,
     GetOrderDirectComponent,
     DialogReauthenticateComponent,
     DialogInfoOrderOfferComponent,
+    DialogTosComponent,
   ],
   imports: [
     BrowserModule,
@@ -146,7 +137,6 @@ const appRoutes: Routes = [
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     NgxAuthFirebaseUIModule.forRoot(environment.firebase),
-    // FirebaseUIModule.forRoot(firebaseUiAuthConfig)
   ],
   providers: [
     AngularFireDatabase,
@@ -168,11 +158,12 @@ const appRoutes: Routes = [
     DialogAddPeerComponent,
     DialogAddTokenComponent,
     DialogGetOrderComponent,
-    DialogSendOfflineComponent,
     DialogInfoDealSealComponent,
-    DialogYesNoComponent,
-    DialogReauthenticateComponent,
     DialogInfoOrderOfferComponent,
+    DialogReauthenticateComponent,
+    DialogSendOfflineComponent,
+    DialogTosComponent,
+    DialogYesNoComponent,
   ],
   bootstrap: [AppComponent]
 })
