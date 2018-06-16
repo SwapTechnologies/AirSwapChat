@@ -70,6 +70,21 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   sign_order(order): Promise<any> {
+    order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
+    order['expiration'] = Math.round(Date.now() / 1000 + this.expiration * 60).toString();
+    const hashV = this.web3service.web3.utils.soliditySha3(
+      order['makerAddress'],
+      order['makerAmount'],
+      order['makerToken'],
+      order['takerAddress'],
+      order['takerAmount'],
+      order['takerToken'],
+      order['expiration'],
+      order['nonce']
+    );
+    const prefixedHash =
+      this.web3service.web3.eth.accounts.hashMessage(hashV);
+
     const dialogRef = this.dialog.open(DialogYesNoComponent, {
       width: '700px',
       data: {
@@ -77,7 +92,9 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
         order.makerAmount / order.makerDecimals  + ' ' + order.makerProps.symbol +
         ' for peers ' + order.takerAmount / order.takerDecimals  + ' ' + order.takerProps.symbol +
         '? ' +
-        'Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal.',
+        'Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal. With nonce ' +
+         order.nonce +
+         ' you will have to sign the hash ' + prefixedHash,
         yes: 'DO IT',
         no: 'CANCEL'
       }
@@ -85,22 +102,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return dialogRef.afterClosed().toPromise()
     .then(result => {
       if (result) {
-        order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
-        order['expiration'] = Math.round(Date.now() / 1000 + this.expiration * 60).toString();
-
-        const hashV = this.web3service.web3.utils.soliditySha3(
-          order['makerAddress'],
-          order['makerAmount'],
-          order['makerToken'],
-          order['takerAddress'],
-          order['takerAmount'],
-          order['takerToken'],
-          order['expiration'],
-          order['nonce']
-        );
-        const prefixedHash =
-          this.web3service.web3.eth.accounts.hashMessage(hashV);
-
         return this.web3service.web3.eth.sign(prefixedHash, this.web3service.connectedAccount)
         .then((signedMessage) => {
           let v, r, s;
@@ -192,7 +193,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   detailsForOrderOffer(order): void {
     order['expirationMinutes'] = this.expiration;
     order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
-    console.log(order);
+
     const dialogRef = this.dialog.open(DialogInfoOrderOfferComponent, {
       width: '700px',
       data: order

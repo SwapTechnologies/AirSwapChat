@@ -15,7 +15,7 @@
         </mat-card-subtitle>
         <mat-card-content>
           <div>
-            Peer has {{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}} and
+            Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> and
             {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
           </div>
           <div *ngIf="!order.makerValid">
@@ -39,11 +39,11 @@
           </div>
           <div>
             <p>
-              <i>How many {{order.takerProps.symbol}} do you want for this deal?</i>
+              <strong><i>How many {{order.takerProps.symbol}} do you want for this deal?</i></strong>
             </p>
             <div *ngIf="order['UsdPrices']">
               <div>
-                Current prices according to cryptocompare.com:<br>
+                Current prices according to <a href='https://www.cryptocompare.com/' target='_blank'>CryptoCompare.com</a>:<br>
                 <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
                 {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
               </div>
