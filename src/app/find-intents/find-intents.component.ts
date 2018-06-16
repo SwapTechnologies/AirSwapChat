@@ -75,7 +75,9 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   get columnNumber(): number {
-    return this.displayIntents.length < 2 ? 1 : this.columnSpaceObserver.columnNum;
+    const columnNum = this.columnSpaceObserver.columnNum;
+    const numMessages = this.displayIntents.length;
+    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
   enteredTokenName(): void {
