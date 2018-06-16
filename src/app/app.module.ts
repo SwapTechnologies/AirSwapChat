@@ -62,7 +62,6 @@ import { environment } from '../environments/environment';
 // directives
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
-import { TosComponent } from './tos/tos.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -73,7 +72,6 @@ const appRoutes: Routes = [
   { path: 'answer', component: AnswerOrdersComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'myAccount', component: MyAccountComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'getOrder', component: GetOrderDirectComponent, canActivate: [RouterWebsocketActivatedService] },
-  { path: 'tos', component: TosComponent},
   { path: 'error', component: ErrorComponent},
   { path: '**', redirectTo: '' }
 ];
@@ -116,7 +114,6 @@ const appRoutes: Routes = [
     DialogAddTokenComponent,
     MyAccountComponent,
     DialogInfoDealSealComponent,
-    TosComponent,
     DialogYesNoComponent,
     GetOrderDirectComponent,
     DialogReauthenticateComponent,

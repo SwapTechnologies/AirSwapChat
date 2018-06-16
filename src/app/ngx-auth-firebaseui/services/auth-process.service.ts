@@ -85,7 +85,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
    * @param dialogContent - String with HTML Code that can be included in the register
    * @returns
    */
-  public async signUp(name: string, email: string, password: string, dialogContent?: string) {
+  public async signUp(name: string, email: string, password: string) {
     try {
       this.isLoading = true;
 

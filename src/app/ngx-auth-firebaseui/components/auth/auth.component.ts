@@ -25,13 +25,10 @@ export const PHONE_NUMBER_REGEX = new RegExp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
 export class AuthComponent implements OnInit, OnDestroy {
 
   @Input()
-  providers: string[] | string = AuthProvider.ALL; //  google, facebook, twitter, github as array or all as one single string
+  providers: string[];
 
   @Input()
   guestEnabled = true;
-
-  @Input()
-  dialogContent: string;
 
   // tslint:disable-next-line:no-output-on-prefix
   @Output()

@@ -1,8 +1,4 @@
 import { auth } from 'firebase/app';
-import GoogleAuthProvider = auth.GoogleAuthProvider;
-import FacebookAuthProvider = auth.FacebookAuthProvider;
-import TwitterAuthProvider = auth.TwitterAuthProvider;
-import GithubAuthProvider = auth.GithubAuthProvider;
 import AuthProvider = auth.AuthProvider;
 
 export interface INgxAuthFirebaseUIConfig {
@@ -20,7 +16,7 @@ export interface INgxAuthFirebaseUIConfig {
 
 export const defaultAuthFirebaseUIConfig: INgxAuthFirebaseUIConfig = {
   authMethod: 'redirect',
-  authProviders: [new GoogleAuthProvider(), new FacebookAuthProvider(), new TwitterAuthProvider(), new GithubAuthProvider()],
+  authProviders: [],
   onlyEmailPasswordAuth: false,
   onlyProvidersAuth: false,
   toastMessageOnAuthSuccess: true,
