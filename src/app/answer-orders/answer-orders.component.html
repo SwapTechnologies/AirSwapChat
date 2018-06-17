@@ -1,193 +1,369 @@
-<div *ngIf='this.orderService.orderRequests.length > 0'>
-  <h1> You have Open Requests For Offers </h1>
-  <mat-grid-list [cols]='columnNumber' rowHeight='600px'>
-    <mat-grid-tile *ngFor="let order of this.orderService.orderRequests">
-      <mat-card>
-        <mat-card-title>
-          {{order.alias}}
-        </mat-card-title>
-        <mat-card-subtitle>
-          Address: {{order.takerAddress}}
-        </mat-card-subtitle>
-        <mat-card-subtitle>
-          Wants to <b>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}} of yours for his
-            {{order.takerProps.symbol}}</b>
-        </mat-card-subtitle>
-        <mat-card-content>
-          <div>
-            Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> and
-            {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
-          </div>
-          <div *ngIf="!order.makerValid">
-            <span style='color:red'>
-              <strong>
-                {{order.makerProps.symbol}}: {{order.makerProps.address}}
-              </strong>
-            </span>
-          </div>
-          <div *ngIf="!order.takerValid">
-            <span style='color:red'>
-              <strong>
-                {{order.takerProps.symbol}}: {{order.takerProps.address}}
-              </strong>
-            </span>
-          </div>
-          <div *ngIf="!order.bothTokensValid">
-            <span style='color:red'><strong>
-                Warning: Trade contains unvalidated tokens. Don't get scammed.
-            </strong></span>
-          </div>
-          <div>
-            <p>
-              <strong><i>How many {{order.takerProps.symbol}} do you want for this deal?</i></strong>
-            </p>
+<mat-tab-group
+[selectedIndex] = 'selectedTabIndex'>
+  <mat-tab
+  [label]='answerOrderRequests'
+  [disabled] = 'makerOrderService.orderRequests.length == 0'
+  >
+    <div *ngIf='makerOrderService.orderRequests.length > 0'>
+      <h1> A Peer is asking you for an Offer </h1>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.orderRequests)' rowHeight='600px'>
+        <mat-grid-tile *ngFor="let order of makerOrderService.orderRequests">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.takerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                Wants to <strong>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> of yours for peer's <strong>{{order.takerProps.symbol}}</strong>
+              </div>
+              <div>
+                Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> and {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
+              </div>
+              <div *ngIf="!order.makerValid">
+                <span style='color:red'>
+                  <strong>
+                    {{order.makerProps.symbol}}: {{order.makerProps.address}}
+                  </strong>
+                </span>
+              </div>
+              <div *ngIf="!order.takerValid">
+                <span style='color:red'>
+                  <strong>
+                    {{order.takerProps.symbol}}: {{order.takerProps.address}}
+                  </strong>
+                </span>
+              </div>
+              <div *ngIf="!order.bothTokensValid">
+                <span style='color:red'><strong>
+                    Warning: Trade contains unvalidated tokens. Don't get scammed.
+                </strong></span>
+              </div>
+              <div>
+                <p>
+                  <strong><i>How many {{order.takerProps.symbol}} do you want for this deal?</i></strong>
+                </p>
+                <div *ngIf="order['UsdPrices']">
+                  <div>
+                    Current prices according to <a href='https://www.cryptocompare.com/' target='_blank'>CryptoCompare.com</a>:<br>
+                    <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
+                    {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
+                  </div>
+                  <div>
+                    Suggested amount to ask for:<br>
+                    <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}} {{ order.takerProps.symbol }}</strong>
+                  </div>
+                </div>
+                <mat-form-field style="width: 100%;">
+                  <input
+                  matInput
+                  type="number"
+                  placeholder="Offer the deal for {{order.takerProps.symbol}}"
+                  (keydown.enter)="answerOrder(order)"
+                  [(ngModel)]="takerAmount[order.id]"
+                  [disabled]="order.clickedOfferDeal">
+                </mat-form-field>
+              </div>
+              <div>
+                <p>
+                  <i>How many minutes should the order be open for the counterparty to seal?</i>
+                </p>
+                <mat-form-field style="width: 100%;">
+                  <input
+                  matInput
+                  type="number"
+                  placeholder="Minutes after the order should expire"
+                  [(ngModel)]="expiration"
+                  [disabled]="order.clickedOfferDeal">
+                </mat-form-field>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <span *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
+                <button mat-button
+                (click)="detailsForOrderOffer(order)"
+                [disabled]="order.clickedOfferDeal">
+                  DETAILS
+                </button>
+                <button mat-button
+                (click)="answerOrder(order)"
+                [disabled]="order.clickedOfferDeal">
+                  OFFER DEAL
+                </button>
+              </span>
+              <button
+              mat-button
+              (click)="rejectToOffer(order)"
+              color='warn'
+              [disabled]="order.clickedOfferDeal">
+                DECLINE TO OFFER
+              </button>
+            </mat-card-actions>
+            <mat-card-content>
+              <div *ngIf="order.clickedOfferDeal">
+                <i>Sign in Metamask that you accept a deal of your
+                {{order.makerAmount / order.makerDecimals}}
+                {{order.makerProps.symbol}} for peer's
+                {{order.takerAmount / order.takerDecimals}}
+                {{order.takerProps.symbol}}
+                </i>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </mat-tab>
+  <mat-tab
+  [label]='takeSignedOrders'
+  [disabled] = 'takerOrderService.orderResponses.length == 0'>
+  <div *ngIf='takerOrderService.orderResponses.length > 0'>
+    <h1> You Can Close Deals </h1>
+    <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='600px'>
+      <mat-grid-tile *ngFor="let order of takerOrderService.orderResponses">
+        <mat-card>
+          <mat-card-title>
+            You got an response from {{order.alias}}
+          </mat-card-title>
+          <mat-card-subtitle>
+            Address: {{order.makerAddress}}
+          </mat-card-subtitle>
+
+          <mat-card-content>
+            <div>
+              <div>
+                He signed the deal to give you
+                {{order.makerAmount / order.makerDecimals}}
+                {{order.makerProps.symbol}}
+                for {{order.takerAmount / order.takerDecimals}}
+                {{order.takerProps.symbol}}
+              </div>
+              <div>
+                That is a price of <strong>{{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}}
+                {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
+              </div>
+            </div>
             <div *ngIf="order['UsdPrices']">
               <div>
-                Current prices according to <a href='https://www.cryptocompare.com/' target='_blank'>CryptoCompare.com</a>:<br>
+                Current prices according to cryptocompare.com:<br>
                 <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
                 {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
               </div>
               <div>
-                Suggested amount to ask for:<br>
-                <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}}
-                {{ order.takerProps.symbol }}</strong>
+                Suggested price according to this would be :<br>
+                <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
+                {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
               </div>
             </div>
-            <mat-form-field style="width: 100%;">
-              <input
-              matInput
-              type="number"
-              placeholder="Offer the deal for {{order.takerProps.symbol}}"
-              (keydown.enter)="answerOrder(order)"
-              [(ngModel)]="takerAmount[order.id]"
-              [disabled]="order.clickedOfferDeal">
-            </mat-form-field>
-          </div>
-          <div>
-            <p>
-              <i>How many minutes should the order be open for the counterparty to seal?</i>
-            </p>
-            <mat-form-field style="width: 100%;">
-              <input
-              matInput
-              type="number"
-              placeholder="Minutes after the order should expire"
-              [(ngModel)]="expiration"
-              [disabled]="order.clickedOfferDeal">
-            </mat-form-field>
-          </div>
-        </mat-card-content>
-        <mat-card-actions>
-          <span *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
-            <button mat-button
-            (click)="detailsForOrderOffer(order)"
-            [disabled]="order.clickedOfferDeal">
+            <div>
+              Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button
+            mat-button
+            (click)="dealSealDetails(order)">
               DETAILS
             </button>
-            <button mat-button
-            (click)="answerOrder(order)"
-            [disabled]="order.clickedOfferDeal">
-              OFFER DEAL
+            <button
+            mat-button
+            (click)="sealDeal(order)"
+            [disabled]="order.clickedDealSeal">
+              SEAL THE DEAL
             </button>
-          </span>
-          <button
-          mat-button
-          (click)="rejectToOffer(order)"
-          color='warn'
-          [disabled]="order.clickedOfferDeal">
-            DECLINE TO OFFER
-          </button>
-        </mat-card-actions>
-        <mat-card-content>
-          <div *ngIf="order.clickedOfferDeal">
-            <i>Sign in Metamask that you accept a deal of your
-            {{order.makerAmount / order.makerDecimals}}
-            {{order.makerProps.symbol}} for peers
-            {{order.takerAmount / order.takerDecimals}}
+            <button
+            mat-button
+            (click)="rejectDeal(order)"
+            color='warn'
+            [disabled]="order.clickedDealSeal">
+              DECLINE DEAL
+            </button>
+          </mat-card-actions>
+          <mat-card-content *ngIf="order.clickedDealSeal">
+            <i>Send transaction in Metamask to seal the deal to trade peer's
+            {{order.makerAmount /order.makerDecimals}}
+            {{order.makerProps.symbol}} for your
+            {{order.takerAmount/order.takerDecimals}}
             {{order.takerProps.symbol}}
             </i>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </mat-grid-tile>
-  </mat-grid-list>
-</div>
+            <div *ngIf="order.txHash">
+              Follow the transaction on Etherscan <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+  </mat-tab>
+  <mat-tab
+  [label]='pendingOrders'
+  [disabled] = 'takerOrderService.pendingOrders.length + makerOrderService.answeredRequests.length == 0'>
+    <div *ngIf='takerOrderService.pendingOrders.length > 0'>
+      <h1> Waiting for orders to get mined</h1>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.pendingOrders)' rowHeight='400px'>
+        <mat-grid-tile *ngFor="let order of takerOrderService.pendingOrders">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.makerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                You agreed to trade peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
+                 for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
+              </div>
+              <div>
+                Waiting for the transaction to get mined. Follow it on Etherscan: <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+    <div *ngIf='makerOrderService.answeredRequests.length > 0'>
+      <h1> Waiting for Answer from Taker </h1>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.answeredRequests)' rowHeight='400px'>
+        <mat-grid-tile *ngFor="let order of makerOrderService.answeredRequests">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.takerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                You offered to <b>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</b> of yours for peer's
+                <b> {{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</b>.
+              </div>
+              <div>
+                <span *ngIf="!order.txHash">
+                  Waiting for the peer to accept and send the swap transaction to the blockchain.
+                </span>
+                <span *ngIf="order.txHash">
+                  The peer has send the swap to the blockchain. Follow it on Etherscan: <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                </span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </mat-tab>
+  <mat-tab
+  [label]='doneDeals'
+  [disabled] = 'takerOrderService.finishedOrders.length + makerOrderService.doneDeals.length == 0'>
+    <div *ngIf='takerOrderService.finishedOrders.length > 0'>
+      <h1> Succeeded Trades as Taker </h1>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.finishedOrders)' rowHeight='400px'>
+        <mat-grid-tile *ngFor="let order of takerOrderService.finishedOrders">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.makerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                You traded <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>
+                 for peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
+              </div>
+              <div>
+                Verify this transaction on the blockchain using Etherscan: <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+    <div *ngIf='makerOrderService.doneDeals.length > 0'>
+      <h1> Succeeded Trades as Maker </h1>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.doneDeals)' rowHeight='400px'>
+        <mat-grid-tile *ngFor="let order of makerOrderService.doneDeals">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.takerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                You traded <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
+                  for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>
+              </div>
+              <div>
+                Verify this transaction on the blockchain using Etherscan: <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </mat-tab>
+  <mat-tab
+  [label]='abortedDeals'
+  [disabled] = 'takerOrderService.errorOrders.length + makerOrderService.errorRequests.length == 0'>
+    <h1> Aborted Trades </h1>
+    <!-- Aborted Trades where you were the taker -->
+    <div *ngIf='takerOrderService.errorOrders.length > 0'>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='600px'>
+        <mat-grid-tile *ngFor="let order of takerOrderService.errorOrders">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.makerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                <span *ngIf="order.takerAmount">
+                  Order was about trading peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
+                </span>
+                <span *ngIf="!order.takerAmount">
+                  You requested an offer for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>.
+                </span>
+              </div>
+              <div>
+                {{order.error}}
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+    <!-- Aborted Trades where you were the taker -->
+    <div *ngIf='makerOrderService.errorRequests.length > 0'>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='600px'>
+        <mat-grid-tile *ngFor="let order of makerOrderService.errorRequests">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.takerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                Order was about trading your <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>.
+              </div>
+              <div>
+                {{order.error}}
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </mat-tab>
+</mat-tab-group>
 
-<div *ngIf='this.getOrderService.orderResponses.length > 0'>
-  <h1> You Can Close Deals </h1>
-  <mat-grid-list [cols]='columnNumber2' rowHeight='600px'>
-    <mat-grid-tile *ngFor="let order of getOrderService.orderResponses">
-      <mat-card>
-        <mat-card-title>
-          You got an response from {{order.alias}}
-        </mat-card-title>
-        <mat-card-subtitle>
-          Address: {{order.makerAddress}}
-        </mat-card-subtitle>
-
-        <mat-card-content>
-          <div>
-            <div>
-              He signed the deal to give you
-              {{order.makerAmount / order.makerDecimals}}
-              {{order.makerProps.symbol}}
-              for {{order.takerAmount / order.takerDecimals}}
-              {{order.takerProps.symbol}}
-            </div>
-            <div>
-              That is a price of <strong>{{order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals | number:'1.1-8'}}
-              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
-            </div>
-          </div>
-          <div *ngIf="order['UsdPrices']">
-            <div>
-              Current prices according to cryptocompare.com:<br>
-              <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
-              {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
-            </div>
-            <div>
-              Suggested price according to this would be :<br>
-              <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
-              {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
-            </div>
-          </div>
-          <div>
-            Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec
-          </div>
-        </mat-card-content>
-        <mat-card-actions>
-          <button
-          mat-button
-          (click)="dealSealDetails(order)">
-            DETAILS
-          </button>
-          <button
-          mat-button
-          (click)="sealDeal(order)"
-          [disabled]="order.clickedDealSeal">
-            SEAL THE DEAL
-          </button>
-          <button
-          mat-button
-          (click)="rejectDeal(order)"
-          color='warn'
-          [disabled]="order.clickedDealSeal">
-            DECLINE DEAL
-          </button>
-        </mat-card-actions>
-        <mat-card-content *ngIf="order.clickedDealSeal">
-          <i>Send transaction in Metamask to seal the deal to trade peers
-          {{order.makerAmount /order.makerDecimals}}
-          {{order.makerProps.symbol}} for your
-          {{order.takerAmount/order.takerDecimals}}
-          {{order.takerProps.symbol}}
-          </i>
-        </mat-card-content>
-      </mat-card>
-    </mat-grid-tile>
-  </mat-grid-list>
-</div>
-
-<div *ngIf='this.orderService.orderRequests.length === 0 && this.getOrderService.orderResponses.length === 0'>
-  <p>There are currently no offer requests for you.</p>
+<div *ngIf='!gotOrderRequests && !gotOrdersToTake && !gotPendingOrders && !gotDoneDeals && !gotAbortedDeals'>
+  <p>You haven't interacted with any peer today.</p>
 </div>

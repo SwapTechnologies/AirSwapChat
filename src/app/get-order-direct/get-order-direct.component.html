@@ -85,6 +85,9 @@
             [(ngModel)]="makerAmount">
           </mat-form-field>
         </div>
+        <div *ngIf="sentRequest">
+          <i>{{sentRequest}}</i>
+        </div>
       </mat-card-content>
       <mat-card-actions>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
@@ -101,9 +104,6 @@
         APPROVE {{this.takerToken.symbol}}
         </button>
       </mat-card-actions>
-      <mat-card-content>
-        <i>{{responseMessage}}</i>
-      </mat-card-content>
     </mat-card>
   </div>
 </div>

@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject';
 import { environment } from '../../environments/environment';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
-import { OrderRequestsService } from '../services/order-requests.service';
+// import { OrderRequestsService } from '../services/order-requests.service';
 import { ConnectionService } from './connection.service';
 
 declare var require: any;
@@ -22,8 +22,7 @@ export class WebsocketService {
 
   constructor(
     private web3service: ConnectWeb3Service,
-    private connectionService: ConnectionService,
-    private orderRequestsService: OrderRequestsService,
+    private connectionService: ConnectionService
   ) {}
 
   public initSocket(): Promise<boolean> {
@@ -57,8 +56,6 @@ export class WebsocketService {
 
             this.connectionService.loggedInUser.wsAddress = this.web3service.connectedAccount.toLowerCase();
             this.connectionService.wsConnected = true;
-
-            this.listenForOrders();
             resolve(true);
 
           } else {
@@ -93,35 +90,6 @@ export class WebsocketService {
         this.performingHandshake = false;
       })
     );
-  }
-
-  listenForOrders(): void {
-    // start a listener that looks for messages
-    this.websocketSubscriptions['listenForOrders'] =
-    this.websocketSubject
-    .subscribe(message => {
-      const receivedMessage = JSON.parse(message);
-      const content = JSON.parse(receivedMessage['message']);
-      const method = content['method'];
-      if (method === 'getOrder') {
-        const uuid = content['id'];
-        const makerAddress = receivedMessage['receiver'];
-        const makerAmount = content['params']['makerAmount'];
-        const makerToken = content['params']['makerToken'];
-        const takerToken = content['params']['takerToken'];
-        const takerAddress = content['params']['takerAddress'];
-
-        const newOrder = {
-          makerAddress: makerAddress,
-          makerAmount: makerAmount,
-          makerToken: makerToken,
-          takerToken: takerToken,
-          takerAddress: takerAddress,
-          id: uuid
-        };
-        this.orderRequestsService.addOrder(newOrder);
-      }
-    });
   }
 
   // idleListening(): void {
@@ -162,13 +130,13 @@ export class WebsocketService {
   setIntents(intents: any[]): string {
     const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
     const jsonrpc = {
-        'id': callId,
-        'jsonrpc': '2.0',
-        'method': 'setIntents',
-        'params': {
-            'address': this.web3service.connectedAccount.toLowerCase(),
-            'intents': intents
-        },
+      'id': callId,
+      'jsonrpc': '2.0',
+      'method': 'setIntents',
+      'params': {
+          'address': this.web3service.connectedAccount.toLowerCase(),
+          'intents': intents
+      },
     };
 
     this.sendRPC(jsonrpc, this.indexerAddress);
@@ -180,15 +148,15 @@ export class WebsocketService {
            takerToken: string, takerAddress: string): string {
     const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
     const jsonrpc = {
-        'id': callId,
-        'jsonrpc': '2.0',
-        'method': 'getOrder',
-        'params': {
-          'makerAmount': makerAmount,
-          'makerToken': makerToken,
-          'takerToken': takerToken,
-          'takerAddress': takerAddress
-        },
+      'id': callId,
+      'jsonrpc': '2.0',
+      'method': 'getOrder',
+      'params': {
+        'makerAmount': makerAmount,
+        'makerToken': makerToken,
+        'takerToken': takerToken,
+        'takerAddress': takerAddress
+      },
     };
     this.sendRPC(jsonrpc, makerAddress);
     return callId;
@@ -248,6 +216,49 @@ export class WebsocketService {
     };
     this.sendRPC(jsonrpc, receiver);
     return uuid;
+  }
+
+  tookOrder(id: string, txHash: string, makerAddress: string): string {
+    const jsonrpc = {
+      'id': id,
+      'jsonrpc': '2.0',
+      'method': 'tookOrder',
+      'params': {
+        'txHash': txHash,
+      },
+    };
+    this.sendRPC(jsonrpc, makerAddress);
+    return id;
+  }
+
+  tellDeletedOrder(receiver, id) {
+    const jsonrpc = {
+      'id': id,
+      'jsonrpc': '2.0',
+      'method': 'deletedOrder',
+    };
+    this.sendRPC(jsonrpc, receiver);
+    return id;
+  }
+
+  tellOrderTimedOut(receiver, id) {
+    const jsonrpc = {
+      'id': id,
+      'jsonrpc': '2.0',
+      'method': 'orderTimedOut',
+    };
+    this.sendRPC(jsonrpc, receiver);
+    return id;
+  }
+
+  tellMakerMinedOrder(makerAddress, id) {
+    const jsonrpc = {
+      'id': id,
+      'jsonrpc': '2.0',
+      'method': 'minedOrder',
+    };
+    this.sendRPC(jsonrpc, makerAddress);
+    return id;
   }
 
   // pingPeer(receiver): string {

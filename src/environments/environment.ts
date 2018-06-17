@@ -18,7 +18,7 @@ export const environment = {
     websocketUrl: 'wss://sandbox.airswap-api.com/websocket',
     // desiredNetwork: 'Mainnet',
     // airswapDexAddress: '0x8fd3121013A07C57f0D69646E86E7a4880b467b7',
-    // websocketUrl: 'wss://connect.airswap-api.com/websocket'; // mainnet
+    // websocketUrl: 'wss://connect.airswap-api.com/websocket' // mainnet
   }
 };
 

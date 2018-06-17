@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Subscription } from 'rxjs/Subscription';
 
 // services
@@ -8,12 +7,12 @@ import { ColumnSpaceObserverService } from '../services/column-space-observer.se
 import { ConnectionService } from '../services/connection.service';
 import { Erc20Service } from '../services/erc20.service';
 import { MessagingService } from '../services/messaging.service';
-import { GetOrderService } from '../services/get-order.service';
+import { TakerOrderService } from '../services/taker-order.service';
 import { TokenService, EtherAddress } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { DialogGetOrderComponent } from '../dialogs/dialog-get-order/dialog-get-order.component';
 import { DialogAddTokenComponent } from '../dialogs/dialog-add-token/dialog-add-token.component';
 
@@ -52,12 +51,12 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     private connectionService: ConnectionService,
     private erc20services: Erc20Service,
     private messageService: MessagingService,
-    public getOrderService: GetOrderService,
+    public takerOrderService: TakerOrderService,
     public tokenService: TokenService,
     private userOnlineService: UserOnlineService,
-    private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
     public dialog: MatDialog,
+    public snackBar: MatSnackBar,
     ) { }
 
   ngOnInit() {
@@ -134,7 +133,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           this.foundIntents = this.foundIntents.filter(x => {
             return (x.address !== this.connectionService.loggedInUser.address);
           });
-          // this.stillLoading = true;
+
           this.makerTokens = [];
           this.takerTokens = [];
           this.websocketSubscription.unsubscribe();
@@ -164,10 +163,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     this.checkAllApprovals();
     this.fetchBalances();
     this.checkPeerData();
-  }
-
-  getExponential(exponent: number): number {
-    return 10 ** exponent;
   }
 
   getTokenProperties(): void {
@@ -248,10 +243,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     return this.erc20services.approvedAmount(contract,  this.airswapDexService.airswapDexAddress);
   }
 
-  stringIsValidNumber(x: string): boolean {
-    return Number(x) > 0;
-  }
-
   approveTaker(intent: any): void {
     this.clickedApprove[intent['takerToken']] = true;
     const contract = this.erc20services.getContract(intent.takerToken);
@@ -298,13 +289,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   message(intent: any): void {
-    // const selectedIntentIdx = this.displayIntents.findIndex(x => {
-    //   return x.uid === intent.uid;
-    // });
-    // const helpObject = this.displayIntents[0];
-    // this.displayIntents[0] = intent;
-    // this.displayIntents[selectedIntentIdx] = helpObject;
-
     this.messageService.getPeerAndAdd(intent.peer.uid)
     .then(peer => {
       this.messageService.selectedPeer = peer;
@@ -313,7 +297,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   openDialogGetOrder(intent: any): void {
-    console.log('open dialog', intent);
     const dialogRef = this.dialog.open(DialogGetOrderComponent, {
       width: '500px',
       data: intent
@@ -321,19 +304,25 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(makerAmount => {
       if (makerAmount) {
-        console.log(makerAmount, intent);
-
-        const uuid = this.getOrderService.sendGetOrder({
+        const order = {
           makerAddress: intent.address,
-          takerAddress: this.web3service.connectedAccount.toLowerCase(),
           makerAmount: this.erc20services.toFixed(makerAmount),
           makerToken: intent.makerToken,
           takerToken: intent.takerToken,
+          takerAddress: this.connectionService.loggedInUser.address,
+          peer: intent.peer,
           makerProps: intent.makerProps,
           takerProps: intent.takerProps,
           makerDecimals: intent.makerDecimals,
-        });
-        intent['sentRequest'] = uuid;
+          takerDecimals: intent.takerDecimals,
+          makerValid: intent.makerValid,
+          takerValid: intent.takerValid,
+          bothTokensValid: intent.bothTokensValid
+        };
+        this.takerOrderService.sendGetOrder(order);
+        this.snackBar.open('Asking ' + intent.peer.alias + ' for an offer in ' +
+          intent.takerProps.symbol + ' for ' + makerAmount / intent.makerDecimals +
+          ' ' + intent.makerProps.symbol, 'Ok.', {duration: 2000});
       }
     });
   }

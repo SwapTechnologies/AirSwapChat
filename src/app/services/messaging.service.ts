@@ -134,7 +134,7 @@ export class MessagingService {
     }
   }
 
-  startMessenger(): void {
+  startMessenger(): Promise<any> {
     console.log('Starting the messenger.');
     console.log('Looking for offline messages.');
     // check firebase for unread messages
@@ -159,7 +159,7 @@ export class MessagingService {
       }
     });
 
-    Promise.all(promiseList)
+    return Promise.all(promiseList)
     .then(() => {
       console.log('Start listening for new messages.');
       // start a listener that ears for messages

@@ -89,6 +89,35 @@ export class TokenService {
       isValid: isValid
     };
   }
+  
+  getTokenAndWhetherItsValidByName(name: string): any {
+    let isValid: boolean;
+    let token: Token;
+
+    token = validatedTokens.find(x => {
+      return x.name.toLowerCase() === name.toLowerCase()
+             || x.symbol.toLowerCase() === name.toLowerCase();
+    });
+
+    if (token) {
+      isValid = true;
+    } else {
+      token = this.customTokens.find(x => {
+        return x.name.toLowerCase() === name.toLowerCase()
+             || x.symbol.toLowerCase() === name.toLowerCase();
+      });
+      if (token) {
+        isValid = false;
+      } else {
+        token = null;
+        isValid = false;
+      }
+    }
+    return {
+      token: token,
+      isValid: isValid
+    };
+  }
 
   isValidToken(address: string): boolean {
     const validToken = validatedTokens.find(x => {

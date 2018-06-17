@@ -1,0 +1,28 @@
+Taker:
+contact peer
+  -> sendGetOrder(order): order --> sentOrders CHECK
+  ... listen for answer ...
+    -> no answer, tough luck forever
+  ===
+    -> deleted request by maker. it's over :-( XsentOrders +errorOrders CHECK
+  ===
+    -> answer from WS: signedOrder (address, amount, token, expiration, nonce, v, r, s): get remaining info and --> XsentOrders +orderResponses CHECK
+      -> delete (tell Maker) CHECK
+      -> accept it --> XorderResponses +pendingOrders (tell Maker) CHECK
+        -> mined --> XpendingOrders +finishedOrders (tell Maker) CHECK
+        ===
+        -> expires before --> XpendingOrders +errorOrders (tell Maker) CHECK
+
+Maker:
+peer contacts you with getOrder order --> +orderRequests CHECK
+  -> delete it (tellTaker) CHECK
+  ===
+  -> sign it and send signature -> XorderRequests +answeredRequests
+    -> taker deletes it CHECK
+    ===
+    -> order expires CHECK
+    ===
+    -> taker accepts it -> txHash
+      -> taker mines it in time
+      ===
+      -> taker is too slow

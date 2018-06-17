@@ -1,0 +1,13 @@
+Maker:
+peer contacts you with getOrder order --> +orderRequests CHECK
+  -> delete it (tellTaker) CHECK
+  ===
+  -> sign it and send signature -> XorderRequests +answeredRequests
+    -> taker deletes it CHECK
+    ===
+    -> order expires CHECK
+    ===
+    -> taker accepts it -> txHash
+      -> taker mines it in time
+      ===
+      -> taker is too slow

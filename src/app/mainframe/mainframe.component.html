@@ -6,7 +6,7 @@
   <!-- Start Define the Left Sidenav -->
   <mat-sidenav
   #sidenav mode="side"
-  [opened]="this.connectionService.connected && firebaseService.userIsVerified"
+  [opened]="connectionService.connected && firebaseService.userIsVerified && initializedPage"
   class="main-sidenav"
   [fixedInViewport]="false" [fixedTopGap]="0"
   [fixedBottomGap]="0">
@@ -22,7 +22,7 @@
         <mat-icon
         class='menu_icon'
         [matBadge]="numUnreadMessages"
-        [matBadgeHidden]="!this.showMessageBadge"
+        [matBadgeHidden]="!showMessageBadge"
         matBadgePosition="above after">chat</mat-icon>
         MESSAGE
       </button>
@@ -34,10 +34,10 @@
         </button>
       </a>
 
+      <!-- [disabled]="!showAnswerBadge" -->
       <a routerLink="./answer">
         <button
         mat-raised-button
-        [disabled]="!showAnswerBadge"
         class="menu_button">
           <mat-icon
           class='menu_icon'
@@ -88,7 +88,7 @@
   <!-- Start Define The main center container -->
   <mat-sidenav-content>
     <div class="content">
-      <div *ngIf="connectionService.connected && firebaseService.userIsVerified; else initialPage">
+      <div *ngIf="connectionService.connected && firebaseService.userIsVerified && initializedPage; else initialPage">
         <router-outlet></router-outlet>
       </div>
       <ng-template #initialPage>
@@ -128,11 +128,11 @@
   </mat-sidenav-content>
   <mat-sidenav #sidechat
   mode="side"
-  [opened]="this.connectionService.connected && this.messageService.showMessenger"
+  [opened]="connectionService.connected && firebaseService.userIsVerified && messageService.showMessenger"
   class="chat-side"
   position="end"
   disableClose="true">
-    <app-message-system *ngIf="this.messageService.showMessenger"></app-message-system>
+    <app-message-system *ngIf="messageService.showMessenger"></app-message-system>
   </mat-sidenav>
 </mat-sidenav-container>
 
