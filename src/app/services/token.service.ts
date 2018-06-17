@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import { FirebaseService } from './firebase.service';
-import { Erc20Service } from './erc20.service';
 
 import { validatedTokens } from './tokens-validated';
 import { Token } from '../types/types';
@@ -20,7 +19,6 @@ export class TokenService {
 
   constructor(
     private firebaseService: FirebaseService,
-    private erc20Service: Erc20Service,
   ) { }
 
   getToken(address: string): Token {
@@ -89,7 +87,7 @@ export class TokenService {
       isValid: isValid
     };
   }
-  
+
   getTokenAndWhetherItsValidByName(name: string): any {
     let isValid: boolean;
     let token: Token;
@@ -144,7 +142,7 @@ export class TokenService {
   }
 
   getCustomTokenListFromDB(): Promise<Token[]> {
-    if (Date.now() - this.lastUpdateOfCustomTokens > 60000) {
+    if (!this.customTokens || Date.now() - this.lastUpdateOfCustomTokens > 60000) {
       this.lastUpdateOfCustomTokens = Date.now();
       return this.firebaseService.getTokenListFromDatabase()
       .then((customTokens) => {

@@ -255,6 +255,64 @@
     </div>
   </mat-tab>
   <mat-tab
+  [label]='abortedDeals'
+  [disabled] = 'takerOrderService.errorOrders.length + makerOrderService.errorRequests.length == 0'>
+    <div *ngIf='takerOrderService.errorOrders.length + makerOrderService.errorRequests.length > 0'>
+      <h1> Aborted Trades As </h1>
+      <!-- Aborted Trades where you were the taker -->
+      <div *ngIf='takerOrderService.errorOrders.length > 0'>
+        <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='600px'>
+          <mat-grid-tile *ngFor="let order of takerOrderService.errorOrders">
+            <mat-card>
+              <mat-card-title>
+                {{order.alias}}
+              </mat-card-title>
+              <mat-card-subtitle>
+                Address: {{order.makerAddress}}
+              </mat-card-subtitle>
+              <mat-card-content>
+                <div>
+                  <span *ngIf="order.takerAmount">
+                    Order was about trading peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
+                  </span>
+                  <span *ngIf="!order.takerAmount">
+                    You requested an offer for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>.
+                  </span>
+                </div>
+                <div>
+                  {{order.error}}
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </div>
+      <!-- Aborted Trades where you were the taker -->
+      <div *ngIf='makerOrderService.errorRequests.length > 0'>
+        <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='600px'>
+          <mat-grid-tile *ngFor="let order of makerOrderService.errorRequests">
+            <mat-card>
+              <mat-card-title>
+                {{order.alias}}
+              </mat-card-title>
+              <mat-card-subtitle>
+                Address: {{order.takerAddress}}
+              </mat-card-subtitle>
+              <mat-card-content>
+                <div>
+                  Order was about trading your <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>.
+                </div>
+                <div>
+                  {{order.error}}
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </div>
+    </div>
+  </mat-tab>
+  <mat-tab
   [label]='doneDeals'
   [disabled] = 'takerOrderService.finishedOrders.length + makerOrderService.doneDeals.length == 0'>
     <div *ngIf='takerOrderService.finishedOrders.length > 0'>
@@ -299,62 +357,6 @@
               </div>
               <div>
                 Verify this transaction on the blockchain using Etherscan: <a href='https://rinkeby.etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </div>
-  </mat-tab>
-  <mat-tab
-  [label]='abortedDeals'
-  [disabled] = 'takerOrderService.errorOrders.length + makerOrderService.errorRequests.length == 0'>
-    <h1> Aborted Trades </h1>
-    <!-- Aborted Trades where you were the taker -->
-    <div *ngIf='takerOrderService.errorOrders.length > 0'>
-      <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='600px'>
-        <mat-grid-tile *ngFor="let order of takerOrderService.errorOrders">
-          <mat-card>
-            <mat-card-title>
-              {{order.alias}}
-            </mat-card-title>
-            <mat-card-subtitle>
-              Address: {{order.makerAddress}}
-            </mat-card-subtitle>
-            <mat-card-content>
-              <div>
-                <span *ngIf="order.takerAmount">
-                  Order was about trading peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
-                </span>
-                <span *ngIf="!order.takerAmount">
-                  You requested an offer for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>.
-                </span>
-              </div>
-              <div>
-                {{order.error}}
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </div>
-    <!-- Aborted Trades where you were the taker -->
-    <div *ngIf='makerOrderService.errorRequests.length > 0'>
-      <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='600px'>
-        <mat-grid-tile *ngFor="let order of makerOrderService.errorRequests">
-          <mat-card>
-            <mat-card-title>
-              {{order.alias}}
-            </mat-card-title>
-            <mat-card-subtitle>
-              Address: {{order.takerAddress}}
-            </mat-card-subtitle>
-            <mat-card-content>
-              <div>
-                Order was about trading your <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>.
-              </div>
-              <div>
-                {{order.error}}
               </div>
             </mat-card-content>
           </mat-card>
