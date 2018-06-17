@@ -66,12 +66,12 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.selectedTabIndex = 1;
     } else if (this.gotPendingOrders) {
       this.selectedTabIndex = 2;
-    } else if (this.gotDoneDeals) {
+    } else if (this.gotAbortedDeals) {
       this.selectedTabIndex = 3;
-    } else if (this.abortedDeals) {
+    } else if (this.gotDoneDeals) {
       this.selectedTabIndex = 4;
     } else {
-      this.selectedTabIndex = null;
+      this.selectedTabIndex = 0;
     }
   }
 
@@ -80,7 +80,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get answerOrderRequests(): string {
-    let baseName = 'Answer Order Requests';
+    let baseName = 'ANSWER REQUESTS';
     this.gotOrderRequests = this.makerOrderService.orderRequests.length > 0;
     if (this.gotOrderRequests) {
       baseName = baseName + ' (' + this.makerOrderService.orderRequests.length + ')';
@@ -89,7 +89,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get takeSignedOrders(): string {
-    let baseName = 'Take Signed Orders';
+    let baseName = 'SIGNED ORDERS';
     this.gotOrdersToTake = this.takerOrderService.orderResponses.length > 0;
     if (this.gotOrdersToTake) {
       baseName = baseName + ' (' + this.takerOrderService.orderResponses.length + ')';
@@ -98,7 +98,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get pendingOrders(): string {
-    let baseName = 'Pending Orders';
+    let baseName = 'PENDING';
     const sum = this.takerOrderService.pendingOrders.length +
                 this.makerOrderService.answeredRequests.length;
     this.gotPendingOrders = sum > 0;
@@ -109,7 +109,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get doneDeals(): string {
-    let baseName = 'Done Deals Today';
+    // tslint:disable-next-line:quotemark
+    let baseName = "TODAY'S TRADES";
     const sum = this.makerOrderService.doneDeals.length +
                 this.takerOrderService.finishedOrders.length;
     this.gotDoneDeals = sum > 0;
@@ -120,7 +121,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get abortedDeals(): string {
-    let baseName = 'Aborted Deals';
+    let baseName = 'ABORTED TRADES';
     const sum = this.takerOrderService.errorOrders.length +
                 this.makerOrderService.errorRequests.length;
     this.gotAbortedDeals = sum > 0;
@@ -206,7 +207,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.sign_order(order)
       .then(fullOrder => {
         this.makerOrderService.answerOrder(fullOrder, () => {
-          this.selectedTabIndex = 3;
+          this.selectedTabIndex = 4;
           this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
         });
         this.selectedTabIndex = 2;
@@ -238,12 +239,12 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
         order['clickedDealSeal'] = true;
         this.takerOrderService.sealDeal(order,
           () => {
-            this.snackbar.open('Sent signed order to ' + order.alias);
+            this.snackbar.open('Sent signed order to ' + order.alias, 'Ok.', {duration: 3000});
             this.selectedTabIndex = 2;
           },
           () => {
-            this.snackbar.open('Successfully traded with ' + order.alias);
-            this.selectedTabIndex = 3;
+            this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
+            this.selectedTabIndex = 4;
           });
       }
     });
@@ -264,7 +265,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   rejectDeal(order: any): void {
     this.takerOrderService.rejectDeal(order, () => {
       if (this.takerOrderService.orderResponses.length === 0) {
-        this.selectedTabIndex = 4;
+        this.selectedTabIndex = 3;
       }
     });
   }
