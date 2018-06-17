@@ -1,19 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
 import { DialogInfoOrderOfferComponent } from '../dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
 import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.component';
 
 // services
-import { AirswapdexService } from '../services/airswapdex.service';
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Erc20Service } from '../services/erc20.service';
-import { WebsocketService } from '../services/websocket.service';
-import { OrderRequestsService } from '../services/order-requests.service';
-import { GetOrderService } from '../services/get-order.service';
+import { MakerOrderService } from '../services/maker-order.service';
+import { TakerOrderService } from '../services/taker-order.service';
 
 interface Order {
   makerAddress: string;
@@ -38,22 +36,98 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public expiration = 5;
   public timers: any = {};
 
+  public gotOrderRequests = false;
+  public gotOrdersToTake = false;
+  public gotPendingOrders = false;
+  public gotDoneDeals = false;
+  public gotAbortedDeals = false;
+  public selectedTabIndex: number;
+
   constructor(
-    private airswapDexService: AirswapdexService,
     public columnSpaceObserver: ColumnSpaceObserverService,
     private erc20Service: Erc20Service,
-    public getOrderService: GetOrderService,
-    public orderService: OrderRequestsService,
+    public takerOrderService: TakerOrderService,
+    public makerOrderService: MakerOrderService,
     private web3service: ConnectWeb3Service,
-    public wsService: WebsocketService,
     public dialog: MatDialog,
+    public snackbar: MatSnackBar,
   ) { }
 
   ngOnInit() {
+    const a = this.answerOrderRequests;
+    const b = this.takeSignedOrders;
+    const c = this.pendingOrders;
+    const d = this.doneDeals;
+    const e = this.abortedDeals;
+
+    if (this.gotOrderRequests) {
+      this.selectedTabIndex = 0;
+    } else if (this.gotOrdersToTake) {
+      this.selectedTabIndex = 1;
+    } else if (this.gotPendingOrders) {
+      this.selectedTabIndex = 2;
+    } else if (this.gotDoneDeals) {
+      this.selectedTabIndex = 3;
+    } else if (this.abortedDeals) {
+      this.selectedTabIndex = 4;
+    } else {
+      this.selectedTabIndex = null;
+    }
   }
 
   ngOnDestroy() {
     if (this.websocketSubscription) { this.websocketSubscription.unsubscribe(); }
+  }
+
+  get answerOrderRequests(): string {
+    let baseName = 'Answer Order Requests';
+    this.gotOrderRequests = this.makerOrderService.orderRequests.length > 0;
+    if (this.gotOrderRequests) {
+      baseName = baseName + ' (' + this.makerOrderService.orderRequests.length + ')';
+    }
+    return baseName;
+  }
+
+  get takeSignedOrders(): string {
+    let baseName = 'Take Signed Orders';
+    this.gotOrdersToTake = this.takerOrderService.orderResponses.length > 0;
+    if (this.gotOrdersToTake) {
+      baseName = baseName + ' (' + this.takerOrderService.orderResponses.length + ')';
+    }
+    return baseName;
+  }
+
+  get pendingOrders(): string {
+    let baseName = 'Pending Orders';
+    const sum = this.takerOrderService.pendingOrders.length +
+                this.makerOrderService.answeredRequests.length;
+    this.gotPendingOrders = sum > 0;
+    if (this.gotPendingOrders) {
+      baseName = baseName + ' (' + sum + ')';
+    }
+    return baseName;
+  }
+
+  get doneDeals(): string {
+    let baseName = 'Done Deals Today';
+    const sum = this.makerOrderService.doneDeals.length +
+                this.takerOrderService.finishedOrders.length;
+    this.gotDoneDeals = sum > 0;
+    if (this.gotDoneDeals) {
+      baseName = baseName + ' (' + sum + ')';
+    }
+    return baseName;
+  }
+
+  get abortedDeals(): string {
+    let baseName = 'Aborted Deals';
+    const sum = this.takerOrderService.errorOrders.length +
+                this.makerOrderService.errorRequests.length;
+    this.gotAbortedDeals = sum > 0;
+    if (this.gotAbortedDeals) {
+      baseName = baseName + ' (' + sum + ')';
+    }
+    return baseName;
   }
 
   takerHasEnough(order: any): boolean {
@@ -61,17 +135,17 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       (order.takerBalanceTakerToken / order.takerDecimals));
   }
 
-  get columnNumber(): number {
+  columnNumber(array): number {
     const columnNum = this.columnSpaceObserver.columnNum;
-    const numMessages = this.orderService.orderRequests.length;
+    const numMessages = array.length;
     return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
-  get columnNumber2(): number {
-    const columnNum = this.columnSpaceObserver.columnNum;
-    const numMessages = this.getOrderService.orderResponses.length;
-    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
-  }
+  // get columnNumber2(): number {
+  //   const columnNum = this.columnSpaceObserver.columnNum;
+  //   const numMessages = this.takerOrderService.orderResponses.length;
+  //   return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
+  // }
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
@@ -131,11 +205,15 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
       this.sign_order(order)
       .then(fullOrder => {
-        this.wsService.sendOrder(order['takerAddress'], fullOrder, uuid);
-        this.orderService.orderRequests = this.orderService.orderRequests.filter(
-          x => x.id !== uuid);
+        this.makerOrderService.answerOrder(fullOrder, () => {
+          this.selectedTabIndex = 3;
+          this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
+        });
+        this.selectedTabIndex = 2;
+        this.snackbar.open('Signed and answered the deal with ' + order.alias +
+          '. Now it is up to your peer.', 'Ok', {duration: 3000});
       }).catch(error => {
-        console.log('Sign failed.');
+        console.log('Sign aborted.');
         order['clickedOfferDeal'] = false;
       });
     }
@@ -158,19 +236,15 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         order['clickedDealSeal'] = true;
-        this.airswapDexService.fill(
-        order['makerAddress'], order['makerAmount'], order['makerToken'],
-        order['takerAddress'],  order['takerAmount'], order['takerToken'],
-        order['expiration'], order['nonce'], order['v'], order['r'], order['s'])
-        .then(() => {
-          this.getOrderService.orderResponses =
-          this.getOrderService.orderResponses.filter(
-            x => x.id !== order.id
-          );
-        }).catch(error => {
-          console.log('Deal was not sealed.');
-          order['clickedDealSeal'] = false;
-        });
+        this.takerOrderService.sealDeal(order,
+          () => {
+            this.snackbar.open('Sent signed order to ' + order.alias);
+            this.selectedTabIndex = 2;
+          },
+          () => {
+            this.snackbar.open('Successfully traded with ' + order.alias);
+            this.selectedTabIndex = 3;
+          });
       }
     });
   }
@@ -188,10 +262,15 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   rejectDeal(order: any): void {
-    this.getOrderService.orderResponses =
-      this.getOrderService.orderResponses.filter(
-        x => x.id !== order.id
-      );
+    this.takerOrderService.rejectDeal(order, () => {
+      if (this.takerOrderService.orderResponses.length === 0) {
+        this.selectedTabIndex = 4;
+      }
+    });
+  }
+
+  rejectToOffer(order): void {
+    this.makerOrderService.rejectRequest(order);
   }
 
   detailsForOrderOffer(order): void {
@@ -208,11 +287,4 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       }
     });
   }
-
-  rejectToOffer(order): void {
-    this.orderService.orderRequests = this.orderService.orderRequests.filter(
-      x => x.id !== order.id);
-  }
 }
-
-

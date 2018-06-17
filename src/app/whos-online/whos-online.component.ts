@@ -34,15 +34,13 @@ export class WhosOnlineComponent implements OnInit {
 
   get columnNumber(): number {
     const columnNum = this.columnSpaceObserver.columnNum;
-    const numMessages = this.displayedPeople.length;
+    const numMessages = this.displayedPeople.filter(this.onlyOnline).length;
     return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
   message(user: any) {
-    console.log('trying to message', user);
     this.messageService.getPeerAndAdd(user.uid)
     .then((peer) => {
-      console.log('found peer', peer);
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;
     });

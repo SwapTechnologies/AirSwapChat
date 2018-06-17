@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
 import { HttpClient } from '@angular/common/http';
+import { WebsocketService } from './websocket.service';
 import { EtherAddress } from './token.service';
 import { environment } from '../../environments/environment';
 @Injectable({
@@ -111,6 +112,7 @@ export class AirswapdexService {
   constructor(
     private web3service: ConnectWeb3Service,
     private http: HttpClient,
+    private wsService: WebsocketService
   ) { }
 
   get airswapDexContract(): any {
@@ -135,10 +137,21 @@ export class AirswapdexService {
   toChecksum(address: string): string {
     return this.web3service.web3.utils.toChecksumAddress(address);
   }
-
-  fill(makerAddress: string, makerAmount: string, makerToken: string,
-  takerAddress: string, takerAmount: string, takerToken: string,
-  expiration: number,  nonce: number, v: string, r: string, s: string): Promise<any> {
+  // makerAddress: string, makerAmount: string, makerToken: string,
+  // takerAddress: string, takerAmount: string, takerToken: string,
+  // expiration: number,  nonce: number, v: string, r: string, s: string
+  fill(order: any, gettingMined: (string) => any): Promise<any> {
+    const makerAddress = order['makerAddress'];
+    const makerAmount = order['makerAmount'];
+    const makerToken = order['makerToken'];
+    const takerAddress = order['takerAddress'];
+    const takerAmount = order['takerAmount'];
+    const takerToken = order['takerToken'];
+    const expiration = order['expiration'];
+    const nonce = order['nonce'];
+    const v = order['v'];
+    const r = order['r'];
+    const s = order['s'];
     const gas = 200000;
     let dataString = '0x1d4d691d';
     dataString = dataString + this.pad(makerAddress.slice(2), 64);
@@ -160,14 +173,20 @@ export class AirswapdexService {
         gasPrice = ethGasStationResult['average'] / 10 * 1e9;
       }
       if (takerToken === EtherAddress) {
-        return this.web3service.web3.eth.sendTransaction({
+        this.web3service.web3.eth.sendTransaction({
           from: this.web3service.connectedAccount,
           to: this.airswapDexAddress,
           value: takerAmount,
           gas: gas,
           gasPrice: gasPrice,
           data: dataString
-        });
+        }, ((error, result) => {
+          if (error) {
+            return error;
+          } else {
+            gettingMined(result);
+          }
+        }));
       } else {
         return this.web3service.web3.eth.sendTransaction({
           from: this.web3service.connectedAccount,
@@ -175,7 +194,13 @@ export class AirswapdexService {
           gas: gas,
           gasPrice: gasPrice,
           data: dataString
-        });
+        }, ((error, result) => {
+          if (error) {
+            return error;
+          } else {
+            gettingMined(result);
+          }
+        }));
       }
     });
   }

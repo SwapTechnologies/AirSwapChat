@@ -5,7 +5,7 @@ import { ConnectionService } from '../services/connection.service';
 import { MessagingService } from '../services/messaging.service';
 import { TokenService, EtherAddress } from '../services/token.service';
 import { Erc20Service } from '../services/erc20.service';
-import { GetOrderService } from '../services/get-order.service';
+import { TakerOrderService } from '../services/taker-order.service';
 
 import { Token } from '../types/types';
 
@@ -35,8 +35,9 @@ export class GetOrderDirectComponent implements OnInit {
   public takerTakerTokenApproval = 0;
   public makerDecimals;
   public takerDecimals;
-
-  public responseMessage: string;
+  public makerIsValid: boolean;
+  public takerIsValid: boolean;
+  public sentRequest: string;
 
 
   constructor(
@@ -45,7 +46,7 @@ export class GetOrderDirectComponent implements OnInit {
     public messagingService: MessagingService,
     public tokenService: TokenService,
     private erc20Service: Erc20Service,
-    private getOrderService: GetOrderService,
+    private takerOrderService: TakerOrderService,
   ) { }
 
   ngOnInit() {
@@ -65,12 +66,13 @@ export class GetOrderDirectComponent implements OnInit {
       || x.symbol.toLowerCase().includes(this.makerTokenName.toLowerCase());
     });
 
-    const token = this.tokenService.getTokenByName(this.makerTokenName);
-    if (token) {
-      this.makerToken = token;
+    const helper_makerToken = this.tokenService.getTokenAndWhetherItsValidByName(this.makerTokenName);
+    if (helper_makerToken) {
+      this.makerToken = helper_makerToken.token;
+      this.makerIsValid = helper_makerToken.isValid;
       this.makerDecimals = 10 ** this.makerToken.decimals;
       this.fetchMakerTokenBalances();
-      this.responseMessage = '';
+      this.sentRequest = '';
     }
   }
 
@@ -84,9 +86,11 @@ export class GetOrderDirectComponent implements OnInit {
       || x.symbol.toLowerCase().includes(this.takerTokenName.toLowerCase());
     });
 
-    const token = this.tokenService.getTokenByName(this.takerTokenName);
-    if (token) {
-      this.takerToken = token;
+    // const token = this.tokenService.getTokenByName(this.takerTokenName);
+    const helper_takerToken = this.tokenService.getTokenAndWhetherItsValidByName(this.takerTokenName);
+    if (helper_takerToken) {
+      this.takerToken = helper_takerToken.token;
+      this.takerIsValid = helper_takerToken.isValid;
       this.takerDecimals = 10 ** this.takerToken.decimals;
       this.fetchTakerTokenBalances();
       if (this.takerToken.address !== EtherAddress) {
@@ -97,7 +101,7 @@ export class GetOrderDirectComponent implements OnInit {
       } else {
         this.takerTakerTokenApproval = 1e25;
       }
-      this.responseMessage = '';
+      this.sentRequest = '';
     }
   }
 
@@ -117,13 +121,22 @@ export class GetOrderDirectComponent implements OnInit {
         makerAmount: this.erc20Service.toFixed(Math.floor(Number(this.makerAmount) * this.makerDecimals)),
         makerToken: this.makerToken.address,
         takerToken: this.takerToken.address,
-        takerAddress: this.connectionService.loggedInUser.address
+        takerAddress: this.connectionService.loggedInUser.address,
+        peer: this.messagingService.selectedPeer.peerDetails,
+        makerProps: this.makerToken,
+        takerProps: this.takerToken,
+        makerDecimals: this.makerDecimals,
+        takerDecimals: this.takerDecimals,
+        makerValid: this.makerIsValid,
+        takerValid: this.takerIsValid,
+        bothTokensValid: this.makerIsValid && this.takerIsValid
       };
-      const uuid = this.getOrderService.sendGetOrder(order);
-      this.responseMessage = 'Asking peer how much ' + this.takerToken.symbol +
-                  ' he wants for ' + this.makerAmount + ' ' + this.makerToken.symbol;
-      this.makerToken = undefined;
-      this.takerToken = undefined;
+      this.takerOrderService.sendGetOrder(order);
+      this.sentRequest = order['sentRequest'];
+      // this.responseMessage = 'Asking peer how much ' + this.takerToken.symbol +
+      //             ' he wants for ' + this.makerAmount + ' ' + this.makerToken.symbol;
+      // this.makerToken = undefined;
+      // this.takerToken = undefined;
       this.makerAmount = undefined;
     }
   }

@@ -2,9 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Subscription } from 'rxjs/Subscription';
 
-import { ConnectWeb3Service } from '../../services/connectWeb3.service';
-import { GetOrderService } from '../../services/get-order.service';
-import { TokenService } from '../../services/token.service';
 import { WebsocketService } from '../../services/websocket.service';
 
 
@@ -15,7 +12,6 @@ import { WebsocketService } from '../../services/websocket.service';
   styleUrls: ['./dialog-get-order.component.scss']
 })
 export class DialogGetOrderComponent implements OnInit {
-  public receiver: string;
   public makerAmount: string;
 
   public foundIntents: any[] = [];
@@ -26,14 +22,10 @@ export class DialogGetOrderComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<DialogGetOrderComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private getOrderService: GetOrderService,
-    private tokenService: TokenService,
-    private web3service: ConnectWeb3Service,
     public wsService: WebsocketService,
   ) { }
 
   ngOnInit() {
-    this.receiver = this.data.address;
   }
 
   onNoClick(): void {
@@ -58,8 +50,7 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   getOrder(): void {
-    if (this.web3service.web3.utils.isAddress(this.receiver)
-    && Number(this.makerAmount) >= 0 && this.makerHasEnough()) {
+    if (Number(this.makerAmount) >= 0 && this.makerHasEnough()) {
       this.onCloseConfirm(Math.round(parseFloat(this.makerAmount) * this.data.makerDecimals));
     }
   }

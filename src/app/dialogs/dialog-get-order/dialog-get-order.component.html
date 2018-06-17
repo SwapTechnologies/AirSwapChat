@@ -4,29 +4,29 @@
   </h1>
   <div>
     <mat-form-field style="width: 100%;">
-      <input 
-      matInput 
-      placeholder="Peer Address" 
-      [(ngModel)]="receiver" 
+      <input
+      matInput
+      placeholder="Peer Address"
+      [(ngModel)]="data.address"
       readonly='true'>
     </mat-form-field>
   </div>
   <div>
-    <i>{{receiver.slice(2,6)}} has 
-    {{data.makerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</i>
+    <i>{{data.peer.alias}} has
+    <strong>{{data.makerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</strong></i>
   </div>
   <div>
     Give me {{data.makerProps.name}} for {{data.takerProps.name}}
   <mat-form-field style="width: 100%;">
-    <input 
-    matInput 
+    <input
+    matInput
     type="number"
     (keydown.enter)="getOrder()"
-    placeholder="I want the following amount of {{data.makerProps.symbol}}" 
+    placeholder="I want the following amount of {{data.makerProps.symbol}}"
     [(ngModel)]="makerAmount">
   </mat-form-field>
-  </div>  
-  <div *ngIf="receiver && stringIsValidNumber(makerAmount) && makerHasEnough()">
+  </div>
+  <div *ngIf="stringIsValidNumber(makerAmount) && makerHasEnough()">
     <button mat-raised-button (click)="getOrder()">ASK FOR OFFER</button>
   </div>
 </div>

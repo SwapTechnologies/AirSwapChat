@@ -5,9 +5,9 @@ import { ColumnSpaceObserverService } from '../services/column-space-observer.se
 import { ConnectionService } from '../services/connection.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
-import { GetOrderService } from '../services/get-order.service';
+import { TakerOrderService } from '../services/taker-order.service';
 import { MessagingService } from '../services/messaging.service';
-import { OrderRequestsService } from '../services/order-requests.service';
+import { MakerOrderService } from '../services/maker-order.service';
 import { TokenService } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
@@ -42,11 +42,13 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public timer: any;
   public registrationCompleted = false;
 
+  public initializedPage = false;
+  
   constructor(
     private afAuth: AngularFireAuth,
     public columnSpaceObserver: ColumnSpaceObserverService,
-    private getOrderService: GetOrderService,
-    private orderRequestsService: OrderRequestsService,
+    private takerOrderService: TakerOrderService,
+    private makerOrderService: MakerOrderService,
     private tokenService: TokenService,
     public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
@@ -115,6 +117,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   //     }
   //   }
   // }
+
   ngOnDestroy() {
     if (this.timer) {
       this.timer.unsubscribe();
@@ -221,7 +224,11 @@ export class MainframeComponent implements OnInit, OnDestroy {
       return Promise.all(promiseList);
     })
     .then(() => {
-      this.messageService.startMessenger();
+      this.makerOrderService.listenForOrders();
+      this.messageService.startMessenger()
+      .then(() => {
+        this.initializedPage = true;
+      });
     });
   }
 
@@ -233,8 +240,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
     this.numUnreadMessages = this.messageService.unreadMessages;
     this.showMessageBadge = this.numUnreadMessages > 0;
 
-    this.numUnreadAnswers = this.orderRequestsService.openRequests
-                            + this.getOrderService.countOrderResponses();
+    this.numUnreadAnswers = this.makerOrderService.openRequests
+                            + this.takerOrderService.countOrderResponses();
     this.showAnswerBadge = this.numUnreadAnswers > 0;
 
     const sum_unread = this.numUnreadAnswers + this.numUnreadMessages;

@@ -33,9 +33,9 @@ import { ConnectWeb3Service } from './services/connectWeb3.service';
 import { ConnectionService } from './services/connection.service';
 import { ColumnSpaceObserverService } from './services/column-space-observer.service';
 import { FirebaseService } from './services/firebase.service';
-import { GetOrderService } from './services/get-order.service';
+import { TakerOrderService } from './services/taker-order.service';
 import { MessagingService } from './services/messaging.service';
-import { OrderRequestsService } from './services/order-requests.service';
+import { MakerOrderService } from './services/maker-order.service';
 import { PriceInfoService } from './services/price-info.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
 import { TokenService } from './services/token.service';
@@ -146,11 +146,11 @@ const appRoutes: Routes = [
     ConnectWeb3Service,
     ConnectionService,
     FirebaseService,
+    MakerOrderService,
     MessagingService,
-    GetOrderService,
-    OrderRequestsService,
     PriceInfoService,
     RouterWebsocketActivatedService,
+    TakerOrderService,
     TokenService,
     UserOnlineService,
     WebsocketService,
