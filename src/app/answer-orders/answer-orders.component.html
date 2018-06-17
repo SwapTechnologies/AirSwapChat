@@ -81,7 +81,7 @@
               </div>
             </mat-card-content>
             <mat-card-actions>
-              <span *ngIf="takerAmount[order.id] >= 0 && takerHasEnough(order)">
+              <span *ngIf="isValidNumber(takerAmount[order.id]) && takerHasEnough(order)">
                 <button mat-button
                 (click)="detailsForOrderOffer(order)"
                 [disabled]="order.clickedOfferDeal">
@@ -156,6 +156,12 @@
                 <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
                 {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
               </div>
+              <!-- <div *ngIf="{{(order['UsdPrices'].makerToken / order['UsdPrices'].takerToken - (order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals)) / (order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals)}} > 0.1">
+                <strong style='color:orange'>The suggested price is over 10% higher than what is being asked for.<br>This might be unfair to the other party. Are you sure?</strong>
+              </div>
+              <div *ngIf="{{(order['UsdPrices'].makerToken / order['UsdPrices'].takerToken - (order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals)) / (order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals)}} < -0.1">
+                <strong style='color:red'>The suggested price is over 10% lower than the suggested price.<br>Are you sure you want to pay too much?</strong>
+              </div> -->
             </div>
             <div>
               Offer expires in {{order.minutesLeft}} min and {{order.secondsLeft}} sec

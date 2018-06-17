@@ -5,6 +5,7 @@ import { MatDialog, MatSnackBar } from '@angular/material';
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
 import { DialogInfoOrderOfferComponent } from '../dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
 import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.component';
+import { DialogAskMakerSignatureComponent } from '../dialogs/dialog-ask-maker-signature/dialog-ask-maker-signature.component';
 
 // services
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
@@ -108,6 +109,17 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return baseName;
   }
 
+  get abortedDeals(): string {
+    let baseName = 'ABORTED TRADES';
+    const sum = this.takerOrderService.errorOrders.length +
+    this.makerOrderService.errorRequests.length;
+    this.gotAbortedDeals = sum > 0;
+    if (this.gotAbortedDeals) {
+      baseName = baseName + ' (' + sum + ')';
+    }
+    return baseName;
+  }
+
   get doneDeals(): string {
     // tslint:disable-next-line:quotemark
     let baseName = "TODAY'S TRADES";
@@ -115,17 +127,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
                 this.takerOrderService.finishedOrders.length;
     this.gotDoneDeals = sum > 0;
     if (this.gotDoneDeals) {
-      baseName = baseName + ' (' + sum + ')';
-    }
-    return baseName;
-  }
-
-  get abortedDeals(): string {
-    let baseName = 'ABORTED TRADES';
-    const sum = this.takerOrderService.errorOrders.length +
-                this.makerOrderService.errorRequests.length;
-    this.gotAbortedDeals = sum > 0;
-    if (this.gotAbortedDeals) {
       baseName = baseName + ' (' + sum + ')';
     }
     return baseName;
@@ -164,18 +165,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     const prefixedHash =
       this.web3service.web3.eth.accounts.hashMessage(hashV);
 
-    const dialogRef = this.dialog.open(DialogYesNoComponent, {
+    const dialogRef = this.dialog.open(DialogAskMakerSignatureComponent, {
       width: '700px',
       data: {
-        text: 'Are you sure you want to sign this deal of your ' +
-        order.makerAmount / order.makerDecimals  + ' ' + order.makerProps.symbol +
-        ' for peers ' + order.takerAmount / order.takerDecimals  + ' ' + order.takerProps.symbol +
-        '? ' +
-        'Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal. With nonce ' +
-         order.nonce +
-         ' you will have to sign the hash ' + prefixedHash,
-        yes: 'DO IT',
-        no: 'CANCEL'
+        order: order,
+        prefixedHash: prefixedHash
       }
     });
     return dialogRef.afterClosed().toPromise()
@@ -196,6 +190,10 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     });
   }
 
+  isValidNumber(num: string): boolean {
+      return Number(num) >= 0;
+  }
+
   answerOrder(order: any): void {
     if (Number(this.takerAmount[order.id]) >= 0 && this.takerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
@@ -207,12 +205,12 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.sign_order(order)
       .then(fullOrder => {
         this.makerOrderService.answerOrder(fullOrder, () => {
-          this.selectedTabIndex = 4;
           this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
+          this.selectedTabIndex = 4;
         });
-        this.selectedTabIndex = 2;
         this.snackbar.open('Signed and answered the deal with ' + order.alias +
-          '. Now it is up to your peer.', 'Ok', {duration: 3000});
+        '. Now it is up to your peer.', 'Ok', {duration: 3000});
+        this.selectedTabIndex = 2;
       }).catch(error => {
         console.log('Sign aborted.');
         order['clickedOfferDeal'] = false;

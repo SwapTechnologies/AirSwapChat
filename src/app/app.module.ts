@@ -58,6 +58,7 @@ import { DialogTosComponent } from './dialogs/dialog-tos/dialog-tos.component';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no.component';
 import { DonateComponent } from './donate/donate.component';
 import { AboutComponent } from './about/about.component';
+import { DialogAskMakerSignatureComponent } from './dialogs/dialog-ask-maker-signature/dialog-ask-maker-signature.component';
 
 import { environment } from '../environments/environment';
 
@@ -123,6 +124,7 @@ const appRoutes: Routes = [
     DialogTosComponent,
     AboutComponent,
     DonateComponent,
+    DialogAskMakerSignatureComponent,
   ],
   imports: [
     BrowserModule,
@@ -165,6 +167,7 @@ const appRoutes: Routes = [
     DialogSendOfflineComponent,
     DialogTosComponent,
     DialogYesNoComponent,
+    DialogAskMakerSignatureComponent,
     DonateComponent,
     AboutComponent
   ],

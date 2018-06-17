@@ -67,7 +67,7 @@ export class GetOrderDirectComponent implements OnInit {
     });
 
     const helper_makerToken = this.tokenService.getTokenAndWhetherItsValidByName(this.makerTokenName);
-    if (helper_makerToken) {
+    if (helper_makerToken && helper_makerToken.token) {
       this.makerToken = helper_makerToken.token;
       this.makerIsValid = helper_makerToken.isValid;
       this.makerDecimals = 10 ** this.makerToken.decimals;
@@ -88,7 +88,7 @@ export class GetOrderDirectComponent implements OnInit {
 
     // const token = this.tokenService.getTokenByName(this.takerTokenName);
     const helper_takerToken = this.tokenService.getTokenAndWhetherItsValidByName(this.takerTokenName);
-    if (helper_takerToken) {
+    if (helper_takerToken && helper_takerToken.token) {
       this.takerToken = helper_takerToken.token;
       this.takerIsValid = helper_takerToken.isValid;
       this.takerDecimals = 10 ** this.takerToken.decimals;
