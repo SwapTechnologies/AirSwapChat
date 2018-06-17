@@ -43,7 +43,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public registrationCompleted = false;
 
   public initializedPage = false;
-  
+
   constructor(
     private afAuth: AngularFireAuth,
     public columnSpaceObserver: ColumnSpaceObserverService,

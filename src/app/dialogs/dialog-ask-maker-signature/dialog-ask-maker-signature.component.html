@@ -1,0 +1,35 @@
+<div>
+  <div>
+    Are you sure you want to sign this deal of your {{data.order.makerAmount / data.order.makerDecimals}} {{data.order.makerProps.symbol}} for peers <strong>{{data.order.takerAmount / data.order.takerDecimals}} {{data.order.takerProps.symbol}}</strong> ?
+  </div>
+  <div>
+    <div>
+      Prices according to <a href='https://www.cryptocompare.com/' target='_blank'>CryptoCompare.com</a>:<br>
+      <strong>{{ data.order.makerProps.symbol }}: {{data.order['UsdPrices'].makerToken}} $,
+      {{ data.order.takerProps.symbol }}: {{data.order['UsdPrices'].takerToken}} $</strong>
+    </div>
+    <div>
+      Suggested amount to ask for:<br>
+      <strong>{{data.order['UsdPrices'].makerToken / data.order['UsdPrices'].takerToken * data.order.makerAmount / data.order.makerDecimals | number: '1.1-8'}} {{ data.order.takerProps.symbol }}</strong>
+    </div>
+    <div *ngIf="this.deviation > .1"><strong style='color:red'>The suggested price is over 10% higher than what you are asking for.<br>Are you sure you want to sell low?</strong></div>
+    <div *ngIf="this.deviation < -.1"><strong style='color:red'>Your price is over 10% higher than the suggested price.<br>Are you sure you want to overprice?</strong></div>
+  </div>
+  <div>
+      Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal.<br>
+      With nonce {{data.order.nonce}}, Metamask will ask you to sign the hash <br>
+      {{data.prefixedHash}}
+    </div>
+  <div>
+    <button
+    mat-button
+    (click)='onNoClick()'
+    color='primary'>CANCEL
+    </button>
+    <button
+    mat-button
+    (click)='onCloseConfirm()'
+    color='warn'>DO IT
+    </button>
+  </div>
+</div>
