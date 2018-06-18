@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
+import { NotificationService} from '../services/notification.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
@@ -12,7 +13,6 @@ import { MatDialog } from '@angular/material';
 import { DialogAddPeerComponent } from './dialog-add-peer/dialog-add-peer.component';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
-import {MatSnackBar} from '@angular/material';
 
 @Component({
   selector: 'app-message-system',
@@ -32,12 +32,12 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     private userOnlineService: UserOnlineService,
     public wsService: WebsocketService,
     public dialog: MatDialog,
-    public snackBar: MatSnackBar,
+    private notifierService: NotificationService,
     private router: Router,
   ) { }
 
   ngOnInit() {
-    this.timer = TimerObservable.create(0, 5000)
+    this.timer = TimerObservable.create(0, 1000)
     .subscribe( () => this.updateStatus());
   }
 
@@ -69,13 +69,12 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
               this.messageService.selectedPeer = peer;
             });
           } else {
-            this.snackBar.open('Entered address ' +
-            result +
-            ' is not registered with AirSwapChat', 'Sad...', {duration: 5000});
+            this.notifierService.showMessage('Entered address ' +
+            result + ' is not registered with AirSwapChat');
           }
         });
       } else {
-        this.snackBar.open('Entered invalid address', 'Oops.', {duration: 3000});
+        this.notifierService.showMessage('Entered invalid address');
       }
     });
   }
@@ -92,6 +91,12 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     if (this.messageService.selectedPeer && this.messageService.selectedPeer.peerDetails.uid) {
       this.firebaseService.addPeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
       this.userOnlineService.setPeerToFriend(this.messageService.selectedPeer.peerDetails.uid);
+    }
+  }
+  removePeerAsFriend(): void {
+    if (this.messageService.selectedPeer && this.messageService.selectedPeer.peerDetails.uid) {
+      this.firebaseService.removePeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
+      this.userOnlineService.removePeerAsFriend(this.messageService.selectedPeer.peerDetails.uid);
     }
   }
 

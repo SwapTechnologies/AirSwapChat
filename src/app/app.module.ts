@@ -36,6 +36,7 @@ import { FirebaseService } from './services/firebase.service';
 import { TakerOrderService } from './services/taker-order.service';
 import { MessagingService } from './services/messaging.service';
 import { MakerOrderService } from './services/maker-order.service';
+import { NotificationService } from './services/notification.service';
 import { PriceInfoService } from './services/price-info.service';
 import { RouterWebsocketActivatedService } from './services/router-websocket-activated.service';
 import { TokenService } from './services/token.service';
@@ -71,30 +72,14 @@ const appRoutes: Routes = [
   { path: 'intents', component: SetIntentsComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'findPeers', component: FindIntentsComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'message', component: MessageSystemComponent, canActivate: [RouterWebsocketActivatedService] },
-  { path: 'whosOnline', component: WhosOnlineComponent, canActivate: [RouterWebsocketActivatedService] },
-  { path: 'answer', component: AnswerOrdersComponent, canActivate: [RouterWebsocketActivatedService] },
+  { path: 'online', component: WhosOnlineComponent, canActivate: [RouterWebsocketActivatedService] },
+  { path: 'trading', component: AnswerOrdersComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'myAccount', component: MyAccountComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'getOrder', component: GetOrderDirectComponent, canActivate: [RouterWebsocketActivatedService] },
   { path: 'error', component: ErrorComponent},
   { path: '**', redirectTo: '' }
 ];
 
-// const emailCustomConfig: AuthProviderWithCustomConfig = {
-//   provider: AuthProvider.Password,
-//   customConfig: {
-//     requireDisplayName: true
-//   }
-// };
-
-// const firebaseUiAuthConfig: FirebaseUIAuthConfig = {
-//   providers: [
-//     emailCustomConfig,
-//   ],
-//   method: AuthMethods.Popup,
-//   credentialHelper: CredentialHelper.OneTap,
-// };
-
-// tos: 'tos',
 @NgModule({
   declarations: [
     AccountComponent,
@@ -150,6 +135,7 @@ const appRoutes: Routes = [
     FirebaseService,
     MakerOrderService,
     MessagingService,
+    NotificationService,
     PriceInfoService,
     RouterWebsocketActivatedService,
     TakerOrderService,

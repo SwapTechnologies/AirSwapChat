@@ -3,9 +3,10 @@ import { Injectable } from '@angular/core';
 import { TokenService } from './token.service';
 import { Erc20Service } from './erc20.service';
 import { FirebaseService } from './firebase.service';
+import { NotificationService} from '../services/notification.service';
 import { PriceInfoService } from './price-info.service';
 import { WebsocketService } from './websocket.service';
-import { MatSnackBar } from '@angular/material';
+
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +25,8 @@ export class MakerOrderService {
     private priceInfoService: PriceInfoService,
     private tokenService: TokenService,
     private wsService: WebsocketService,
-    private snackBar: MatSnackBar,
+    private notifierService: NotificationService,
   ) { }
-
-  get openRequests(): number {
-    return this.orderRequests.length;
-  }
 
   listenForOrders(): void {
     // start a listener that looks for getOrder messages
@@ -125,7 +122,10 @@ export class MakerOrderService {
     Promise.all(promiseList)
     .then(() => {
       this.orderRequests.push(order);
-      this.snackBar.open('You have a new request for an order', 'Ok', {duration: 2000});
+      this.notifierService.showMessageAndRoute(
+        'You have a new request for an order',
+        'trading'
+      );
     });
   }
 
@@ -169,17 +169,24 @@ export class MakerOrderService {
           fullOrder['error'] = 'Taker deleted your signed offer.';
           this.errorRequests.push(fullOrder);
           this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
-          this.snackBar.open(fullOrder.alias + ' deleted your signed offer', 'Ok.', {duration: 3000});
+          this.notifierService.showMessageAndRoute(
+            fullOrder.alias + ' deleted your signed offer', 'trading'
+          );
         } else if (parsedContent['method'] === 'orderTimedOut') {
           // received answer that the order timed out -> stop listening
           this.websocketSubscriptions[fullOrder.id].unsubscribe();
           if (fullOrder.txHash) {
-            fullOrder['error'] = 'It seems order timed out before it was mined. Check on https://rinkeby.etherscan.io/tx/' +
-                                      fullOrder.txHash;
-            this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out before it could be mined.', 'Ok.', {duration: 3000});
+            fullOrder['error'] = 'It seems order timed out before it was mined. ' +
+              'Check on https://rinkeby.etherscan.io/tx/' +fullOrder.txHash;
+            this.notifierService.showMessageAndRoute(
+              'Your offer for ' + fullOrder.alias +
+              ' timed out before it was mined.',  'trading'
+            );
           } else {
             fullOrder['error'] = 'Order timed out.';
-            this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out.', 'Ok.', {duration: 3000});
+            this.notifierService.showMessageAndRoute(
+              'Your offer for ' + fullOrder.alias + ' timed out.', 'trading'
+            );
           }
           this.errorRequests.push(fullOrder);
           this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
@@ -187,8 +194,10 @@ export class MakerOrderService {
           // received answer that the order was took, keep listening until it's mined
           const txDetails = parsedContent['params'];
           fullOrder['txHash'] = txDetails['txHash']; // taker is about to mine it. listen for the result
-          this.snackBar.open(fullOrder.alias + ' send the transaction to the blockchain and it is waiting to be mined.',
-                             'Ok.', {duration: 3000});
+          this.notifierService.showMessageAndRoute(
+            fullOrder.alias + ' sent the transaction and it is waiting to be mined.',
+            'trading'
+          );
         } else if (parsedContent['method'] === 'minedOrder') {
           // received answer that the deal is mined and done -> stop listening
           this.websocketSubscriptions[fullOrder.id].unsubscribe();

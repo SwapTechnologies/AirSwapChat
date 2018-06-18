@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Subscription } from 'rxjs/Subscription';
 
+import { Erc20Service } from '../../services/erc20.service';
 import { WebsocketService } from '../../services/websocket.service';
 
 
@@ -18,14 +19,15 @@ export class DialogGetOrderComponent implements OnInit {
   public orderResponses: any[] = [];
   public websocketSubscription: Subscription;
 
-
   constructor(
     public dialogRef: MatDialogRef<DialogGetOrderComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public wsService: WebsocketService,
+    private erc20service: Erc20Service
   ) { }
 
   ngOnInit() {
+    console.log(this.data.makerBalanceMakerToken);
   }
 
   onNoClick(): void {
@@ -41,7 +43,7 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   makerHasEnough(): boolean {
-    return (Math.floor(this.makerAmount * this.data.makerDecimals) <= this.data.makerBalanceMakerToken);
+    return (this.erc20service.toFixed(this.makerAmount * this.data.makerDecimals) <= this.data.makerBalanceMakerToken);
   }
 
   isPositive(): boolean {
@@ -50,7 +52,7 @@ export class DialogGetOrderComponent implements OnInit {
 
   getOrder(): void {
     if (this.makerAmount && this.isPositive() && this.makerHasEnough()) {
-      this.onCloseConfirm(Math.floor(this.makerAmount * this.data.makerDecimals));
+      this.onCloseConfirm(this.erc20service.toFixed(this.makerAmount * this.data.makerDecimals));
     }
   }
 }

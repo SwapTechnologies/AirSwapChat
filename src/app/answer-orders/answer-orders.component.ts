@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { MatDialog, MatSnackBar } from '@angular/material';
-
+import { MatDialog, } from '@angular/material';
+import { NotificationService} from '../services/notification.service';
 import { DialogInfoDealSealComponent } from '../dialogs/dialog-info-deal-seal/dialog-info-deal-seal.component';
 import { DialogInfoOrderOfferComponent } from '../dialogs/dialog-info-order-offer/dialog-info-order-offer.component';
 import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.component';
@@ -51,7 +51,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     public makerOrderService: MakerOrderService,
     private web3service: ConnectWeb3Service,
     public dialog: MatDialog,
-    public snackbar: MatSnackBar,
+    private notifierService: NotificationService,
   ) { }
 
   ngOnInit() {
@@ -61,6 +61,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     const d = this.abortedDeals;
     const e = this.doneDeals;
 
+    console.log(this.gotOrderRequests);
+    console.log(this.gotOrdersToTake);
+    console.log(this.gotPendingOrders);
+    console.log(this.gotAbortedDeals);
+    console.log(this.gotDoneDeals);
     if (this.gotOrderRequests) {
       this.selectedTabIndex = 0;
     } else if (this.gotOrdersToTake) {
@@ -72,7 +77,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     } else if (this.gotDoneDeals) {
       this.selectedTabIndex = 4;
     } else {
-      this.selectedTabIndex = 0;
+      this.selectedTabIndex = null;
     }
   }
 
@@ -138,7 +143,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   takerHasEnough(order: any): boolean {
-    return (Math.floor(this.takerAmount[order.id] * order.takerDecimals) <= order.takerBalanceTakerToken);
+    return (this.erc20Service.toFixed(this.takerAmount[order.id] * order.takerDecimals) <= order.takerBalanceTakerToken);
   }
 
   columnNumber(array): number {
@@ -201,7 +206,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   answerOrder(order: any): void {
     if (this.askingPositiveNumber(order) && this.takerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
-      order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
+      order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order['takerDecimals']);
       order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
       const uuid = order.id;
       // delete order.id;
@@ -209,11 +214,13 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.sign_order(order)
       .then(fullOrder => {
         this.makerOrderService.answerOrder(fullOrder, () => {
-          this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
+          this.notifierService.showMessage('Successfully traded with ' + order.alias);
           this.selectedTabIndex = 4;
         });
-        this.snackbar.open('Signed and answered the deal with ' + order.alias +
-        '. Now it is up to your peer.', 'Ok', {duration: 3000});
+        this.notifierService.showMessage(
+          'Signed and answered the deal with ' + order.alias +
+          '. Now it is up to your peer.'
+      );
         this.selectedTabIndex = 2;
       }).catch(error => {
         console.log('Sign aborted.');
@@ -241,11 +248,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
         order['clickedDealSeal'] = true;
         this.takerOrderService.sealDeal(order,
           () => {
-            this.snackbar.open('Sent signed order to ' + order.alias, 'Ok.', {duration: 3000});
+            this.notifierService.showMessage('Sent signed order to ' + order.alias);
             this.selectedTabIndex = 2;
           },
           () => {
-            this.snackbar.open('Successfully traded with ' + order.alias, 'Ok.', {duration: 3000});
+            this.notifierService.showMessage('Successfully traded with ' + order.alias);
             this.selectedTabIndex = 4;
           });
       }
@@ -278,7 +285,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   detailsForOrderOffer(order): void {
     order['expirationMinutes'] = this.expiration;
-    order['takerAmount'] = this.erc20Service.toFixed(Math.floor(this.takerAmount[order.id] * order.takerDecimals));
+    order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order.takerDecimals);
 
     const dialogRef = this.dialog.open(DialogInfoOrderOfferComponent, {
       width: '700px',

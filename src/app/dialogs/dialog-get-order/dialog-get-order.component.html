@@ -23,6 +23,7 @@
       (keydown.enter)="getOrder()"
       placeholder="I want the following amount of {{data.makerProps.symbol}}"
       [(ngModel)]="makerAmount">
+      <mat-hint *ngIf="!makerAmount">Enter how much you want</mat-hint>
       <mat-hint *ngIf="makerAmount && !isPositive()"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
       <mat-hint *ngIf="makerAmount && isPositive() && !makerHasEnough()"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
     </mat-form-field>

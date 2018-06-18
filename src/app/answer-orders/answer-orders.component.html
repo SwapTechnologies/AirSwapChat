@@ -2,7 +2,7 @@
 [selectedIndex] = 'selectedTabIndex'>
   <mat-tab
   [label]='answerOrderRequests'
-  [disabled] = '!gotOrderRequests'
+  [disabled] = 'makerOrderService.orderRequests.length === 0'
   >
     <div *ngIf='gotOrderRequests'>
       <h1> A Peer is Asking you for an Offer </h1>
@@ -64,6 +64,7 @@
                   (keydown.enter)="answerOrder(order)"
                   [(ngModel)]="takerAmount[order.id]"
                   [disabled]="order.clickedOfferDeal">
+                  <mat-hint *ngIf="!takerAmount[order.id]">Enter how much you want</mat-hint>
                   <mat-hint *ngIf="takerAmount[order.id] && !askingPositiveNumber(order)"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
                   <mat-hint *ngIf="takerAmount[order.id] && askingPositiveNumber(order) && !takerHasEnough(order)"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
                 </mat-form-field>
@@ -122,7 +123,7 @@
   </mat-tab>
   <mat-tab
   [label]='takeSignedOrders'
-  [disabled] = '!gotOrdersToTake'>
+  [disabled] = 'takerOrderService.orderResponses.length === 0'>
   <div *ngIf='gotOrdersToTake'>
     <h1> You can Close Deals </h1>
     <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='350px'>
@@ -211,7 +212,8 @@
   </mat-tab>
   <mat-tab
   [label]='pendingOrders'
-  [disabled] = '!gotPendingOrders'>
+  [disabled] = 'takerOrderService.sentOrders.length + takerOrderService.pendingOrders.length +
+                makerOrderService.answeredRequests.length === 0'>
     <div *ngIf='takerOrderService.sentOrders.length > 0'>
       <h1> Waiting for an Offer from Peer</h1>
       <mat-grid-list [cols]='columnNumber(takerOrderService.sentOrders)' rowHeight='200px'>
@@ -288,7 +290,7 @@
   </mat-tab>
   <mat-tab
   [label]='abortedDeals'
-  [disabled] = '!gotAbortedDeals'>
+  [disabled] = 'takerOrderService.errorOrders.length + makerOrderService.errorRequests.length === 0'>
     <div *ngIf='gotAbortedDeals'>
       <h1> Aborted Trades </h1>
       <!-- Aborted Trades where you were the taker -->
@@ -346,7 +348,7 @@
   </mat-tab>
   <mat-tab
   [label]='doneDeals'
-  [disabled] = '!gotDoneDeals'>
+  [disabled] = 'makerOrderService.doneDeals.length + takerOrderService.finishedOrders.length === 0'>
     <div *ngIf='takerOrderService.finishedOrders.length > 0'>
       <h1> Succeeded Trades as Taker </h1>
       <mat-grid-list [cols]='columnNumber(takerOrderService.finishedOrders)' rowHeight='200px'>

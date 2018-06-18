@@ -130,6 +130,10 @@ export class UserOnlineService {
     this.setUserProperty(uid, 'inMyPeerList', true);
   }
 
+  removePeerAsFriend(uid: string) {
+    this.setUserProperty(uid, 'inMyPeerList', false);
+  }
+  
   getUserByAddress(address: string): any {
     let user = this.usersByAddress[address];
     if (user) {

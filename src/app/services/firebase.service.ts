@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
-import { MatSnackBar } from '@angular/material';
 
 // firebase
 import { AngularFirestore } from 'angularfire2/firestore';
@@ -14,6 +13,7 @@ import { UserInfo } from 'firebase/app';
 import { Erc20Service } from './erc20.service';
 import { ConnectionService } from './connection.service';
 import { WebsocketService } from './websocket.service';
+import { NotificationService} from '../services/notification.service';
 
 // types
 import { StoredMessage, OtherUser, Token } from '../types/types';
@@ -37,7 +37,7 @@ export class FirebaseService {
     private erc20Service: Erc20Service,
     private afAuth: AngularFireAuth,
     private afs: AngularFirestore,
-    private snackbar: MatSnackBar
+    private notifierService: NotificationService,
   ) { }
 
 
@@ -99,6 +99,11 @@ export class FirebaseService {
     .update({[uid]: true});
   }
 
+  removePeerAsFriend(uid: string): Promise<any> {
+    return this.db.object(
+      'users/' + this.connectionService.loggedInUser.uid + '/peers/' + uid).remove();
+  }
+
   logOffUser(): Promise<any> {
     return this.db.object('online/' + this.connectionService.loggedInUser.uid)
     .remove()
@@ -131,7 +136,7 @@ export class FirebaseService {
       this.logOffUser();
     }).catch ((error) => {
       if (error.code && error.code === 'auth/wrong-password') {
-        this.snackbar.open('Invalid Password.', 'Ok', { duration: 3000 });
+        this.notifierService.showMessage('Invalid Password.');
       } else {
         console.log('Unexpected error while delete user\'s account', error);
       }

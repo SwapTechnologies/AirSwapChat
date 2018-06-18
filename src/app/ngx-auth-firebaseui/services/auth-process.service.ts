@@ -1,10 +1,9 @@
 import { EventEmitter, Injectable, SecurityContext } from '@angular/core';
-import { MatSnackBar } from '@angular/material';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { ISignInProcess, ISignUpProcess } from '../interfaces/main.interface';
 import { FirestoreSyncService } from './firestore-sync.service';
 import { auth, User } from 'firebase/app';
-
+import { NotificationService } from '../../services/notification.service';
 export enum AuthProvider {
   EmailAndPassword = 'firebase',
 }
@@ -21,7 +20,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
   // tslint:disable-next-line:no-shadowed-variable
   constructor(public auth: AngularFireAuth,
               private _fireStoreService: FirestoreSyncService,
-              private _snackBar: MatSnackBar) {
+              private notificationService: NotificationService) {
   }
 
   /**
@@ -32,7 +31,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
    */
   public resetPassword(email: string) {
     return this.auth.auth.sendPasswordResetEmail(email)
-      .then(() => this._snackBar.open('Email sent.', 'Ok.', {duration: 3000}))
+      .then(() => this.notificationService.showMessage('Email sent.'))
       .catch((error) => this.onErrorEmitter.next(error));
   }
 
@@ -64,7 +63,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
       await this._fireStoreService.updateUserData(this.parseUserInfo(signInResult.user));
       this.onSuccessEmitter.next(signInResult.user);
     } catch (err) {
-      this._snackBar.open(err.message, 'OK', {duration: 5000});
+      this.notificationService.showMessage(err.message);
       this.onErrorEmitter.next(err);
     } finally {
       this.isLoading = false;
@@ -102,7 +101,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
       this.auth.auth.signOut();
       this.onSuccessEmitter.next(user);
     } catch (err) {
-      this._snackBar.open(err.message, 'OK', {duration: 5000});
+      this.notificationService.showMessage(err.message);
       this.onErrorEmitter.next(err);
     } finally {
       this.isLoading = false;

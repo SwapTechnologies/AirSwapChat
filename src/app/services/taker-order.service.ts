@@ -3,12 +3,12 @@ import { Injectable } from '@angular/core';
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
 import { FirebaseService } from '../services/firebase.service';
+import { NotificationService} from '../services/notification.service';
 import { TokenService } from '../services/token.service';
 import { WebsocketService } from './websocket.service';
 
 import { PriceInfoService } from './price-info.service';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
-import { MatSnackBar } from '@angular/material';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +29,7 @@ export class TakerOrderService {
     private priceInfoService: PriceInfoService,
     private tokenService: TokenService,
     private wsService: WebsocketService,
-    public snackBar: MatSnackBar,
+    private notifierService: NotificationService,
   ) { }
 
   sendGetOrder(order: any): string {
@@ -63,10 +63,10 @@ export class TakerOrderService {
           this.errorOrders.push(order);
           this.sentOrders = this.sentOrders.filter(x => x.id !== id);
 
-          this.snackBar.open(
+          this.notifierService.showMessageAndRoute(
             order.peer.alias + ' deleted your request for an offer about ' +
             order.makerAmount / order.makerDecimals + ' ' + order.makerProps.symbol,
-            'Ok.', {duration: 2000}
+            'trading'
           );
         } else if (parsedContent['result']) {
           // this is an answer to getOrder, either by a person or by a bot
@@ -140,26 +140,22 @@ export class TakerOrderService {
             signedOrder['alias'] = alias;
             this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);
             this.orderResponses.push(signedOrder);
-            this.snackBar.open(
+            this.notifierService.showMessageAndRoute(
               'You received an answer from ' + order.peer.alias,
-              'Ok', {duration: 3000}
+              'trading'
             );
           });
         } else {
           if (parsedContent['error']) {
-            this.snackBar.open(
+            this.notifierService.showMessageAndRoute(
               'An error occured during get-order: ' + parsedContent['error']['message'],
-              'Ok.', {duration: 3000}
+              'trading'
             );
           }
         }
       }
     });
     return uuid;
-  }
-
-  countOrderResponses(): number {
-    return this.orderResponses.length;
   }
 
   sealDeal(order: any, cbTookOrder: () => any, cbMinedOrder: () => any): Promise<any> {

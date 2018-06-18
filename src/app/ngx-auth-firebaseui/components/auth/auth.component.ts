@@ -7,7 +7,8 @@ import { AuthProcessService, AuthProvider } from '../../services/auth-process.se
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { DialogTosComponent } from '../../../dialogs/dialog-tos/dialog-tos.component';
-import { MatSnackBar, MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material';
+import { NotificationService } from '../../../services/notification.service';
 
 export const EMAIL_REGEX = new RegExp(['^(([^<>()[\\]\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\.,;:\\s@\"]+)*)',
   '|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.',
@@ -66,7 +67,7 @@ export class AuthComponent implements OnInit, OnDestroy {
               public auth: AngularFireAuth,
               public authProcess: AuthProcessService,
               private _dialog: MatDialog,
-              private _snackBar: MatSnackBar,
+              private notificationService: NotificationService,
               private _formBuilder: FormBuilder,
               private _iconRegistry: MatIconRegistry,
               private _sanitizer: DomSanitizer) {
@@ -174,7 +175,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       }
       this.authProcess.signUp(name, email, password);
     }).catch(err => {
-      this._snackBar.open(err.message, 'OK', {duration: 5000});
+      this.notificationService.showMessage(err.message);
     });
 
   }
