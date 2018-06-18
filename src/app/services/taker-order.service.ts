@@ -29,7 +29,7 @@ export class TakerOrderService {
     private priceInfoService: PriceInfoService,
     private tokenService: TokenService,
     private wsService: WebsocketService,
-    public _snackBar: MatSnackBar,
+    public snackBar: MatSnackBar,
   ) { }
 
   sendGetOrder(order: any): string {
@@ -55,15 +55,24 @@ export class TakerOrderService {
       const parsedContent = JSON.parse(parsedMessage['message']);
       const id = parsedContent['id'];
       if (id === uuid) {
-        this.websocketSubscriptions[uuid].unsubscribe();
         if (parsedContent['method'] === 'deletedOrder') {
+          // received answer that maker deleted the order -> stop listening
+          this.websocketSubscriptions[uuid].unsubscribe();
+
+          order['error'] = 'Maker deleted the request.';
           this.errorOrders.push(order);
           this.sentOrders = this.sentOrders.filter(x => x.id !== id);
-          order['error'] = 'Maker deleted the request.';
-          this._snackBar.open(order.peer.alias + ' deleted your request for an offer about ' +
-          order.makerAmount / order.makerDecimals +
-          ' ' + order.makerProps.symbol, 'Ok.', {duration: 2000});
+
+          this.snackBar.open(
+            order.peer.alias + ' deleted your request for an offer about ' +
+            order.makerAmount / order.makerDecimals + ' ' + order.makerProps.symbol,
+            'Ok.', {duration: 2000}
+          );
         } else if (parsedContent['result']) {
+          // this is an answer to getOrder, either by a person or by a bot
+          // don't expect any further answers from the maker. I take the deal or not. Stop listening
+          this.websocketSubscriptions[uuid].unsubscribe();
+
           const signedOrder = parsedContent['result'];
           signedOrder['id'] = id;
           signedOrder['clickedDealSeal'] = false;
@@ -91,6 +100,7 @@ export class TakerOrderService {
           });
 
           signedOrder['timedOut'] = false;
+          // create a countdown timer for the order to expire
           signedOrder['timer'] = TimerObservable.create(0, 1000)
           .subscribe( () => {
             const currentTime = Date.now() / 1000;
@@ -113,12 +123,17 @@ export class TakerOrderService {
             signedOrder['alias'] = alias;
             this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);
             this.orderResponses.push(signedOrder);
-            this._snackBar.open('You received an answer from ' + order.peer.alias, 'Ok', {duration: 3000});
+            this.snackBar.open(
+              'You received an answer from ' + order.peer.alias,
+              'Ok', {duration: 3000}
+            );
           });
         } else {
           if (parsedContent['error']) {
-            this._snackBar.open('An error occured during get-order: ' +
-            parsedContent['error']['message'], 'Ok.', {duration: 3000});
+            this.snackBar.open(
+              'An error occured during get-order: ' + parsedContent['error']['message'],
+              'Ok.', {duration: 3000}
+            );
           }
         }
       }
@@ -130,7 +145,8 @@ export class TakerOrderService {
     return this.orderResponses.length;
   }
 
-  sealDeal(order: any, cbTookOrder?: () => any, cbMinedOrder?: () => any): Promise<any> {
+  sealDeal(order: any, cbTookOrder: () => any, cbMinedOrder: () => any): Promise<any> {
+    console.log('sealDeal', cbTookOrder, cbMinedOrder, order);
     // fill will tell maker about mining it when sent
     // and adds txHash to the order for the taker
     return this.airswapDexService.fill(order, (txHash) => {
@@ -141,9 +157,9 @@ export class TakerOrderService {
       cbTookOrder();
     })
     .then(() => {
-      order.timer.unsubscribe();
-      this.pendingOrders = this.pendingOrders.filter(x => x.id !== order.id);
+      order.timer.unsubscribe(); // order is mined, stop listening for it
       this.finishedOrders.push(order);
+      this.pendingOrders = this.pendingOrders.filter(x => x.id !== order.id);
       this.wsService.tellMakerMinedOrder(order.makerAddress, order.id);
       cbMinedOrder();
     }).catch(error => {
