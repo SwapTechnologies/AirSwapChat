@@ -100,7 +100,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   get pendingOrders(): string {
     let baseName = 'PENDING';
-    const sum = this.takerOrderService.pendingOrders.length +
+    const sum = this.takerOrderService.sentOrders.length +
+                this.takerOrderService.pendingOrders.length +
                 this.makerOrderService.answeredRequests.length;
     this.gotPendingOrders = sum > 0;
     if (this.gotPendingOrders) {
@@ -132,9 +133,12 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return baseName;
   }
 
+  askingPositiveNumber(order: any): boolean {
+    return (this.takerAmount[order.id] >= 0);
+  }
+
   takerHasEnough(order: any): boolean {
-    return (this.takerAmount[order.id] <=
-      (order.takerBalanceTakerToken / order.takerDecimals));
+    return (Math.floor(this.takerAmount[order.id] * order.takerDecimals) <= order.takerBalanceTakerToken);
   }
 
   columnNumber(array): number {
@@ -195,7 +199,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   answerOrder(order: any): void {
-    if (Number(this.takerAmount[order.id]) >= 0 && this.takerHasEnough(order)) {
+    if (this.askingPositiveNumber(order) && this.takerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
       order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
       order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
@@ -274,7 +278,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   detailsForOrderOffer(order): void {
     order['expirationMinutes'] = this.expiration;
-    order['takerAmount'] = this.erc20Service.toFixed(Math.floor(Number(this.takerAmount[order.id]) * order['takerDecimals']));
+    order['takerAmount'] = this.erc20Service.toFixed(Math.floor(this.takerAmount[order.id] * order.takerDecimals));
 
     const dialogRef = this.dialog.open(DialogInfoOrderOfferComponent, {
       width: '700px',

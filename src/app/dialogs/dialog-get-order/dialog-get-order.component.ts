@@ -12,7 +12,7 @@ import { WebsocketService } from '../../services/websocket.service';
   styleUrls: ['./dialog-get-order.component.scss']
 })
 export class DialogGetOrderComponent implements OnInit {
-  public makerAmount: string;
+  public makerAmount: number;
 
   public foundIntents: any[] = [];
   public orderResponses: any[] = [];
@@ -40,18 +40,17 @@ export class DialogGetOrderComponent implements OnInit {
     this.dialogRef.close(false);
   }
 
-  stringIsValidNumber(x: string): boolean {
-    return Number(x) >= 0;
+  makerHasEnough(): boolean {
+    return (Math.floor(this.makerAmount * this.data.makerDecimals) <= this.data.makerBalanceMakerToken);
   }
 
-  makerHasEnough(): boolean {
-    return (parseFloat(this.makerAmount) <=
-      (this.data.makerBalanceMakerToken / this.data.makerDecimals));
+  isPositive(): boolean {
+    return (this.makerAmount >= 0);
   }
 
   getOrder(): void {
-    if (Number(this.makerAmount) >= 0 && this.makerHasEnough()) {
-      this.onCloseConfirm(Math.round(parseFloat(this.makerAmount) * this.data.makerDecimals));
+    if (this.makerAmount && this.isPositive() && this.makerHasEnough()) {
+      this.onCloseConfirm(Math.floor(this.makerAmount * this.data.makerDecimals));
     }
   }
 }

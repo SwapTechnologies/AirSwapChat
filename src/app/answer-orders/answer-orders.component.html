@@ -2,10 +2,10 @@
 [selectedIndex] = 'selectedTabIndex'>
   <mat-tab
   [label]='answerOrderRequests'
-  [disabled] = 'makerOrderService.orderRequests.length == 0'
+  [disabled] = '!gotOrderRequests'
   >
-    <div *ngIf='makerOrderService.orderRequests.length > 0'>
-      <h1> A Peer is asking you for an Offer </h1>
+    <div *ngIf='gotOrderRequests'>
+      <h1> A Peer is Asking you for an Offer </h1>
       <mat-grid-list [cols]='columnNumber(makerOrderService.orderRequests)' rowHeight='600px'>
         <mat-grid-tile *ngFor="let order of makerOrderService.orderRequests">
           <mat-card>
@@ -59,11 +59,13 @@
                 <mat-form-field style="width: 100%;">
                   <input
                   matInput
-                  type="number"
+                  number
                   placeholder="Offer the deal for {{order.takerProps.symbol}}"
                   (keydown.enter)="answerOrder(order)"
                   [(ngModel)]="takerAmount[order.id]"
                   [disabled]="order.clickedOfferDeal">
+                  <mat-hint *ngIf="takerAmount[order.id] && !askingPositiveNumber(order)"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
+                  <mat-hint *ngIf="takerAmount[order.id] && askingPositiveNumber(order) && !takerHasEnough(order)"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
                 </mat-form-field>
               </div>
               <div>
@@ -73,7 +75,7 @@
                 <mat-form-field style="width: 100%;">
                   <input
                   matInput
-                  type="number"
+                  number
                   placeholder="Minutes after the order should expire"
                   [(ngModel)]="expiration"
                   [disabled]="order.clickedOfferDeal">
@@ -118,10 +120,10 @@
   </mat-tab>
   <mat-tab
   [label]='takeSignedOrders'
-  [disabled] = 'takerOrderService.orderResponses.length == 0'>
-  <div *ngIf='takerOrderService.orderResponses.length > 0'>
-    <h1> You Can Close Deals </h1>
-    <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='600px'>
+  [disabled] = '!gotOrdersToTake'>
+  <div *ngIf='gotOrdersToTake'>
+    <h1> You can Close Deals </h1>
+    <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='350px'>
       <mat-grid-tile *ngFor="let order of takerOrderService.orderResponses">
         <mat-card>
           <mat-card-title>
@@ -205,10 +207,30 @@
   </mat-tab>
   <mat-tab
   [label]='pendingOrders'
-  [disabled] = 'takerOrderService.pendingOrders.length + makerOrderService.answeredRequests.length == 0'>
+  [disabled] = '!gotPendingOrders'>
+    <div *ngIf='takerOrderService.sentOrders.length > 0'>
+      <h1> Waiting for an Offer from Peer</h1>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.sentOrders)' rowHeight='200px'>
+        <mat-grid-tile *ngFor="let order of takerOrderService.sentOrders">
+          <mat-card>
+            <mat-card-title>
+              {{order.alias}}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Address: {{order.makerAddress}}
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div>
+                You are asking the peer to make an offer in <strong>{{order.takerProps.symbol}}</strong> for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
     <div *ngIf='takerOrderService.pendingOrders.length > 0'>
-      <h1> Waiting for orders to get mined</h1>
-      <mat-grid-list [cols]='columnNumber(takerOrderService.pendingOrders)' rowHeight='400px'>
+      <h1> Waiting for Orders to get Mined</h1>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.pendingOrders)' rowHeight='200px'>
         <mat-grid-tile *ngFor="let order of takerOrderService.pendingOrders">
           <mat-card>
             <mat-card-title>
@@ -232,7 +254,7 @@
     </div>
     <div *ngIf='makerOrderService.answeredRequests.length > 0'>
       <h1> Waiting for Answer from Taker </h1>
-      <mat-grid-list [cols]='columnNumber(makerOrderService.answeredRequests)' rowHeight='400px'>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.answeredRequests)' rowHeight='200px'>
         <mat-grid-tile *ngFor="let order of makerOrderService.answeredRequests">
           <mat-card>
             <mat-card-title>
@@ -262,12 +284,12 @@
   </mat-tab>
   <mat-tab
   [label]='abortedDeals'
-  [disabled] = 'takerOrderService.errorOrders.length + makerOrderService.errorRequests.length == 0'>
-    <div *ngIf='takerOrderService.errorOrders.length + makerOrderService.errorRequests.length > 0'>
-      <h1> Aborted Trades As </h1>
+  [disabled] = '!gotAbortedDeals'>
+    <div *ngIf='gotAbortedDeals'>
+      <h1> Aborted Trades </h1>
       <!-- Aborted Trades where you were the taker -->
       <div *ngIf='takerOrderService.errorOrders.length > 0'>
-        <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='300px'>
+        <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='200px'>
           <mat-grid-tile *ngFor="let order of takerOrderService.errorOrders">
             <mat-card>
               <mat-card-title>
@@ -295,7 +317,7 @@
       </div>
       <!-- Aborted Trades where you were the taker -->
       <div *ngIf='makerOrderService.errorRequests.length > 0'>
-        <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='300px'>
+        <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='200px'>
           <mat-grid-tile *ngFor="let order of makerOrderService.errorRequests">
             <mat-card>
               <mat-card-title>
@@ -320,10 +342,10 @@
   </mat-tab>
   <mat-tab
   [label]='doneDeals'
-  [disabled] = 'takerOrderService.finishedOrders.length + makerOrderService.doneDeals.length == 0'>
+  [disabled] = '!gotDoneDeals'>
     <div *ngIf='takerOrderService.finishedOrders.length > 0'>
       <h1> Succeeded Trades as Taker </h1>
-      <mat-grid-list [cols]='columnNumber(takerOrderService.finishedOrders)' rowHeight='400px'>
+      <mat-grid-list [cols]='columnNumber(takerOrderService.finishedOrders)' rowHeight='200px'>
         <mat-grid-tile *ngFor="let order of takerOrderService.finishedOrders">
           <mat-card>
             <mat-card-title>
@@ -347,7 +369,7 @@
     </div>
     <div *ngIf='makerOrderService.doneDeals.length > 0'>
       <h1> Succeeded Trades as Maker </h1>
-      <mat-grid-list [cols]='columnNumber(makerOrderService.doneDeals)' rowHeight='400px'>
+      <mat-grid-list [cols]='columnNumber(makerOrderService.doneDeals)' rowHeight='200px'>
         <mat-grid-tile *ngFor="let order of makerOrderService.doneDeals">
           <mat-card>
             <mat-card-title>

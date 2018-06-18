@@ -18,7 +18,7 @@ export class GetOrderDirectComponent implements OnInit {
 
   public makerToken: Token;
   public takerToken: Token;
-  public makerAmount: string;
+  public makerAmount: number;
 
   public makerTokenName;
   public filteredValidatedMakerTokens;
@@ -109,19 +109,25 @@ export class GetOrderDirectComponent implements OnInit {
     return token.address !== EtherAddress;
   }
 
-  stringIsValidNumber(makerAmount): boolean {
-    return Number(this.makerAmount) <= this.makerBalanceMakerToken / this.makerDecimals;
+  makerHasEnough(): boolean {
+    return (this.makerAmount
+          && Math.floor(this.makerAmount * this.makerDecimals) <= this.makerBalanceMakerToken);
+  }
+
+  isPositive(): boolean {
+    return this.makerAmount >= 0;
   }
 
   getOrder() {
-    if (Number(this.makerAmount) >= 0 && this.makerToken && this.takerToken) {
+    if (this.makerToken && this.takerToken && this.isPositive() && this.makerHasEnough()) {
       const order = {
         makerAddress: this.messagingService.selectedPeer.peerDetails.address,
-        makerAmount: this.erc20Service.toFixed(Math.floor(Number(this.makerAmount) * this.makerDecimals)),
+        makerAmount: this.erc20Service.toFixed(Math.floor(this.makerAmount * this.makerDecimals)),
         makerToken: this.makerToken.address,
         takerToken: this.takerToken.address,
         takerAddress: this.connectionService.loggedInUser.address,
         peer: this.messagingService.selectedPeer.peerDetails,
+        alias: this.messagingService.selectedPeer.peerDetails.alias,
         makerProps: this.makerToken,
         takerProps: this.takerToken,
         makerDecimals: this.makerDecimals,

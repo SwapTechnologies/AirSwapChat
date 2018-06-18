@@ -311,6 +311,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           takerToken: intent.takerToken,
           takerAddress: this.connectionService.loggedInUser.address,
           peer: intent.peer,
+          alias: intent.peer.alias,
           makerProps: intent.makerProps,
           takerProps: intent.takerProps,
           makerDecimals: intent.makerDecimals,
