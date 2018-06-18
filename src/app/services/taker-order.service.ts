@@ -92,9 +92,26 @@ export class TakerOrderService {
             signedOrder.makerProps.symbol + ',' + signedOrder.takerProps.symbol)
           .then(priceResult => {
             if (priceResult) {
+              let priceMakerToken = priceResult[signedOrder.makerProps.symbol];
+              if (!priceMakerToken) {
+                priceMakerToken = 0;
+              } else {
+                priceMakerToken = priceMakerToken['USD'];
+              }
+              let priceTakerToken = priceResult[signedOrder.takerProps.symbol];
+              if (!priceTakerToken) {
+                priceTakerToken = 0;
+              } else {
+                priceTakerToken = priceTakerToken['USD'];
+              }
               signedOrder['UsdPrices'] = {
-                makerToken: priceResult[signedOrder.makerProps.symbol]['USD'],
-                takerToken: priceResult[signedOrder.takerProps.symbol]['USD']
+                makerToken: priceMakerToken,
+                takerToken: priceTakerToken
+              };
+            } else {
+              signedOrder['UsdPrices'] = {
+                makerToken: 0,
+                takerToken: 0
               };
             }
           });
