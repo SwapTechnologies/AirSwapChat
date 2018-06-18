@@ -78,9 +78,26 @@ export class MakerOrderService {
       helper_maker.token.symbol + ',' + helper_taker.token.symbol)
     .then(priceResult => {
       if (priceResult) {
+        let priceMakerToken = priceResult[helper_maker.token.symbol];
+        if (!priceMakerToken) {
+          priceMakerToken = 0;
+        } else {
+          priceMakerToken = priceMakerToken['USD'];
+        }
+        let priceTakerToken = priceResult[helper_taker.token.symbol];
+        if (!priceTakerToken) {
+          priceTakerToken = 0;
+        } else {
+          priceTakerToken = priceTakerToken['USD'];
+        }
         order['UsdPrices'] = {
-          makerToken: priceResult[helper_maker.token.symbol]['USD'],
-          takerToken: priceResult[helper_taker.token.symbol]['USD']
+          makerToken: priceMakerToken,
+          takerToken: priceTakerToken
+        };
+      } else {
+        order['UsdPrices'] = {
+          makerToken: 0,
+          takerToken: 0
         };
       }
     });
