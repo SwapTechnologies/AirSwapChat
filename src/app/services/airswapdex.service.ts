@@ -173,7 +173,7 @@ export class AirswapdexService {
         gasPrice = ethGasStationResult['average'] / 10 * 1e9;
       }
       if (takerToken === EtherAddress) {
-        this.web3service.web3.eth.sendTransaction({
+        return this.web3service.web3.eth.sendTransaction({
           from: this.web3service.connectedAccount,
           to: this.airswapDexAddress,
           value: takerAmount,

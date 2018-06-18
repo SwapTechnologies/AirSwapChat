@@ -167,6 +167,8 @@ export class TakerOrderService {
     // fill will tell maker about mining it when sent
     // and adds txHash to the order for the taker
     return this.airswapDexService.fill(order, (txHash) => {
+
+      console.log('this is the callback of fill (should be took order, not yet mined)');
       order['txHash'] = txHash;
       this.pendingOrders.push(order);
       this.orderResponses = this.orderResponses.filter(x => x.id !== order.id);
@@ -175,6 +177,7 @@ export class TakerOrderService {
     })
     .then(() => {
       order.timer.unsubscribe(); // order is mined, stop listening for it
+      console.log('this is the then branch after having pressed fill');
       this.finishedOrders.push(order);
       this.pendingOrders = this.pendingOrders.filter(x => x.id !== order.id);
       this.wsService.tellMakerMinedOrder(order.makerAddress, order.id);
