@@ -1,32 +1,36 @@
 <div>
-  <h1>
-    Get Order
-  </h1>
-  <div>
+  <h1 mat-dialog-title>Get Order</h1>
+  <div mat-dialog-content>
+    <div>
+      <mat-form-field style="width: 100%;">
+        <input
+        matInput
+        placeholder="Peer Address"
+        [(ngModel)]="data.address"
+        readonly='true'>
+      </mat-form-field>
+    </div>
+    <div>
+      <i>{{data.peer.alias}} has
+      <strong>{{data.makerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</strong></i>
+    </div>
+    <div>
+      Give me {{data.makerProps.name}} for {{data.takerProps.name}}
     <mat-form-field style="width: 100%;">
       <input
       matInput
-      placeholder="Peer Address"
-      [(ngModel)]="data.address"
-      readonly='true'>
+      number
+      (keydown.enter)="getOrder()"
+      placeholder="I want the following amount of {{data.makerProps.symbol}}"
+      [(ngModel)]="makerAmount">
+      <mat-hint *ngIf="makerAmount && !isPositive()"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
+      <mat-hint *ngIf="makerAmount && isPositive() && !makerHasEnough()"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
     </mat-form-field>
+    </div>
   </div>
-  <div>
-    <i>{{data.peer.alias}} has
-    <strong>{{data.makerBalanceMakerToken / data.makerDecimals}} {{data.makerProps.symbol}}</strong></i>
-  </div>
-  <div>
-    Give me {{data.makerProps.name}} for {{data.takerProps.name}}
-  <mat-form-field style="width: 100%;">
-    <input
-    matInput
-    type="number"
-    (keydown.enter)="getOrder()"
-    placeholder="I want the following amount of {{data.makerProps.symbol}}"
-    [(ngModel)]="makerAmount">
-  </mat-form-field>
-  </div>
-  <div *ngIf="stringIsValidNumber(makerAmount) && makerHasEnough()">
-    <button mat-raised-button (click)="getOrder()">ASK FOR OFFER</button>
+  <div mat-dialog-actions>
+    <div *ngIf="makerAmount && isPositive() && makerHasEnough()">
+      <button mat-raised-button (click)="getOrder()">ASK FOR OFFER</button>
+    </div>
   </div>
 </div>

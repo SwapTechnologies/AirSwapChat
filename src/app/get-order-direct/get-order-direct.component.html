@@ -83,6 +83,8 @@
             number
             placeholder="Sell me following amount of  {{makerToken.symbol}}"
             [(ngModel)]="makerAmount">
+            <mat-hint *ngIf="makerAmount && !isPositive()"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
+            <mat-hint *ngIf="makerAmount && isPositive() && !makerHasEnough()"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
           </mat-form-field>
         </div>
         <div *ngIf="sentRequest">
@@ -91,7 +93,7 @@
       </mat-card-content>
       <mat-card-actions>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
-        makerToken && takerToken && stringIsValidNumber(makerAmount) &&
+        makerToken && takerToken && makerAmount && isPositive() && makerHasEnough() &&
         takerTakerTokenApproval > 0"
         mat-button
         (click)="getOrder()">
