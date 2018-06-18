@@ -26,6 +26,7 @@ export class WebsocketService {
   ) {}
 
   public initSocket(): Promise<boolean> {
+    console.log('Websocket set to debug mode: watching all communication');
     this.ws = new WebSocket(this.url);
     this.websocketSubject = new Subject<string>();
     this.ws.onmessage = (event) => this.websocketSubject.next(event.data);
@@ -56,6 +57,7 @@ export class WebsocketService {
 
             this.connectionService.loggedInUser.wsAddress = this.web3service.connectedAccount.toLowerCase();
             this.connectionService.wsConnected = true;
+            this.idleListening();
             resolve(true);
 
           } else {
@@ -92,15 +94,16 @@ export class WebsocketService {
     );
   }
 
-  // idleListening(): void {
-  //   this.websocketSubscriptions['idleListening'] =
-  //   this.websocketSubject
-  //   .subscribe(message => {
-  //     const receivedMessage = JSON.parse(message);
-  //     const content = JSON.parse(receivedMessage['message']);
-  //     const method = content['method'];
-  //   });
-  // }
+  idleListening(): void {
+    this.websocketSubscriptions['idleListening'] =
+    this.websocketSubject
+    .subscribe(message => {
+      const receivedMessage = JSON.parse(message);
+      const content = JSON.parse(receivedMessage['message']);
+      const method = content['method'];
+      console.log('WS: Received from: ', receivedMessage.sender, content);
+    });
+  }
 
   sendRPC(jsonrpc, receiver): void {
     const envelope = {
@@ -109,6 +112,7 @@ export class WebsocketService {
       'message': JSON.stringify(jsonrpc)
     };
     const request: string = JSON.stringify(envelope);
+    console.log('WS: Sending to ', receiver, jsonrpc);
     this.send(request);
   }
 

@@ -20,7 +20,6 @@ export class DialogAskMakerSignatureComponent implements OnInit {
     this.suggestedTakerAmount = this.data.order['UsdPrices'].makerToken / this.data.order['UsdPrices'].takerToken *
                           this.data.order.makerAmount / this.data.order.makerDecimals;
     const setTakerAmount = this.data.order.takerAmount / this.data.order.takerDecimals;
-    console.log(this.suggestedTakerAmount, setTakerAmount);
     this.deviation = (this.suggestedTakerAmount - setTakerAmount) / setTakerAmount;
   }
 

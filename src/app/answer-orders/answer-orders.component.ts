@@ -286,4 +286,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  calcDeviation(order): number {
+    const marketPrice = order['UsdPrices'].makerToken / order['UsdPrices'].takerToken;
+    const offeredPrice = order.takerAmount / order.makerAmount * order.makerDecimals / order.takerDecimals;
+    const deviation = (marketPrice - offeredPrice) / offeredPrice;
+    return deviation;
+  }
 }
