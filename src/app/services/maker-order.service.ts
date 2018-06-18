@@ -117,7 +117,7 @@ export class MakerOrderService {
     this.wsService.tellDeletedOrder(order.takerAddress, order.id);
   }
 
-  answerOrder(fullOrder: any, callback?: () => any): void {
+  answerOrder(fullOrder: any, cbTradeSucceeded: () => any): void {
     // full order contains all information and signature by maker
     const orderAnswer = {
       makerAddress: fullOrder.makerAddress,
@@ -132,53 +132,53 @@ export class MakerOrderService {
       r: fullOrder.r,
       s: fullOrder.s
     };
+    // send signed order to taker
     this.wsService.sendOrder(fullOrder.takerAddress, orderAnswer, fullOrder.id);
     this.answeredRequests.push(fullOrder);
     this.orderRequests = this.orderRequests.filter(x => x.id !== fullOrder.id);
+
+    // START listening for an answer to signed order from taker
+    console.log('Maker start listening for answer from taker, id:', fullOrder.id);
     this.websocketSubscriptions[fullOrder.id] = this.wsService.websocketSubject
     .subscribe(message => {
       // startListening for an answer of this answered getOrder request
-      let parsedMessage = JSON.parse(message);
-      let parsedContent = JSON.parse(parsedMessage['message']);
+      const parsedMessage = JSON.parse(message);
+      const parsedContent = JSON.parse(parsedMessage['message']);
       const id = parsedContent['id'];
       if (id === fullOrder.id) {
-        this.websocketSubscriptions[fullOrder.id].unsubscribe(); // received an answer -> stop listening
-
         if (parsedContent['method'] === 'deletedOrder') {
+          // received answer that taker deleted the order -> stop listening
+          this.websocketSubscriptions[fullOrder.id].unsubscribe();
+
           fullOrder['error'] = 'Taker deleted your signed offer.';
           this.errorRequests.push(fullOrder);
           this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
           this.snackBar.open(fullOrder.alias + ' deleted your signed offer', 'Ok.', {duration: 3000});
         } else if (parsedContent['method'] === 'orderTimedOut') {
-          fullOrder['error'] = 'Order timed out.';
+          // received answer that the order timed out -> stop listening
+          this.websocketSubscriptions[fullOrder.id].unsubscribe();
+          if (fullOrder.txHash) {
+            fullOrder['error'] = 'It seems order timed out before it was mined. Check on https://rinkeby.etherscan.io/tx/' +
+                                      fullOrder.txHash;
+            this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out before it could be mined.', 'Ok.', {duration: 3000});
+          } else {
+            fullOrder['error'] = 'Order timed out.';
+            this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out.', 'Ok.', {duration: 3000});
+          }
           this.errorRequests.push(fullOrder);
           this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
-          this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out.', 'Ok.', {duration: 3000});
         } else if (parsedContent['method'] === 'tookOrder') {
+          // received answer that the order was took, keep listening until it's mined
           const txDetails = parsedContent['params'];
           fullOrder['txHash'] = txDetails['txHash']; // taker is about to mine it. listen for the result
           this.snackBar.open(fullOrder.alias + ' send the transaction to the blockchain and it is waiting to be mined.',
                              'Ok.', {duration: 3000});
-          this.websocketSubscriptions[fullOrder.id] = this.wsService.websocketSubject
-          .subscribe(miningMessage => {
-            parsedMessage = JSON.parse(miningMessage);
-            parsedContent = JSON.parse(parsedMessage['message']);
-            if (id === fullOrder.id) {
-              if (parsedContent['method'] === 'orderTimedOut') {
-                fullOrder['error'] = 'It seems order timed out before it was mined. Check on https://rinkeby.etherscan.io/tx/' +
-                                      fullOrder.txHash;
-                this.errorRequests.push(fullOrder);
-                this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
-                this.snackBar.open('Your offer for ' + fullOrder.alias + ' timed out before it could be mined.', 'Ok.', {duration: 3000});
-              } else if (parsedContent['method'] === 'minedOrder') {
-                this.doneDeals.push(fullOrder);
-                this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
-                if (callback) {
-                  callback();
-                }
-              }
-            }
-          });
+        } else if (parsedContent['method'] === 'minedOrder') {
+          // received answer that the deal is mined and done -> stop listening
+          this.websocketSubscriptions[fullOrder.id].unsubscribe();
+          this.doneDeals.push(fullOrder);
+          this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
+          cbTradeSucceeded();
         }
       }
     });
