@@ -40,8 +40,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public gotOrderRequests = false;
   public gotOrdersToTake = false;
   public gotPendingOrders = false;
-  public gotDoneDeals = false;
   public gotAbortedDeals = false;
+  public gotDoneDeals = false;
   public selectedTabIndex: number;
 
   constructor(
@@ -58,8 +58,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     const a = this.answerOrderRequests;
     const b = this.takeSignedOrders;
     const c = this.pendingOrders;
-    const d = this.doneDeals;
-    const e = this.abortedDeals;
+    const d = this.abortedDeals;
+    const e = this.doneDeals;
 
     if (this.gotOrderRequests) {
       this.selectedTabIndex = 0;
@@ -112,7 +112,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   get abortedDeals(): string {
     let baseName = 'ABORTED TRADES';
     const sum = this.takerOrderService.errorOrders.length +
-    this.makerOrderService.errorRequests.length;
+                this.makerOrderService.errorRequests.length;
     this.gotAbortedDeals = sum > 0;
     if (this.gotAbortedDeals) {
       baseName = baseName + ' (' + sum + ')';

@@ -155,7 +155,6 @@ export class MakerOrderService {
     this.orderRequests = this.orderRequests.filter(x => x.id !== fullOrder.id);
 
     // START listening for an answer to signed order from taker
-    console.log('Maker start listening for answer from taker, id:', fullOrder.id);
     this.websocketSubscriptions[fullOrder.id] = this.wsService.websocketSubject
     .subscribe(message => {
       // startListening for an answer of this answered getOrder request
