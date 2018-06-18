@@ -267,7 +267,7 @@
       <h1> Aborted Trades As </h1>
       <!-- Aborted Trades where you were the taker -->
       <div *ngIf='takerOrderService.errorOrders.length > 0'>
-        <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='600px'>
+        <mat-grid-list [cols]='columnNumber(takerOrderService.errorOrders)' rowHeight='300px'>
           <mat-grid-tile *ngFor="let order of takerOrderService.errorOrders">
             <mat-card>
               <mat-card-title>
@@ -295,7 +295,7 @@
       </div>
       <!-- Aborted Trades where you were the taker -->
       <div *ngIf='makerOrderService.errorRequests.length > 0'>
-        <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='600px'>
+        <mat-grid-list [cols]='columnNumber(makerOrderService.errorRequests)' rowHeight='300px'>
           <mat-grid-tile *ngFor="let order of makerOrderService.errorRequests">
             <mat-card>
               <mat-card-title>

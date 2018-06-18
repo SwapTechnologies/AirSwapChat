@@ -115,7 +115,6 @@ export class GetOrderDirectComponent implements OnInit {
 
   getOrder() {
     if (Number(this.makerAmount) >= 0 && this.makerToken && this.takerToken) {
-
       const order = {
         makerAddress: this.messagingService.selectedPeer.peerDetails.address,
         makerAmount: this.erc20Service.toFixed(Math.floor(Number(this.makerAmount) * this.makerDecimals)),

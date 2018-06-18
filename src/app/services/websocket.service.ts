@@ -26,7 +26,6 @@ export class WebsocketService {
   ) {}
 
   public initSocket(): Promise<boolean> {
-    console.log('Websocket set to debug mode: watching all communication');
     this.ws = new WebSocket(this.url);
     this.websocketSubject = new Subject<string>();
     this.ws.onmessage = (event) => this.websocketSubject.next(event.data);
