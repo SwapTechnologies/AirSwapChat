@@ -97,12 +97,14 @@
       <div class='centeredContainer'>
         <button
         mat-button
+        color='warn'
         (click)="onCloseCancel()">
           CANCEL
         </button>
         <button
         *ngIf="checkStoreData && checkToS"
         mat-button
+        color='primary'
         (click)="onCloseConfirm()">
           SEND AGREEMENT
         </button>

@@ -6,29 +6,29 @@
 </div>
 <div mat-dialog-content>
   <mat-form-field>
-    <input 
+    <input
     matInput
     placeholder="E-Mail"
     [(ngModel)]="mailAddress"
     disabled="true">
   </mat-form-field>
   <mat-form-field>
-    <input 
+    <input
     matInput
-    type='password' 
+    type='password'
     placeholder="Password"
     [(ngModel)]="password">
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
-  <button 
+  <button
   mat-button
   (click)='onNoClick()'
-  color='primary'>CANCEL
+  color='warn'>CANCEL
   </button>
-  <button 
-  mat-button 
+  <button
+  mat-button
   (click)='reauthenticate()'
-  color='warn'>ENTER
+  color='primary'>ENTER
   </button>
 </div>

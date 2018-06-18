@@ -86,11 +86,13 @@
               <span *ngIf="isValidNumber(takerAmount[order.id]) && takerHasEnough(order)">
                 <button mat-button
                 (click)="detailsForOrderOffer(order)"
+                color='primary'
                 [disabled]="order.clickedOfferDeal">
                   DETAILS
                 </button>
                 <button mat-button
                 (click)="answerOrder(order)"
+                color='primary'
                 [disabled]="order.clickedOfferDeal">
                   OFFER DEAL
                 </button>
@@ -172,12 +174,14 @@
           <mat-card-actions>
             <button
             mat-button
-            (click)="dealSealDetails(order)">
+            (click)="dealSealDetails(order)"
+            color='primary'>
               DETAILS
             </button>
             <button
             mat-button
             (click)="sealDeal(order)"
+            color='primary'
             [disabled]="order.clickedDealSeal">
               SEAL THE DEAL
             </button>

@@ -96,12 +96,14 @@
         makerToken && takerToken && makerAmount && isPositive() && makerHasEnough() &&
         takerTakerTokenApproval > 0"
         mat-button
+        color='primary'
         (click)="getOrder()">
         ASK FOR OFFER
         </button>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
         takerToken && takerTakerTokenApproval == 0"
         mat-button
+        color='primary'
         (click)="approveTakerToken()">
         APPROVE {{this.takerToken.symbol}}
         </button>
