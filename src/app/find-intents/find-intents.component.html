@@ -160,16 +160,19 @@
                 <button
                 *ngIf="intent.peer.uid"
                 mat-button
+                color='primary'
                 (click)="message(intent)">
                   MESSAGE
                 </button>
                 <button mat-button *ngIf="intent.approvedTakerToken > 0"
                 (click)="openDialogGetOrder(intent)"
+                color='primary'
                 [disabled]="intent.peer.uid && !intent.peer.online">
                   GET ORDER
                 </button>
                 <button mat-button *ngIf="!(intent.approvedTakerToken > 0)"
                 [disabled]="clickedApprove[intent.takerToken]"
+                color='primary'
                 (click)="approveTaker(intent)">
                   APPROVE {{intent.takerProps.symbol}}
                 </button>

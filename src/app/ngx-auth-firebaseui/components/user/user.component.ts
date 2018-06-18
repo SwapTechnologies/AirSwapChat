@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AngularFireAuth } from 'angularfire2/auth';
-import { MatSnackBar } from '@angular/material';
+import { NotificationService} from '../../../services/notification.service';
 import { AuthProcessService } from '../../services/auth-process.service';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { EMAIL_REGEX, PHONE_NUMBER_REGEX } from '../auth/auth.component';
@@ -28,11 +28,12 @@ export class UserComponent implements OnInit {
   updatePhoneNumberFormControl: AbstractControl;
   updatePasswordFormControl: AbstractControl;
 
-  constructor(public auth: AngularFireAuth,
-              public authProcess: AuthProcessService,
-              private _fireStoreService: FirestoreSyncService,
-              private snackBar: MatSnackBar) {
-  }
+  constructor(
+    public auth: AngularFireAuth,
+    public authProcess: AuthProcessService,
+    private _fireStoreService: FirestoreSyncService,
+    private notifierService: NotificationService,
+  ) {}
 
   ngOnInit() {
   }
@@ -105,7 +106,7 @@ export class UserComponent implements OnInit {
         await this._fireStoreService.updateUserData(this.authProcess.parseUserInfo(user));
 
       } catch (error) {
-        error.message ? this.snackBar.open(error.message, 'Ok') : this.snackBar.open(error, 'Ok');
+        error.message ? this.notifierService.showMessage(error.message) : this.notifierService.showMessage(error);
         console.error(error);
         console.error(error.code);
         console.error(error.message);
@@ -113,7 +114,7 @@ export class UserComponent implements OnInit {
 
 
       if (snackBarMsg.length > 0) {
-        this.snackBar.open(snackBarMsg.join('\\n'), 'Ok');
+        this.notifierService.showMessage(snackBarMsg.join('\\n'));
       }
       // this.updateFormGroup.reset();
     }
@@ -136,14 +137,10 @@ export class UserComponent implements OnInit {
       await this._fireStoreService.deleteUserData(user.uid);
       this.onAccountDeleted.emit();
       this.editMode = false;
-      this.snackBar.open('Your account has been successfully deleted!', 'OK', {
-        duration: 5000
-      });
+      this.notifierService.showMessage('Your account has been successfully deleted!');
     } catch (error) {
       console.log('Error while delete user\'s account', error);
-      this.snackBar.open('Error occurred while deleting your account!', 'OK', {
-        duration: 5000
-      });
+      this.notifierService.showMessage('Error occurred while deleting your account!');
     }
   }
 

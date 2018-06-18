@@ -111,7 +111,7 @@ export class GetOrderDirectComponent implements OnInit {
 
   makerHasEnough(): boolean {
     return (this.makerAmount
-          && Math.floor(this.makerAmount * this.makerDecimals) <= this.makerBalanceMakerToken);
+      && this.erc20Service.toFixed(this.makerAmount * this.makerDecimals) <= this.makerBalanceMakerToken);
   }
 
   isPositive(): boolean {
@@ -122,7 +122,7 @@ export class GetOrderDirectComponent implements OnInit {
     if (this.makerToken && this.takerToken && this.isPositive() && this.makerHasEnough()) {
       const order = {
         makerAddress: this.messagingService.selectedPeer.peerDetails.address,
-        makerAmount: this.erc20Service.toFixed(Math.floor(this.makerAmount * this.makerDecimals)),
+        makerAmount: this.erc20Service.toFixed(this.makerAmount * this.makerDecimals),
         makerToken: this.makerToken.address,
         takerToken: this.takerToken.address,
         takerAddress: this.connectionService.loggedInUser.address,

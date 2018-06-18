@@ -7,12 +7,14 @@ import { ColumnSpaceObserverService } from '../services/column-space-observer.se
 import { ConnectionService } from '../services/connection.service';
 import { Erc20Service } from '../services/erc20.service';
 import { MessagingService } from '../services/messaging.service';
+import { NotificationService} from '../services/notification.service';
+
 import { TakerOrderService } from '../services/taker-order.service';
 import { TokenService, EtherAddress } from '../services/token.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material';
 import { DialogGetOrderComponent } from '../dialogs/dialog-get-order/dialog-get-order.component';
 import { DialogAddTokenComponent } from '../dialogs/dialog-add-token/dialog-add-token.component';
 
@@ -56,7 +58,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     private userOnlineService: UserOnlineService,
     public wsService: WebsocketService,
     public dialog: MatDialog,
-    public snackBar: MatSnackBar,
+    private notifierService: NotificationService,
     ) { }
 
   ngOnInit() {
@@ -321,9 +323,11 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           bothTokensValid: intent.bothTokensValid
         };
         this.takerOrderService.sendGetOrder(order);
-        this.snackBar.open('Asking ' + intent.peer.alias + ' for an offer in ' +
+        this.notifierService.showMessage(
+          'Asking ' + intent.peer.alias + ' for an offer in ' +
           intent.takerProps.symbol + ' for ' + makerAmount / intent.makerDecimals +
-          ' ' + intent.makerProps.symbol, 'Ok.', {duration: 2000});
+          ' ' + intent.makerProps.symbol
+        );
       }
     });
   }
@@ -346,6 +350,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   refreshIntents(): void {
     this.showIntents();
+    this.pageIndex = 0;
   }
 
   refreshTokens(): void {

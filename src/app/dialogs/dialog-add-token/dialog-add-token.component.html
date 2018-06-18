@@ -7,8 +7,8 @@
   </p>
   <div>
     <mat-form-field style="width: 100%;">
-      <input 
-      matInput 
+      <input
+      matInput
       placeholder="Token Address"
       [(ngModel)]="tokenAddress"
       [disabled]="tokenIsValid">
@@ -16,24 +16,24 @@
 
     <ng-container *ngIf="checkedToken">
       <mat-form-field style="width: 100%;">
-        <input 
-        matInput 
+        <input
+        matInput
         placeholder="Token Name"
-        readonly='true' 
+        readonly='true'
         [(ngModel)]="tokenName">
       </mat-form-field>
       <mat-form-field style="width: 100%;">
-        <input 
-        matInput 
+        <input
+        matInput
         placeholder="Token Symbol"
-        readonly='true' 
+        readonly='true'
         [(ngModel)]="tokenSymbol">
       </mat-form-field>
       <mat-form-field style="width: 100%;">
-        <input 
-        matInput 
+        <input
+        matInput
         type="number"
-        placeholder="Token Decimals" 
+        placeholder="Token Decimals"
         readonly='true'
         [(ngModel)]="tokenDecimals">
       </mat-form-field>
@@ -42,16 +42,18 @@
   <p style="color: red">
     <strong>{{errorMessage}}</strong>
   </p>
-  <button 
-  mat-raised-button 
+  <button
+  mat-raised-button
   (click)="checkToken()"
+  color='primary'
   [disabled]="tokenIsValid">
     CHECK TOKEN
   </button>
-  
-  <button 
-  mat-raised-button 
+
+  <button
+  mat-raised-button
   (click)="addToken()"
+  color='primary'
   [disabled]="!tokenIsValid">
     ADD TOKEN
   </button>

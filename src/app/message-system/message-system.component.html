@@ -99,13 +99,14 @@
   <div class="send_message_card" *ngIf="messageService.selectedPeer">
     <mat-card>
       <mat-form-field class="send_message_card">
-        <input
-          matInput
-          type="text"
-          maxlength="200"
-          (keydown.enter)="sendMessage()"
-          placeholder="Send message"
-          [(ngModel)]="message"/>
+        <textarea
+        matInput
+        type="text"
+        maxlength="200"
+        (keydown.enter)="sendMessage()"
+        placeholder="Send message"
+        matTextareaAutosize="true"
+        [(ngModel)]="message"></textarea>
         <button
           mat-button
           mat-icon-button
@@ -116,7 +117,7 @@
           (click)="sendMessage()">
           <mat-icon>send</mat-icon>
         </button>
-        <mat-hint>{{message.length}} / 200</mat-hint>
+        <mat-hint align="end">{{message.length}} / 200</mat-hint>
       </mat-form-field>
     </mat-card>
   </div>
