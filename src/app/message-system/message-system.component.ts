@@ -43,12 +43,21 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
     if (this.messageService.selectedPeer &&
       !this.messageService.selectedPeer.peerDetails.online &&
       !this.messageService.selectedPeer.hasUnreadMessages) {
+        // current peer is offline... do I have unread messages?
         for (const peer of this.messageService.connectedPeers) {
           if (peer.hasUnreadMessages) {
             this.messageService.selectedPeer = peer;
             break;
            }
         }
+        // no unread messages... anybody online?
+        for (const peer of this.messageService.connectedPeers) {
+          if (peer.peerDetails.online) {
+            this.messageService.selectedPeer = peer;
+            break;
+           }
+        }
+        // well.. then no
       }
   }
 

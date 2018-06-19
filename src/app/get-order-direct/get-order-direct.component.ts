@@ -115,7 +115,7 @@ export class GetOrderDirectComponent implements OnInit {
   }
 
   isPositive(): boolean {
-    return this.makerAmount >= 0;
+    return this.makerAmount > 0;
   }
 
   getOrder() {

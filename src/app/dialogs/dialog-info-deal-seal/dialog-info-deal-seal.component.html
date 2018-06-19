@@ -4,7 +4,7 @@
   </h1>
   <div mat-dialog-content>
     <div>
-      Following details will be sent to the AirSwap smart contract to finalize the swap
+      Following details will be sent to the AirSwap smart contract to finalize the swap. If you want to do it manually, call the fill() function of the AirSwap Protocol with the arguments in the following order:
     </div>
     <mat-form-field style="width: 100%;">
       <input
@@ -16,16 +16,16 @@
     <mat-form-field style="width: 100%;">
       <input
       matInput
-      placeholder="Maker Token ({{data.makerProps.name}})"
+      placeholder="Maker Amount (Decimals: {{data.makerProps.decimals}})"
       readonly='true'
-      [(ngModel)]="data.makerToken">
+      [(ngModel)]="data.makerAmount">
     </mat-form-field>
     <mat-form-field style="width: 100%;">
       <input
       matInput
-      placeholder="Maker Amount (Decimals: {{data.makerProps.decimals}})"
+      placeholder="Maker Token ({{data.makerProps.name}})"
       readonly='true'
-      [(ngModel)]="data.makerAmount">
+      [(ngModel)]="data.makerToken">
     </mat-form-field>
     <mat-form-field style="width: 100%;">
       <input
@@ -37,16 +37,16 @@
     <mat-form-field style="width: 100%;">
       <input
       matInput
-      placeholder="Taker Token ({{data.takerProps.name}})"
+      placeholder="Taker Amount (Decimals: {{data.takerProps.decimals}})"
       readonly='true'
-      [(ngModel)]="data.takerToken">
+      [(ngModel)]="data.takerAmount">
     </mat-form-field>
     <mat-form-field style="width: 100%;">
       <input
       matInput
-      placeholder="Taker Amount (Decimals: {{data.takerProps.decimals}})"
+      placeholder="Taker Token ({{data.takerProps.name}})"
       readonly='true'
-      [(ngModel)]="data.takerAmount">
+      [(ngModel)]="data.takerToken">
     </mat-form-field>
     <mat-form-field style="width: 100%;">
       <input

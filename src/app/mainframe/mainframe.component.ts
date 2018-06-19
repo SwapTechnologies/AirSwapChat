@@ -65,10 +65,46 @@ export class MainframeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.authUser(); // check for log in of user to firebase
     this.tokenService.getValidatedTokens(); // load the validated token list
-    // this.web3service.getAccount()
-    // .then(account => {
-    //   this.checkTokens();
-    // });
+    this.web3service.getAccount()
+    .then(account => {
+      // this.checkTokens();
+      // const makerAddress = '0xdbd6f75aedebdf1c3d2b7085229450200e410fbb';
+      // const makerToken = '0xbaed6c1f8cd4a443cc372fd15d770e3764b4b2e7';
+      // const makerAmount = '0';
+      // const takerAddress = '0xc7a1b6c071e114c1cd587182aec6838a179a0a11';
+      // const takerToken = '0xcc1cbd4f67cceb7c001bd4adf98451237a193ff8';
+      // const takerAmount = '10000';
+      // const expiration = '1529415197';
+      // const nonce = '13186835645505';
+      // const hash = '0xb177314e2488ba418575f7d4680ae299234430a87872c4cd45ea8e84508cf25a';
+      // const r = '0xa996e2aeec06a64123cf1e2fb38dc50fa8454da007914e8ca61264e1899c4042';
+      // const s = '0x720829dae650ea7fca18f0867dca99caad3e000084ba637f11d3aecf5b8132b6';
+      // const v = '0x1c';
+      // const signature = r + s.slice(2) + v.slice(2);
+      // console.log(signature);
+      // const hashV = this.web3service.web3.utils.soliditySha3(
+      //   makerAddress,
+      //   makerAmount,
+      //   makerToken,
+      //   takerAddress,
+      //   takerAmount,
+      //   takerToken,
+      //   expiration,
+      //   nonce
+      // );
+      // // this.web3service.web3.eth.personal.sign(hashV, this.web3service.connectedAccount)
+      // // .then(console.log);
+      // console.log('ecrecover');
+      // this.web3service.web3.eth.personal.ecRecover(hashV, signature)
+      // .then(result => console.log('result:', result === makerAddress));
+
+      // console.log('ecrecover');
+      // console.log(hashV);
+      // const prefixedHash = this.web3service.web3.eth.accounts.hashMessage(hashV);
+      // console.log(prefixedHash);
+      // // this.web3service.web3.eth.sign(prefixedHash, this.web3service.connectedAccount)
+      // // .then(console.log);
+    });
   }
   // async checkTokens() {
   //   for (const token of this.tokenService.validatedTokens) {

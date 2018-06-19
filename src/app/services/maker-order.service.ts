@@ -204,6 +204,15 @@ export class MakerOrderService {
           this.doneDeals.push(fullOrder);
           this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
           cbTradeSucceeded();
+        } else if (parsedContent['method'] === 'orderRejected') {
+          // received answer that the deal is mined and done -> stop listening
+          this.websocketSubscriptions[fullOrder.id].unsubscribe();
+          fullOrder['error'] = 'Smart contract rejected transaction.';
+          this.errorRequests.push(fullOrder);
+          this.answeredRequests = this.answeredRequests.filter(x => x.id !== id);
+          this.notifierService.showMessage(
+            'Smart contract rejected transaction with ' + fullOrder.alias
+          );
         }
       }
     });
