@@ -254,6 +254,16 @@ export class WebsocketService {
     return id;
   }
 
+  tellOrderRejected(receiver, id) {
+    const jsonrpc = {
+      'id': id,
+      'jsonrpc': '2.0',
+      'method': 'orderRejected',
+    };
+    this.sendRPC(jsonrpc, receiver);
+    return id;
+  }
+
   tellMakerMinedOrder(makerAddress, id) {
     const jsonrpc = {
       'id': id,

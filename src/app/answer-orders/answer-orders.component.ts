@@ -141,7 +141,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   askingPositiveNumber(order: any): boolean {
-    return (this.takerAmount[order.id] >= 0);
+    return (this.takerAmount[order.id] > 0);
   }
 
   takerHasEnough(order: any): boolean {
@@ -191,7 +191,8 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
           let v, r, s;
           r = signedMessage.slice(0, 66);
           s = '0x' + signedMessage.slice(66, 130);
-          v = this.web3service.web3.utils.hexToNumber('0x' + signedMessage.slice(130, 132));
+          v = '0x' + signedMessage.slice(130, 132);
+          // v = this.web3service.web3.utils.hexToNumber('0x' + signedMessage.slice(130, 132));
           order['v'] = v;
           order['r'] = r;
           order['s'] = s;
