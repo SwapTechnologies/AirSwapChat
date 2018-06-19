@@ -27,7 +27,6 @@ export class DialogGetOrderComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log(this.data.makerBalanceMakerToken);
   }
 
   onNoClick(): void {
