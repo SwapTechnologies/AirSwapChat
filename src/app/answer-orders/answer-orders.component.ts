@@ -37,11 +37,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public expiration = 5;
   public timers: any = {};
 
-  public gotOrderRequests = false;
-  public gotOrdersToTake = false;
-  public gotPendingOrders = false;
-  public gotAbortedDeals = false;
-  public gotDoneDeals = false;
+  public gotOrderRequests: boolean;
+  public gotOrdersToTake: boolean;
+  public gotPendingOrders: boolean;
+  public gotAbortedDeals: boolean;
+  public gotDoneDeals: boolean;
   public selectedTabIndex: number;
 
   constructor(
@@ -55,14 +55,21 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    const a = this.answerOrderRequests;
-    const b = this.takeSignedOrders;
-    const c = this.pendingOrders;
-    const d = this.abortedDeals;
-    const e = this.doneDeals;
+    this.gotOrderRequests = this.makerOrderService.orderRequests.length > 0;
+    this.gotOrdersToTake = this.takerOrderService.orderResponses.length > 0;
+    this.gotPendingOrders =
+      this.takerOrderService.sentOrders.length +
+      this.takerOrderService.pendingOrders.length +
+      this.makerOrderService.answeredRequests.length > 0;
+    this.gotAbortedDeals =
+      this.takerOrderService.errorOrders.length +
+      this.makerOrderService.errorRequests.length > 0;
+    this.gotDoneDeals =
+    this.makerOrderService.doneDeals.length +
+      this.takerOrderService.finishedOrders.length > 0;
 
-    console.log(this.gotOrderRequests);
-    console.log(this.gotOrdersToTake);
+    console.log(this.gotOrderRequests, this.makerOrderService.orderRequests.length);
+    console.log(this.gotOrdersToTake, this.takerOrderService.orderResponses.length);
     console.log(this.gotPendingOrders);
     console.log(this.gotAbortedDeals);
     console.log(this.gotDoneDeals);
