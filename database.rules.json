@@ -1,0 +1,48 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+      	".write": "auth.uid === $uid",
+        "alias": {
+	        ".read": "auth !== null"
+        },
+        "address": {
+	        ".read": "auth !== null"
+        },
+        "peers": {
+	        ".read": "auth.uid === $uid"
+        }
+      }
+    },
+    "messaging": {
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid",
+        "unreceivedMessage": {
+          "$timestamp": {
+            ".write": "(newData.hasChildren(['message', 'sender']) && newData.child('sender').val() === auth.uid)",
+            ".validate": "newData.child('message').isString() && newData.child('message').val().length <= 200 && newData.child('message').val().length > 0"
+          }
+        }
+      }
+    },
+    "tokens": {
+  	  ".read": true,
+      "$address": {
+        ".write": "auth !== null",
+        ".validate": "newData.hasChildren(['decimals', 'symbol', 'name', 'addedBy']) && newData.child('addedBy').val() === auth.uid"
+      }
+    },
+    "registeredAddresses": {
+      ".read": true,
+      "$address": {
+				".write": "(!data.exists() && newData.hasChildren(['uid']) && newData.child('uid').val() === auth.uid) || (data.hasChildren(['uid']) && data.child('uid').val() === auth.uid)"      }
+    },
+    "online": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth.uid === $uid"
+      }
+    }
+  }
+}
