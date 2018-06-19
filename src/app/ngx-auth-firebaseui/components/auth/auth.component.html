@@ -76,22 +76,21 @@
                      type="password"
                      placeholder="Password"
                      minlength="6"
-                     maxlength="25"
                      formControlName="password"
                      required>
               <mat-icon matSuffix [color]="color">lock</mat-icon>
-              <mat-hint align="end" aria-live="polite">
+              <!-- <mat-hint align="end" aria-live="polite">
                 {{signInFormGroup.value.password.length}} / 25
-              </mat-hint>
+              </mat-hint> -->
               <mat-error *ngIf="sigInPasswordFormControl.hasError('required')">
                 Please do not forget the password
               </mat-error>
               <mat-error *ngIf="sigInPasswordFormControl.hasError('minlength')">
                 The password must be at least 6 characters long.
               </mat-error>
-              <mat-error *ngIf="sigInPasswordFormControl.hasError('maxlength')">
+              <!-- <mat-error *ngIf="sigInPasswordFormControl.hasError('maxlength')">
                 The password must not exceed 25 characters
-              </mat-error>
+              </mat-error> -->
             </mat-form-field>
 
             <button mat-raised-button
@@ -187,9 +186,9 @@
                          required>
                   <mat-icon matSuffix [color]="color">lock</mat-icon>
 
-                  <mat-hint align="end" aria-live="polite">
+                  <!-- <mat-hint align="end" aria-live="polite">
                     {{signUpFormGroup.value.password.length}} / 25
-                  </mat-hint>
+                  </mat-hint> -->
 
                   <mat-error *ngIf="sigUpPasswordFormControl.hasError('required')" class="cut-text">
                     Please do not forget the password
@@ -198,9 +197,9 @@
                   <mat-error *ngIf="sigUpPasswordFormControl.hasError('minlength')" class="cut-text">
                     The password must be at least 6 characters long.
                   </mat-error>
-                  <mat-error *ngIf="sigUpPasswordFormControl.hasError('maxlength')" class="cut-text">
+                  <!-- <mat-error *ngIf="sigUpPasswordFormControl.hasError('maxlength')" class="cut-text">
                     The password can not be longer than 25 characters.
-                  </mat-error>
+                  </mat-error> -->
 
                 </mat-form-field>
 

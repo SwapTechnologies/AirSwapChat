@@ -126,7 +126,7 @@
   [disabled] = 'takerOrderService.orderResponses.length === 0'>
   <div *ngIf='gotOrdersToTake'>
     <h1> You can Close Deals </h1>
-    <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='350px'>
+    <mat-grid-list [cols]='columnNumber(takerOrderService.orderResponses)' rowHeight='375px'>
       <mat-grid-tile *ngFor="let order of takerOrderService.orderResponses">
         <mat-card>
           <mat-card-title>

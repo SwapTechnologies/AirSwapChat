@@ -101,11 +101,13 @@
       <mat-form-field class="send_message_card">
         <textarea
         matInput
+        matTextareaAutosize
         type="text"
+        placeholder="Send Message"
         maxlength="200"
+        rows="1"
+        matAutosizeMinRows=1
         (keydown.enter)="sendMessage()"
-        placeholder="Send message"
-        matTextareaAutosize="true"
         [(ngModel)]="message"></textarea>
         <button
           mat-button

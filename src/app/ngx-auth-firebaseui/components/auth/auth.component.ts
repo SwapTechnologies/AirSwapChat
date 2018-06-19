@@ -147,7 +147,6 @@ export class AuthComponent implements OnInit, OnDestroy {
         [
           Validators.required,
           Validators.minLength(6),
-          Validators.maxLength(25),
         ])
     });
   }

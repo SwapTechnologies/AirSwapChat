@@ -39,6 +39,17 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.timer = TimerObservable.create(0, 1000)
     .subscribe( () => this.updateStatus());
+
+    if (this.messageService.selectedPeer &&
+      !this.messageService.selectedPeer.peerDetails.online &&
+      !this.messageService.selectedPeer.hasUnreadMessages) {
+        for (const peer of this.messageService.connectedPeers) {
+          if (peer.hasUnreadMessages) {
+            this.messageService.selectedPeer = peer;
+            break;
+           }
+        }
+      }
   }
 
   ngOnDestroy() {

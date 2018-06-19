@@ -68,11 +68,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     this.makerOrderService.doneDeals.length +
       this.takerOrderService.finishedOrders.length > 0;
 
-    console.log(this.gotOrderRequests, this.makerOrderService.orderRequests.length);
-    console.log(this.gotOrdersToTake, this.takerOrderService.orderResponses.length);
-    console.log(this.gotPendingOrders);
-    console.log(this.gotAbortedDeals);
-    console.log(this.gotDoneDeals);
     if (this.gotOrderRequests) {
       this.selectedTabIndex = 0;
     } else if (this.gotOrdersToTake) {
