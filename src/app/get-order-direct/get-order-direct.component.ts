@@ -230,9 +230,10 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
     const contract = this.erc20Service.getContract(this.takerToken.address);
     this.erc20Service.approve(contract, this.airswapDexService.airswapDexAddress)
     .then(result => {
-      this.checkApproval();
-    })
-    .catch(error => {
+      return this.checkApproval();
+    }).then(approvalAmount => {
+      this.takerTakerTokenApproval = approvalAmount;
+    }).catch(error => {
       console.log('Approve failed.');
     });
   }
