@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { ConnectWeb3Service } from './connectWeb3.service';
 import { HttpClient } from '@angular/common/http';
 
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class Erc20Service {
   public EtherAddress = '0x0000000000000000000000000000000000000000';
+  public airswapDexAddress = environment.ethereumNetwork.airswapDexAddress;
   public ABI = [
     {
       'constant': true,
@@ -185,6 +187,13 @@ export class Erc20Service {
   approvedAmount(contract: any, spender): Promise<number> {
     return contract.methods
     .allowance(this.web3service.connectedAccount, spender)
+    .call()
+    .then(approvedAmount => approvedAmount);
+  }
+
+  approvedAmountAirSwap(contract: any): Promise<number> {
+    return contract.methods
+    .allowance(this.web3service.connectedAccount, this.airswapDexAddress)
     .call()
     .then(approvedAmount => approvedAmount);
   }

@@ -372,6 +372,11 @@ export class FirebaseService {
       .then(decimals => validToken = validToken && tokenDecimals === decimals)
       .catch(() => validToken = false)
     );
+    promiseList.push(
+      this.erc20Service.approvedAmountAirSwap(contract)
+      .then(approvedAmount => validToken = validToken && Number(approvedAmount) >= 0)
+      .catch(() => validToken = false)
+    );
 
     return Promise.all(promiseList)
     .then(() => {

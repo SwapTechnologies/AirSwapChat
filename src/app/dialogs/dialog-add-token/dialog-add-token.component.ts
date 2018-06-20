@@ -16,6 +16,7 @@ export class DialogAddTokenComponent implements OnInit {
   public tokenName: string;
   public tokenSymbol: string;
   public tokenDecimals: number;
+  public tokenCanApprove: boolean;
 
   public checkedToken = false;
   public tokenIsValid = false;
@@ -101,6 +102,12 @@ export class DialogAddTokenComponent implements OnInit {
           .then(decimals => this.tokenDecimals = decimals)
           .catch(() => validToken = false)
         );
+        promiseList.push(
+          this.erc20Service.approvedAmountAirSwap(contract)
+          .then(approvedAmount => this.tokenCanApprove = Number(approvedAmount) >= 0)
+          .catch(() => validToken = false)
+        );
+
         Promise.all(promiseList)
         .then(() => {
           this.checkedToken = true;
@@ -108,7 +115,8 @@ export class DialogAddTokenComponent implements OnInit {
                               && validToken
                               && this.tokenName
                               && this.tokenSymbol
-                              && this.tokenDecimals >= 0;
+                              && this.tokenDecimals >= 0
+                              && this.tokenCanApprove;
           if (this.tokenIsValid) {
             this.errorMessage = '';
           } else if (!validToken) {
