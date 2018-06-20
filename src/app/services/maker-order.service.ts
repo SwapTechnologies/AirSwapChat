@@ -73,35 +73,16 @@ export class MakerOrderService {
     order['makerDecimals'] = 10 ** order.makerProps.decimals;
     order['takerDecimals'] = 10 ** order.takerProps.decimals;
 
-    this.priceInfoService.getPriceOfToken(
-      helper_maker.token.symbol + ',' + helper_taker.token.symbol)
-    .then(priceResult => {
-      if (priceResult) {
-        let priceMakerToken = priceResult[helper_maker.token.symbol];
-        if (!priceMakerToken) {
-          priceMakerToken = 0;
-        } else {
-          priceMakerToken = priceMakerToken['USD'];
-        }
-        let priceTakerToken = priceResult[helper_taker.token.symbol];
-        if (!priceTakerToken) {
-          priceTakerToken = 0;
-        } else {
-          priceTakerToken = priceTakerToken['USD'];
-        }
-        order['UsdPrices'] = {
-          makerToken: priceMakerToken,
-          takerToken: priceTakerToken
-        };
-      } else {
-        order['UsdPrices'] = {
-          makerToken: 0,
-          takerToken: 0
-        };
-      }
-    });
-
     const promiseList = [];
+
+    promiseList.push(
+      this.priceInfoService.getPricesOfPair(
+        helper_maker.token.symbol, helper_taker.token.symbol
+      ).then(priceResult => {
+        order['UsdPrices'] = priceResult;
+      })
+    );
+
     if (this.connectionService.anonymousConnection) {
       order['alias'] = order.takerAddress.slice(2, 6);
     } else {
@@ -122,6 +103,20 @@ export class MakerOrderService {
       this.erc20service.balance(order.takerToken, order.takerAddress)
       .then(balance => {
         order['takerBalanceTakerToken'] = balance;
+      })
+    );
+
+    promiseList.push(
+      this.erc20service.balance(order.makerToken, this.connectionService.loggedInUser.address)
+      .then(balance => {
+        order['makerBalanceMakerToken'] = balance;
+      })
+    );
+
+    promiseList.push(
+      this.erc20service.balance(order.takerToken, this.connectionService.loggedInUser.address)
+      .then(balance => {
+        order['makerBalanceTakerToken'] = balance;
       })
     );
 

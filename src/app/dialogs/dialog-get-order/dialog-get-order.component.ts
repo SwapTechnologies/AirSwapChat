@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Subscription } from 'rxjs/Subscription';
 
 import { Erc20Service } from '../../services/erc20.service';
+import { PriceInfoService } from '../../services/price-info.service';
 import { WebsocketService } from '../../services/websocket.service';
 
 
@@ -23,12 +24,20 @@ export class DialogGetOrderComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogGetOrderComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public wsService: WebsocketService,
-    private erc20service: Erc20Service
+    private erc20service: Erc20Service,
+    private priceInfoService: PriceInfoService
   ) { }
 
   ngOnInit() {
+    this.getTokenPrice();
   }
 
+  getTokenPrice() {
+    this.priceInfoService.getPricesOfPair(this.data.makerProps.symbol, this.data.takerProps.symbol)
+    .then(priceResult => {
+      this.data['UsdPrices'] = priceResult;
+    });
+  }
   onNoClick(): void {
     this.dialogRef.close(false);
   }

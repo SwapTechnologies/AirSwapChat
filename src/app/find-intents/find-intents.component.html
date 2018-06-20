@@ -123,15 +123,15 @@
               </mat-card-subtitle>
               <mat-card-content>
                 <div>
-                  <i>In peers wallet are:</i>
-                  {{intent.makerBalanceMakerToken / intent.makerDecimals}}
-                  {{intent.makerProps.symbol}},
+                  <i> In peers wallet are: </i>
+                  <b> {{intent.makerBalanceMakerToken / intent.makerDecimals}}
+                  {{intent.makerProps.symbol}}</b>,
                   {{intent.makerBalanceTakerToken / intent.takerDecimals}}
                   {{intent.takerProps.symbol}}
                   <br/>
-                  <i>In your wallet are:</i>
-                  {{intent.takerBalanceTakerToken / intent.takerDecimals}}
-                  {{intent.takerProps.symbol}},
+                  <i> In your wallet are: </i>
+                  <b> {{intent.takerBalanceTakerToken / intent.takerDecimals}}
+                  {{intent.takerProps.symbol}}</b>,
                   {{intent.takerBalanceMakerToken / intent.makerDecimals}}
                   {{intent.makerProps.symbol}}
                 </div>
