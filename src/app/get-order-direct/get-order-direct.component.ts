@@ -66,7 +66,7 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.balanceTimer) {
-      this.balanceTimer.unsubscribe()
+      this.balanceTimer.unsubscribe();
     }
   }
 
@@ -223,7 +223,7 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
 
   checkApproval(): Promise<any> {
     const contract = this.erc20Service.getContract(this.takerToken.address);
-    return this.erc20Service.approvedAmount(contract,  this.airswapDexService.airswapDexAddress);
+    return this.erc20Service.approvedAmountAirSwap(contract);
   }
 
   approveTakerToken() {

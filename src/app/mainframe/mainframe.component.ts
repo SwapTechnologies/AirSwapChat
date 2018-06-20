@@ -77,10 +77,11 @@ export class MainframeComponent implements OnInit, OnDestroy {
     for (const token of this.tokenService.validatedTokens) {
       const tokenAddress = token.address;
       const contract = this.erc20Service.getContract(tokenAddress);
-      // console.log('Checking ', token.name);
+      console.log('Checking ', token.name);
       let contractName;
       let contractDecimals;
       let contractSymbol;
+      let contractApproved;
 
       await this.erc20Service.name(contract)
       .then(name => {
@@ -100,11 +101,17 @@ export class MainframeComponent implements OnInit, OnDestroy {
       }).catch(err => {
         console.log('decimals check error for ', token.decimals, tokenAddress);
       });
+      await this.erc20Service.approvedAmount(contract,  '0x8fd3121013A07C57f0D69646E86E7a4880b467b7')
+      .then(approvedAmount => {
+        contractApproved = Number(approvedAmount);
+      }).catch(err => {
+        console.log('approval check error for ', token.symbol, tokenAddress);
+      });
       const validName = contractName === token.name;
       const validSymbol = contractSymbol === token.symbol;
       const validDecimals = contractDecimals === token.decimals;
-
-      if (validName && validSymbol && validDecimals) {
+      const validApproval = contractApproved >= 0;
+      if (validName && validSymbol && validDecimals && validApproval) {
         continue;
       }
 

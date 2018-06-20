@@ -197,12 +197,6 @@ export const validatedTokens: Token[] = [
     'decimals': 18,
   },
   {
-    'address': '0xa74476443119a942de498590fe1f2454d7d4ac0d',
-    'name': 'Golem Network Token',
-    'decimals': 18,
-    'symbol': 'GNT'
-  },
-  {
     'address': '0x12b19d3e2ccc14da04fae33e63652ce469b3f2fd',
     'name': 'GRID Token',
     'symbol': 'GRID',
@@ -389,4 +383,10 @@ export const validatedTokens: Token[] = [
 //   'name': 'DigixDAO',
 //   'symbol': 'DGD',
 //   'decimals': 9,
+// },
+// {
+//   'address': '0xa74476443119a942de498590fe1f2454d7d4ac0d',
+//   'name': 'Golem Network Token',
+//   'decimals': 18,
+//   'symbol': 'GNT'
 // },
