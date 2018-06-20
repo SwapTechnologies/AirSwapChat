@@ -66,7 +66,7 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.balanceTimer) {
-      this.balanceTimer.unsubscribe()
+      this.balanceTimer.unsubscribe();
     }
   }
 
