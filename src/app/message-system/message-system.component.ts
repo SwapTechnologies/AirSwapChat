@@ -66,12 +66,6 @@ export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngAfterViewInit() {
-    console.log('focus!');
-    if (this.messageService.selectedPeer) {
-
-    console.log('focus now!');
-      this.chatTextarea.focus();
-    }
   }
 
   ngOnDestroy() {

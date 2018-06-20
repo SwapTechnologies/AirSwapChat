@@ -69,7 +69,7 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
     this.getMyIntents()
     .then(() => {
       return this.erc20service.balance(
-        this.tokenService.getTokenByName('AirSwap').address,
+        this.tokenService.getTokenByName('AirSwap Token').address,
         this.connectionService.loggedInUser.address);
     }).then(balance => {
       this.astBalance = balance / 1e4;
