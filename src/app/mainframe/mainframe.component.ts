@@ -337,18 +337,17 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   enterWithoutRegistration() {
-    // const dialogRef = this.dialog.open(DialogEnterWithoutRegisterComponent, {
-    //   width: '400px'
-    // });
-    // dialogRef.afterClosed().toPromise()
-    // .then(result => {
-    //   if (result) {
-    //
-    //   }
-    // });
-    if (this.connectionService.web3Connected && this.connectionService.wsConnected) {
-      this.connectionService.anonymousConnection = true;
-      this.finalizeInitialization();
-    }
+    const dialogRef = this.dialog.open(DialogEnterWithoutRegisterComponent, {
+      width: '400px'
+    });
+    dialogRef.afterClosed().toPromise()
+    .then(result => {
+      if (result) {
+        if (this.connectionService.web3Connected && this.connectionService.wsConnected) {
+          this.connectionService.anonymousConnection = true;
+          this.finalizeInitialization();
+        }
+      }
+    });
   }
 }
