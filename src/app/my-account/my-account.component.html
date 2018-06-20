@@ -1,4 +1,4 @@
-<div ng-if="firebaseService.user" class="row">
+<div *ngIf="!connectionService.anonymousConnection && firebaseService.user" class="row">
   <div class="peerCard">
     <mat-card>
       <mat-card-title>

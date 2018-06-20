@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { AirswapdexService } from '../services/airswapdex.service';
 import { ConnectionService } from '../services/connection.service';
@@ -8,13 +8,14 @@ import { Erc20Service } from '../services/erc20.service';
 import { TakerOrderService } from '../services/taker-order.service';
 
 import { Token } from '../types/types';
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Component({
   selector: 'app-get-order-direct',
   templateUrl: './get-order-direct.component.html',
   styleUrls: ['./get-order-direct.component.scss']
 })
-export class GetOrderDirectComponent implements OnInit {
+export class GetOrderDirectComponent implements OnInit, OnDestroy {
 
   public makerToken: Token;
   public takerToken: Token;
@@ -39,6 +40,8 @@ export class GetOrderDirectComponent implements OnInit {
   public takerIsValid: boolean;
   public sentRequest: string;
 
+  public balanceTimer: any;
+
 
   constructor(
     private airswapDexService: AirswapdexService,
@@ -54,8 +57,23 @@ export class GetOrderDirectComponent implements OnInit {
     this.filteredCustomMakerTokens = this.tokenService.customTokens;
     this.filteredValidatedTakerTokens = this.tokenService.validatedTokens;
     this.filteredCustomTakerTokens = this.tokenService.customTokens;
+    this.balanceTimer = TimerObservable.create(0, 2000)
+    .subscribe( () => this.checkBalances());
+  }
+  ngOnDestroy() {
+    if (this.balanceTimer) {
+      this.balanceTimer.unsubscribe()
+    }
   }
 
+  checkBalances(): void {
+    if (this.makerToken) {
+      this.fetchMakerTokenBalances();
+    }
+    if (this.takerToken) {
+      this.fetchTakerTokenBalances();
+    }
+  }
   enteredMakerTokenName(): void {
     this.filteredValidatedMakerTokens = this.tokenService.validatedTokens.filter(x => {
       return x.name.toLowerCase().includes(this.makerTokenName.toLowerCase())

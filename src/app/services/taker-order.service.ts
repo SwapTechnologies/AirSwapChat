@@ -38,6 +38,10 @@ export class TakerOrderService {
 
   sendGetOrder(order: any): string {
     // send it away
+    if (order.makerAddress === order.takerAddress) {
+      this.notifierService.showMessage('The contract does not allow to trade with yourself.');
+      return null;
+    }
     const uuid = this.wsService.getOrder(
       order.makerAddress,
       order.makerAmount,
