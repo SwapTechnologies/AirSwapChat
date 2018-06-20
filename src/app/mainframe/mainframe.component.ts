@@ -156,6 +156,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
     .then((connected) => { // websocket succeeded
       if (connected && this.connectionService.connected) { // websocket and firebase? start!
         this.connectionInitialized();
+      } else {
+        // connection to websocket failed.
       }
     });
   }
