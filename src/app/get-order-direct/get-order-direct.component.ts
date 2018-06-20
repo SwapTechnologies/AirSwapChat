@@ -114,8 +114,12 @@ export class GetOrderDirectComponent implements OnInit {
       && this.erc20Service.toFixed(this.makerAmount * this.makerDecimals) <= this.makerBalanceMakerToken);
   }
 
+  takerOwnsSomething(): boolean {
+    return (1 / this.takerDecimals <= this.takerBalanceTakerToken);
+  }
+
   isPositive(): boolean {
-    return this.makerAmount > 0;
+    return this.makerAmount >= 1 / this.makerDecimals;
   }
 
   getOrder() {

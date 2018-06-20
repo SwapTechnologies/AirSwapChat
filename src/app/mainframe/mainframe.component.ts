@@ -19,6 +19,7 @@ import { Erc20Service } from '../services/erc20.service';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { Title } from '@angular/platform-browser';
 import { DialogTosComponent } from '../dialogs/dialog-tos/dialog-tos.component';
+import { DialogEnterWithoutRegisterComponent } from '../dialogs/dialog-enter-without-register/dialog-enter-without-register.component';
 import { AboutComponent } from '../about/about.component';
 import { DonateComponent } from '../donate/donate.component';
 
@@ -65,8 +66,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.authUser(); // check for log in of user to firebase
     this.tokenService.getValidatedTokens(); // load the validated token list
-    this.web3service.getAccount()
-    .then(account => {
+    // this.web3service.getAccount()
+    // .then(account => {
       // this.checkTokens();
       // const makerAddress = '0xdbd6f75aedebdf1c3d2b7085229450200e410fbb';
       // const makerToken = '0xbaed6c1f8cd4a443cc372fd15d770e3764b4b2e7';
@@ -104,7 +105,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
       // console.log(prefixedHash);
       // // this.web3service.web3.eth.sign(prefixedHash, this.web3service.connectedAccount)
       // // .then(console.log);
-    });
+    // });
   }
   // async checkTokens() {
   //   for (const token of this.tokenService.validatedTokens) {
@@ -183,6 +184,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   connectWebsocket(): void {
+    this.connectionService.anonymousConnection = false;
     // on button click
     this.wsService.initSocket() // initiate handshake with websocket
     .then((connected) => { // websocket succeeded
@@ -232,43 +234,50 @@ export class MainframeComponent implements OnInit, OnDestroy {
     this.timer = TimerObservable.create(0, 500)
     .subscribe( () => this.updateNumbers());
 
-    this.tokenService.getCustomTokenListFromDB(); // load custom token list from firebase
-
-    // check if I have unreceived messages
-    // and start listening for messages from others
-    this.firebaseService.setMeOnline()
-    .then(() => this.firebaseService.getMyPeers()) // get your friend list
-    .then((peers) => {
-      const promiseList = [];
-      for (const peer in peers) {
-        if (peers[peer]) {
-          promiseList.push(
-            this.messageService.addPeer(peer)
-            .then((added) => {
-              if (added) {
-                this.userOnlineService.setPeerToFriend(peer);
-              } else {
-                // didn't add the peer,... why not? does he even exist?
-                this.firebaseService.getUserAddress(peer)
-                .then(userAddress => {
-                  if (!userAddress) {
-                    this.firebaseService.deletePeerFromList(peer);
-                  }
-                });
-              }
-            })
-          );
-        }
-      }
-      return Promise.all(promiseList);
-    })
-    .then(() => {
+    if (this.connectionService.anonymousConnection) {
+      this.connectionService.loggedInUser.alias = this.web3service.connectedAccount.slice(2, 6);
+      this.connectionService.loggedInUser.uid = null;
       this.makerOrderService.listenForOrders();
-      this.messageService.startMessenger()
+      this.messageService.startListeningForMessages();
+      this.initializedPage = true;
+    } else {
+      // check if I have unreceived messages
+      // and start listening for messages from others
+      this.tokenService.getCustomTokenListFromDB(); // load custom token list from firebase
+      this.firebaseService.setMeOnline()
+      .then(() => this.firebaseService.getMyPeers()) // get your friend list
+      .then((peers) => {
+        const promiseList = [];
+        for (const peer in peers) {
+          if (peers[peer]) {
+            promiseList.push(
+              this.messageService.addPeer(peer)
+              .then((added) => {
+                if (added) {
+                  this.userOnlineService.setPeerToFriend(peer);
+                } else {
+                  // didn't add the peer,... why not? does he even exist?
+                  this.firebaseService.getUserAddress(peer)
+                  .then(userAddress => {
+                    if (!userAddress) {
+                      this.firebaseService.deletePeerFromList(peer);
+                    }
+                  });
+                }
+              })
+            );
+          }
+        }
+        return Promise.all(promiseList);
+      })
       .then(() => {
-        this.initializedPage = true;
+        this.makerOrderService.listenForOrders();
+        this.messageService.startMessenger()
+        .then(() => {
+          this.initializedPage = true;
+        });
       });
-    });
+    }
   }
 
   toggleMessenger(): void {
@@ -312,11 +321,9 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   openDisclaimer() {
-    const dialogRef = this.dialog.open(DialogTosComponent, {
+    this.dialog.open(DialogTosComponent, {
         data: { showConsent: false }
     });
-    // dialogRef.updatePosition({ top: '50px', left: '50px' });
-
   }
 
   openDonate() {
@@ -327,5 +334,21 @@ export class MainframeComponent implements OnInit, OnDestroy {
   openAbout() {
     this.dialog.open(AboutComponent, {
     });
+  }
+
+  enterWithoutRegistration() {
+    // const dialogRef = this.dialog.open(DialogEnterWithoutRegisterComponent, {
+    //   width: '400px'
+    // });
+    // dialogRef.afterClosed().toPromise()
+    // .then(result => {
+    //   if (result) {
+    //
+    //   }
+    // });
+    if (this.connectionService.web3Connected && this.connectionService.wsConnected) {
+      this.connectionService.anonymousConnection = true;
+      this.finalizeInitialization();
+    }
   }
 }

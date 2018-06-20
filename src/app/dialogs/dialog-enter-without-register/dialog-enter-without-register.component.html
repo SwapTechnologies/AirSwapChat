@@ -1,0 +1,26 @@
+<div>
+    <h1 mat-dialog-title>Anonymous Login</h1>
+    <div mat-dialog-content>
+      <div>
+        <p>
+            Are you sure you do not want to register?
+        </p>
+        <p>You won't be able to interact with the AirSwapChat database, meaning you wont see the alias of other peers, can not see who is currently online, search for tokens that are not on the validated list and also can not send peers that are offline messages.
+          </p>
+      </div>
+    </div>
+    <div mat-dialog-actions>
+      <button
+      mat-button
+      (click)='onNoClick()'
+      color='warn'>
+        CANCEL
+      </button>
+      <button
+      mat-button
+      (click)='onCloseConfirm()'
+      color='primary'>
+        ENTER
+      </button>
+    </div>
+  </div>

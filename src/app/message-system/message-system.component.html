@@ -15,14 +15,21 @@
               style="width: 100%;">
                 {{peer.peerDetails.alias}}
                 <span *ngIf="peer.hasUnreadMessages" class="unreadMessagesDot"></span>
-                <span *ngIf="peer.peerDetails.online" class="onlineDot"></span>
-                <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>
+                <span *ngIf="!connectionService.anonymousConnection && messageService.selectedPeer.peerDetails.uid">
+                  <span *ngIf="peer.peerDetails.online" class="onlineDot"></span>
+                  <span *ngIf="!(peer.peerDetails.online)" class="offlineDot"></span>
+                </span>
               </mat-option>
             </mat-select>
           </mat-form-field>
-          <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
-          <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
-          <button *ngIf="!messageService.selectedPeer.peerDetails.inMyPeerList"
+          <span *ngIf="!connectionService.anonymousConnection && messageService.selectedPeer.peerDetails.uid">
+            <span *ngIf="messageService.selectedPeer.peerDetails.online" class="onlineDot" matSuffix></span>
+            <span *ngIf="!(messageService.selectedPeer.peerDetails.online)" class="offlineDot" matSuffix></span>
+          </span>
+          <button
+          *ngIf="!connectionService.anonymousConnection
+                 && messageService.selectedPeer.peerDetails.uid
+                 && !messageService.selectedPeer.peerDetails.inMyPeerList"
           mat-button
           mat-icon-button
           matSuffix
@@ -32,7 +39,7 @@
           (click)="addPeerAsFriend()">
             <mat-icon>person_add</mat-icon>
           </button>
-          <button *ngIf="messageService.selectedPeer.peerDetails.online"
+          <button
             mat-button
             mat-icon-button
             matSuffix

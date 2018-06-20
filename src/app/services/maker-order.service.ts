@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { ConnectionService } from '../services/connection.service';
 import { TokenService } from './token.service';
 import { Erc20Service } from './erc20.service';
 import { FirebaseService } from './firebase.service';
@@ -20,6 +21,7 @@ export class MakerOrderService {
   public errorRequests: any[] = [];
 
   constructor(
+    public connectionService: ConnectionService,
     private erc20service: Erc20Service,
     private firebaseService: FirebaseService,
     private priceInfoService: PriceInfoService,
@@ -100,12 +102,16 @@ export class MakerOrderService {
     });
 
     const promiseList = [];
-    promiseList.push(
-      this.firebaseService.getUserAliasFromAddress(order.takerAddress)
-      .then(alias => {
-        order['alias'] = alias;
-      })
-    );
+    if (this.connectionService.anonymousConnection) {
+      order['alias'] = order.takerAddress.slice(2, 6);
+    } else {
+        promiseList.push(
+          this.firebaseService.getUserAliasFromAddress(order.takerAddress)
+          .then(alias => {
+            order['alias'] = alias;
+          })
+        );
+    }
     promiseList.push(
       this.erc20service.balance(order.makerToken, order.takerAddress)
       .then(balance => {

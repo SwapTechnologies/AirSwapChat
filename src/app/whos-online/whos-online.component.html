@@ -9,7 +9,7 @@
         <mat-icon>autorenew</mat-icon>
     </button>
   </p>
-  <div *ngIf="(firebaseService.whosOnlineList | callback: onlyOnline).length > 0; else nobodyOnline">
+  <div *ngIf="filteredWhosOnline.length > 0; else nobodyOnline">
     <mat-grid-list [cols]='columnNumber' rowHeight='250px'>
       <mat-grid-tile *ngFor="let user of displayedPeople | callback: onlyOnline">
         <div class="peerCard">
@@ -31,7 +31,7 @@
       </mat-grid-tile>
     </mat-grid-list>
     <mat-paginator
-      [length]="(firebaseService.whosOnlineList | callback: onlyOnline).length"
+      [length]="filteredWhosOnline.length"
       [pageSize]="pageSize"
       (page)="page($event)"
       hidePageSize="true">

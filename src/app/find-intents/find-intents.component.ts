@@ -63,10 +63,12 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredValidatedTokens = this.tokenService.validatedTokens;
-    this.tokenService.getCustomTokenListFromDB()
-    .then(tokenList => {
-      this.filteredCustomTokens = tokenList;
-    });
+    if (!this.connectionService.anonymousConnection) {
+      this.tokenService.getCustomTokenListFromDB()
+      .then(tokenList => {
+        this.filteredCustomTokens = tokenList;
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -86,10 +88,12 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
       return x.name.toLowerCase().includes(this.selectedTokenName.toLowerCase())
       || x.symbol.toLowerCase().includes(this.selectedTokenName.toLowerCase());
     });
-    this.filteredCustomTokens = this.tokenService.customTokens.filter(x => {
-      return x.name.toLowerCase().includes(this.selectedTokenName.toLowerCase())
-      || x.symbol.toLowerCase().includes(this.selectedTokenName.toLowerCase());
-    });
+    if (this.tokenService.customTokens) {
+      this.filteredCustomTokens = this.tokenService.customTokens.filter(x => {
+        return x.name.toLowerCase().includes(this.selectedTokenName.toLowerCase())
+        || x.symbol.toLowerCase().includes(this.selectedTokenName.toLowerCase());
+      });
+    }
 
     const token = this.tokenService.getTokenByName(this.selectedTokenName);
     if (token) {
@@ -259,39 +263,54 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   checkPeerData(): Promise<any> {
-    const checkedUser = {}; // users you are already checking async
-    const promiseList = [];
-    const deferredIntents = []; // multiple intents from checkedUser
-
-    for (const intent of this.displayIntents) {
-      const peerAddress = intent['address'];
-      if (checkedUser[peerAddress]) {
-        deferredIntents.push(intent);
-        continue;
-      } // else
-      checkedUser[peerAddress] = true;
-
-      // check if user was already seen at any point earlier, if no add his details
-      // otherwise load old data, fails if user is not in database
-      promiseList.push(
-        this.userOnlineService.addUserFromFirebaseByAddress(peerAddress)
-        .then(peer => {
-          intent['peer'] = peer;
-        })
-      );
-    }
-    return Promise.all(promiseList)
-    .then(() => {
-      for (const intent of deferredIntents) {
+    if (this.connectionService.anonymousConnection) {
+      for (const intent of this.displayIntents) {
         const peerAddress = intent['address'];
-        const peer = this.userOnlineService.getUserByAddress(peerAddress);
-        intent['peer'] = peer;
+
+        intent['peer'] = {
+          alias: peerAddress.slice(2, 6),
+          address: peerAddress,
+          uid: null,
+          inMyPeerList: false
+        };
       }
-    });
+      Promise.resolve(true);
+    } else {
+      const checkedUser = {}; // users you are already checking async
+      const promiseList = [];
+      const deferredIntents = []; // multiple intents from checkedUser
+
+      for (const intent of this.displayIntents) {
+        const peerAddress = intent['address'];
+        if (checkedUser[peerAddress]) {
+          deferredIntents.push(intent);
+          continue;
+        } // else
+        checkedUser[peerAddress] = true;
+
+        // check if user was already seen at any point earlier, if no add his details
+        // otherwise load old data, fails if user is not in database
+        promiseList.push(
+          this.userOnlineService.addUserFromFirebaseByAddress(peerAddress)
+          .then(peer => {
+            intent['peer'] = peer;
+          })
+        );
+      }
+      return Promise.all(promiseList)
+      .then(() => {
+        for (const intent of deferredIntents) {
+          const peerAddress = intent['address'];
+          const peer = this.userOnlineService.getUserByAddress(peerAddress);
+          intent['peer'] = peer;
+        }
+      });
+    }
   }
 
   message(intent: any): void {
-    this.messageService.getPeerAndAdd(intent.peer.uid)
+    console.log('no')
+    this.messageService.getPeerAndAddByAddress(intent.peer.address)
     .then(peer => {
       this.messageService.selectedPeer = peer;
       this.messageService.showMessenger = true;

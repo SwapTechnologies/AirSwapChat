@@ -6,7 +6,9 @@
   <!-- Start Define the Left Sidenav -->
   <mat-sidenav
   #sidenav mode="side"
-  [opened]="connectionService.connected && firebaseService.userIsVerified && initializedPage"
+  [opened]="connectionService.connected &&
+    (connectionService.anonymousConnection || firebaseService.userIsVerified)
+    && initializedPage"
   class="main-sidenav"
   [fixedInViewport]="false" [fixedTopGap]="0"
   [fixedBottomGap]="0">
@@ -53,6 +55,7 @@
       <a routerLink="./online">
         <button
         mat-raised-button
+        [disabled]="connectionService.anonymousConnection"
         class="menu_button">
           <mat-icon class='menu_icon'>
             people
@@ -64,6 +67,7 @@
       <a routerLink="./myAccount">
         <button
         mat-raised-button
+        [disabled]="connectionService.anonymousConnection"
         class="menu_button">
           <mat-icon
           class='menu_icon'>
@@ -88,7 +92,9 @@
   <!-- Start Define The main center container -->
   <mat-sidenav-content>
     <div class="content">
-      <div *ngIf="connectionService.connected && firebaseService.userIsVerified && initializedPage; else initialPage">
+      <div *ngIf="connectionService.connected
+                  && (connectionService.anonymousConnection || firebaseService.userIsVerified)
+                  && initializedPage; else initialPage">
         <router-outlet></router-outlet>
       </div>
       <ng-template #initialPage>
@@ -107,15 +113,24 @@
 
         <div
         *ngIf="connectionService.web3Connected && connectionService.wsConnected
-                && !firebaseService.userIsVerified"
-        class="firebase_auth_container">
-          <ngx-auth-firebaseui
-          [providers]="[]"
-          [guestEnabled]="false"
-          (onSuccess)="loggedIn($event)"
-          (onError)="signInError($event)"
-          >
-          </ngx-auth-firebaseui>
+                && (!firebaseService.userIsVerified)">
+          <div class="firebase_auth_container">
+            <ngx-auth-firebaseui
+            [providers]="[]"
+            [guestEnabled]="false"
+            (onSuccess)="loggedIn($event)"
+            (onError)="signInError($event)"
+            >
+            </ngx-auth-firebaseui>
+          </div>
+          <div>
+            <button
+            mat-button
+            (click)="enterWithoutRegistration()"
+            color='primary'>
+            I don't want to register
+            </button>
+          </div>
         </div>
       </ng-template>
       <div *ngIf="!connectionService.web3Connected">
@@ -128,7 +143,9 @@
   </mat-sidenav-content>
   <mat-sidenav #sidechat
   mode="side"
-  [opened]="connectionService.connected && firebaseService.userIsVerified && messageService.showMessenger"
+  [opened]="connectionService.connected
+            && (connectionService.anonymousConnection || firebaseService.userIsVerified)
+            && messageService.showMessenger"
   class="chat-side"
   position="end"
   disableClose="true">

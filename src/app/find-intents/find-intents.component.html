@@ -6,6 +6,7 @@
   <!-- Start Of Upper Line: Select Token & Role -->
   <div>
     <button
+      *ngIf="!connectionService.anonymousConnection"
       mat-icon-button
       color="primary"
       matTooltip="Add a new custom token"
@@ -13,6 +14,7 @@
       <mat-icon>add</mat-icon>
     </button>
     <button
+      *ngIf="!connectionService.anonymousConnection"
       mat-icon-button
       color="primary"
       matTooltip="Refresh the custom token list"
@@ -167,7 +169,7 @@
                 <button mat-button *ngIf="intent.approvedTakerToken > 0"
                 (click)="openDialogGetOrder(intent)"
                 color='primary'
-                [disabled]="intent.peer.uid && !intent.peer.online">
+                [disabled]="(intent.peer.uid && !intent.peer.online) || !(intent.takerBalanceTakerToken > 0)">
                   GET ORDER
                 </button>
                 <button mat-button *ngIf="!(intent.approvedTakerToken > 0)"
