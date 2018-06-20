@@ -259,6 +259,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
     const contract = this.erc20services.getContract(intent.takerToken);
     this.erc20services.approve(contract, this.airswapDexService.airswapDexAddress)
     .then(result => {
+      intent.approvedTakerToken = this.erc20services.toFixed(1e21 * 10 ** intent.takerProps.decimals);
       this.checkAllApprovals();
     })
     .catch(error => {
@@ -314,7 +315,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   message(intent: any): void {
-    console.log('no')
     this.messageService.getPeerAndAddByAddress(intent.peer.address)
     .then(peer => {
       this.messageService.selectedPeer = peer;
