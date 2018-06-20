@@ -180,6 +180,20 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     this.takerOrderService.getPriceOfTokenPairs(order);
   }
 
+  clearPendingOrderList() {
+    this.takerOrderService.sentOrders = [];
+    this.takerOrderService.pendingOrders = [];
+    this.makerOrderService.answeredRequests = [];
+  }
+
+  clearAbortedOrderList() {
+    this.takerOrderService.errorOrders = [];
+    this.makerOrderService.errorRequests = [];
+  }
+  clearDoneOrdersList() {
+    this.makerOrderService.doneDeals = [];
+    this.takerOrderService.finishedOrders = [];
+  }
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
