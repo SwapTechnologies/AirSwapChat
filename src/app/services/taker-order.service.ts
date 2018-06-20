@@ -138,33 +138,7 @@ export class TakerOrderService {
               signedOrder['takerIsValid'] = helper_takerToken.isValid;
               signedOrder['takerDecimals'] = 10 ** signedOrder['takerProps'].decimals;
 
-              this.priceInfoService.getPriceOfToken(
-                signedOrder.makerProps.symbol + ',' + signedOrder.takerProps.symbol)
-              .then(priceResult => {
-                if (priceResult) {
-                  let priceMakerToken = priceResult[signedOrder.makerProps.symbol];
-                  if (!priceMakerToken) {
-                    priceMakerToken = 0;
-                  } else {
-                    priceMakerToken = priceMakerToken['USD'];
-                  }
-                  let priceTakerToken = priceResult[signedOrder.takerProps.symbol];
-                  if (!priceTakerToken) {
-                    priceTakerToken = 0;
-                  } else {
-                    priceTakerToken = priceTakerToken['USD'];
-                  }
-                  signedOrder['UsdPrices'] = {
-                    makerToken: priceMakerToken,
-                    takerToken: priceTakerToken
-                  };
-                } else {
-                  signedOrder['UsdPrices'] = {
-                    makerToken: 0,
-                    takerToken: 0
-                  };
-                }
-              });
+              this.getPriceOfTokenPairs(signedOrder);
 
               signedOrder['timedOut'] = false;
               // create a countdown timer for the order to expire
@@ -229,6 +203,14 @@ export class TakerOrderService {
       }
     });
     return uuid;
+  }
+
+  getPriceOfTokenPairs(signedOrder: any): Promise<any> {
+    return this.priceInfoService.getPricesOfPair(
+      signedOrder.makerProps.symbol, signedOrder.takerProps.symbol
+    ).then(priceResult => {
+      signedOrder['UsdPrices'] = priceResult;
+    });
   }
 
   sealDeal(order: any, cbTookOrder: () => any, cbMinedOrder: () => any): Promise<any> {

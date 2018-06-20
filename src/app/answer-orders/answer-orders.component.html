@@ -87,27 +87,45 @@
               </div>
             </mat-card-content>
             <mat-card-actions>
-              <span *ngIf="askingPositiveNumber(order) && takerHasEnough(order)">
-                <button mat-button
+                <button
+                mat-icon-button
+                color="primary"
+                matTooltip="Refresh prices, balances and approval amount"
+                (click)="refreshMakerOrderRequests(order)">
+                  <mat-icon>autorenew</mat-icon>
+                </button>
+                <button
+                mat-button
+                (click)="rejectToOffer(order)"
+                color='warn'
+                [disabled]="order.clickedOfferDeal">
+                  DECLINE TO OFFER
+                </button>
+                <button
+                mat-button
                 (click)="detailsForOrderOffer(order)"
                 color='primary'
                 [disabled]="order.clickedOfferDeal">
                   DETAILS
                 </button>
-                <button mat-button
+                <button
+                *ngIf="askingPositiveNumber(order)
+                       && takerHasEnough(order)
+                       && order.makerMakerTokenApproval > 0"
+                mat-button
                 (click)="answerOrder(order)"
                 color='primary'
                 [disabled]="order.clickedOfferDeal">
                   OFFER DEAL
                 </button>
-              </span>
-              <button
-              mat-button
-              (click)="rejectToOffer(order)"
-              color='warn'
-              [disabled]="order.clickedOfferDeal">
-                DECLINE TO OFFER
-              </button>
+                <button
+                *ngIf="!(order.makerMakerTokenApproval > 0)"
+                mat-button
+                color='primary'
+                (click)="approveMakerToken(order)"
+                [disabled]='order.clickedApprove'>
+                APPROVE {{order.makerProps.symbol}}
+                </button>
             </mat-card-actions>
             <mat-card-content>
               <div *ngIf="order.clickedOfferDeal">
@@ -176,6 +194,13 @@
             </div>
           </mat-card-content>
           <mat-card-actions>
+            <button
+            mat-icon-button
+            color="primary"
+            matTooltip="Refresh prices"
+            (click)="refreshTakerOrderAnswer(order)">
+              <mat-icon>autorenew</mat-icon>
+            </button>
             <button
             mat-button
             (click)="dealSealDetails(order)"

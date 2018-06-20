@@ -79,14 +79,6 @@ export class MakerOrderService {
 
     const promiseList = [];
 
-    promiseList.push(
-      this.priceInfoService.getPricesOfPair(
-        helper_maker.token.symbol, helper_taker.token.symbol
-      ).then(priceResult => {
-        order['UsdPrices'] = priceResult;
-      })
-    );
-
     if (this.connectionService.anonymousConnection) {
       order['alias'] = order.takerAddress.slice(2, 6);
     } else {
@@ -97,6 +89,29 @@ export class MakerOrderService {
           })
         );
     }
+    promiseList.push(this.getPriceBalanceAndApproval(order));
+
+    Promise.all(promiseList)
+    .then(() => {
+      this.orderRequests.push(order);
+      this.notifierService.showMessageAndRoute(
+        'You have a new request for an order',
+        'trading'
+      );
+    });
+  }
+
+  getPriceBalanceAndApproval(order): Promise<any> {
+    const promiseList = [];
+
+    promiseList.push(
+      this.priceInfoService.getPricesOfPair(
+        order.makerProps.symbol, order.takerProps.symbol
+      ).then(priceResult => {
+        order['UsdPrices'] = priceResult;
+      })
+    );
+
     promiseList.push(
       this.erc20service.balance(order.makerToken, order.takerAddress)
       .then(balance => {
@@ -124,14 +139,16 @@ export class MakerOrderService {
       })
     );
 
-    Promise.all(promiseList)
-    .then(() => {
-      this.orderRequests.push(order);
-      this.notifierService.showMessageAndRoute(
-        'You have a new request for an order',
-        'trading'
-      );
-    });
+    promiseList.push(
+      this.checkApproval(order.makerToken)
+      .then(approvalAmount => {
+        order.makerMakerTokenApproval = approvalAmount;
+      }).catch(error => {
+        console.log('Failed to check approval of token. No ERC20 compliance? Aborting deal.');
+        return;
+      })
+    );
+    return Promise.all(promiseList);
   }
 
   rejectRequest(order: any) {
@@ -221,5 +238,10 @@ export class MakerOrderService {
         }
       }
     });
+  }
+
+  checkApproval(makerTokenAddress): Promise<any> {
+    const contract = this.erc20service.getContract(makerTokenAddress);
+    return this.erc20service.approvedAmountAirSwap(contract);
   }
 }

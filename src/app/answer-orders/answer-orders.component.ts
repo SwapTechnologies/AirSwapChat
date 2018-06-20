@@ -8,6 +8,7 @@ import { DialogYesNoComponent } from '../dialogs/dialog-yes-no/dialog-yes-no.com
 import { DialogAskMakerSignatureComponent } from '../dialogs/dialog-ask-maker-signature/dialog-ask-maker-signature.component';
 
 // services
+import { AirswapdexService } from '../services/airswapdex.service';
 import { ColumnSpaceObserverService } from '../services/column-space-observer.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Erc20Service } from '../services/erc20.service';
@@ -45,6 +46,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public selectedTabIndex: number;
 
   constructor(
+    private airswapDexService: AirswapdexService,
     public columnSpaceObserver: ColumnSpaceObserverService,
     private erc20Service: Erc20Service,
     public takerOrderService: TakerOrderService,
@@ -153,11 +155,31 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
   }
 
-  // get columnNumber2(): number {
-  //   const columnNum = this.columnSpaceObserver.columnNum;
-  //   const numMessages = this.takerOrderService.orderResponses.length;
-  //   return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
-  // }
+  checkApproval(order: any): Promise<any> {
+    const contract = this.erc20Service.getContract(order.makerProps.address);
+    return this.erc20Service.approvedAmountAirSwap(contract);
+  }
+
+  approveMakerToken(order: any) {
+    order.clickedApprove = true;
+    const contract = this.erc20Service.getContract(order.makerProps.address);
+    this.erc20Service.approve(contract, this.airswapDexService.airswapDexAddress)
+    .then(result => {
+      order.makerMakerTokenApproval = this.erc20Service.toFixed(1e21 * 10 ** order.makerProps.decimals);
+    }).catch(error => {
+      order.clickedApprove = false;
+      console.log('Approve failed.');
+    });
+  }
+
+  refreshMakerOrderRequests(order: any) {
+    this.makerOrderService.getPriceBalanceAndApproval(order);
+  }
+
+  refreshTakerOrderAnswer(order: any) {
+    this.takerOrderService.getPriceOfTokenPairs(order);
+  }
+
 
   sign_order(order): Promise<any> {
     order['nonce'] = Math.round(Math.random() * 100 * Date.now()).toString();
