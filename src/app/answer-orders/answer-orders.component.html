@@ -20,7 +20,10 @@
                 Wants to <strong>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> of yours for peer's <strong>{{order.takerProps.symbol}}</strong>
               </div>
               <div>
-                Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> and {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}} in the wallet.
+                Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> & {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}}.
+              </div>
+              <div>
+                You have <b>{{order.makerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}}</b> & {{order.makerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}.
               </div>
               <div *ngIf="!order.makerValid">
                 <span style='color:red'>

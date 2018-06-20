@@ -142,7 +142,9 @@ export class TokenService {
   }
 
   getCustomTokenListFromDB(): Promise<Token[]> {
-    if (!this.customTokens || Date.now() - this.lastUpdateOfCustomTokens > 60000) {
+    if (!this.customTokens
+        || this.customTokens.length === 0
+        || Date.now() - this.lastUpdateOfCustomTokens > 60000) {
       this.lastUpdateOfCustomTokens = Date.now();
       return this.firebaseService.getTokenListFromDatabase()
       .then((customTokens) => {

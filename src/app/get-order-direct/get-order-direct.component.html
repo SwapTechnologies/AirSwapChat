@@ -63,6 +63,7 @@
             <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
           </mat-form-field>
         </div>
+        <br>
         <div *ngIf="makerToken && takerToken">
           <i>In peers wallet are:</i>
           <strong> {{makerBalanceMakerToken / makerDecimals}}
@@ -76,6 +77,15 @@
           {{takerBalanceMakerToken / makerDecimals}}
           {{makerToken.symbol}}
         </div>
+        <br>
+        <div *ngIf="UsdPrices">
+          <div>
+            Current prices according to <a href='https://www.cryptocompare.com/' target='_blank'>CryptoCompare.com</a>:<br>
+            <strong>{{ makerToken.symbol }}: {{UsdPrices.makerToken}} $,
+            {{ takerToken.symbol }}: {{UsdPrices.takerToken}} $</strong>
+          </div>
+        </div>
+        <br>
         <div>
           <mat-form-field *ngIf="makerToken">
             <input

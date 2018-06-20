@@ -6,6 +6,7 @@ import { MessagingService } from '../services/messaging.service';
 import { TokenService, EtherAddress } from '../services/token.service';
 import { Erc20Service } from '../services/erc20.service';
 import { TakerOrderService } from '../services/taker-order.service';
+import { PriceInfoService } from '../services/price-info.service';
 
 import { Token } from '../types/types';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
@@ -36,6 +37,7 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
   public takerTakerTokenApproval = 0;
   public makerDecimals;
   public takerDecimals;
+  public UsdPrices;
   public makerIsValid: boolean;
   public takerIsValid: boolean;
   public sentRequest: string;
@@ -46,10 +48,11 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
   constructor(
     private airswapDexService: AirswapdexService,
     private connectionService: ConnectionService,
-    public messagingService: MessagingService,
-    public tokenService: TokenService,
     private erc20Service: Erc20Service,
+    public messagingService: MessagingService,
+    private priceInfoService: PriceInfoService,
     private takerOrderService: TakerOrderService,
+    public tokenService: TokenService,
   ) { }
 
   ngOnInit() {
@@ -60,10 +63,18 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
     this.balanceTimer = TimerObservable.create(0, 2000)
     .subscribe( () => this.checkBalances());
   }
+
   ngOnDestroy() {
     if (this.balanceTimer) {
       this.balanceTimer.unsubscribe()
     }
+  }
+
+  getTokenPrice() {
+    this.priceInfoService.getPricesOfPair(this.makerToken.symbol, this.takerToken.symbol)
+    .then(priceResult => {
+      this.UsdPrices = priceResult;
+    });
   }
 
   checkBalances(): void {
@@ -91,6 +102,9 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
       this.makerDecimals = 10 ** this.makerToken.decimals;
       this.fetchMakerTokenBalances();
       this.sentRequest = '';
+      if (this.takerToken) {
+        this.getTokenPrice();
+      }
     }
   }
 
@@ -120,6 +134,9 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
         this.takerTakerTokenApproval = 1e25;
       }
       this.sentRequest = '';
+      if (this.makerToken) {
+        this.getTokenPrice();
+      }
     }
   }
 

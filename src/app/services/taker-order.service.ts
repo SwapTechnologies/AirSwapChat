@@ -97,9 +97,25 @@ export class TakerOrderService {
           );
           this.web3Service.web3.eth.personal.ecRecover(hashV, signature)
           .then(recoveredMakerAddress => {
+            // valid signature?
             if (recoveredMakerAddress === signedOrder.makerAddress) {
-              // valid signature
               signedOrder['id'] = id;
+              signedOrder['alias'] = order.alias;
+
+              // check if it is the order I asked for
+              if (signedOrder.makerAddress !== order.makerAddress
+                  || signedOrder.makerAmount !== order.makerAmount
+                  || signedOrder.makerToken !== order.makerToken
+                  || signedOrder.takerToken !== order.takerToken) {
+                signedOrder['error'] = 'Maker manipulated the order.';
+                this.errorOrders.push(signedOrder);
+                this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);
+                this.notifierService.showMessage(
+                  'WARNING: Maker manipulated your request. Dropping trade.'
+                );
+                return null;
+              }
+
               signedOrder['clickedDealSeal'] = false;
               const helper_makerToken =
                 this.tokenService.getTokenAndWhetherItsValid(signedOrder['makerToken']);

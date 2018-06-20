@@ -1,5 +1,5 @@
 <mat-toolbar class="main-header">
-  <a routerLink="" style="color:white">AirSwapChat</a>
+  <a routerLink="" style="color:white">AirSwapChat - Open Beta</a>
 </mat-toolbar>
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
@@ -52,7 +52,7 @@
         </button>
       </a>
 
-      <a routerLink="./online">
+      <a *ngIf="!connectionService.anonymousConnection" routerLink="./online">
         <button
         mat-raised-button
         [disabled]="connectionService.anonymousConnection"
@@ -64,7 +64,7 @@
         </button>
       </a>
 
-      <a routerLink="./myAccount">
+      <a *ngIf="!connectionService.anonymousConnection" routerLink="./myAccount">
         <button
         mat-raised-button
         [disabled]="connectionService.anonymousConnection"
@@ -107,7 +107,7 @@
           <button mat-raised-button
             (click)="connectWebsocket()"
             *ngIf="!wsService.performingHandshake && !connectionService.wsConnected">
-            Click to Connect with AirSwap
+            CLICK TO CONNECT WITH AIRSWAP
           </button>
         </div>
 
