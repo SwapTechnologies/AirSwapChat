@@ -68,6 +68,8 @@ export class WebsocketService {
 
           } else {
             console.log('Got unexpected message before handshake finished:' + message);
+            this.performingHandshake = false;
+            this.waitingForHandShakeAnswer = false;
             this.websocketSubscriptions['handshake'].unsubscribe();
             resolve(false);
           }

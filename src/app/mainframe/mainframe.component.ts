@@ -67,10 +67,10 @@ export class MainframeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.authUser(); // check for log in of user to firebase
     this.tokenService.getValidatedTokens(); // load the validated token list
-    this.web3service.getAccount()
-    .then(account => {
-      this.checkTokens();
-    });
+    // this.web3service.getAccount()
+    // .then(account => {
+    //   this.checkTokens();
+    // });
   }
 
   async checkTokens() {
@@ -156,6 +156,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
     .then((connected) => { // websocket succeeded
       if (connected && this.connectionService.connected) { // websocket and firebase? start!
         this.connectionInitialized();
+      } else {
+        // connection to websocket failed.
       }
     });
   }
