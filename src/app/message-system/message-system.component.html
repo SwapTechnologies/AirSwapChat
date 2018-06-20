@@ -106,10 +106,9 @@
   <div class="send_message_card" *ngIf="messageService.selectedPeer">
     <mat-card>
       <mat-form-field class="send_message_card">
-        <textarea #chatTextarea
+        <textarea #chatTextarea="matInput"
         matInput
         matTextareaAutosize
-        focus
         type="text"
         placeholder="Send Message"
         maxlength="200"

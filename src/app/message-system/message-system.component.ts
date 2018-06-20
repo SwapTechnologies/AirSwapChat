@@ -26,7 +26,7 @@ export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy 
 
   public timer: any;
 
-  @ViewChild(MatInput) chatTextarea: MatInput;
+  @ViewChild('chatTextarea') chatTextarea: MatInput;
 
   constructor(
     private connectionService: ConnectionService,
@@ -66,7 +66,10 @@ export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngAfterViewInit() {
+    console.log('focus!');
     if (this.messageService.selectedPeer) {
+
+    console.log('focus now!');
       this.chatTextarea.focus();
     }
   }

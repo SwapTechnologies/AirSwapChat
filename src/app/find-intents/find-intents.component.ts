@@ -136,15 +136,20 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           });
 
           // only show intents that are not made by myself
-          this.foundIntents = this.foundIntents.filter(x => {
-            return (x.address !== this.connectionService.loggedInUser.address);
-          });
+          // this.foundIntents = this.foundIntents.filter(x => {
+          //   return (x.address !== this.connectionService.loggedInUser.address);
+          // });
 
           this.makerTokens = [];
           this.takerTokens = [];
           this.websocketSubscription.unsubscribe();
 
-          this.pageIndex = 0;
+          if (this.foundIntents.length > 0
+              && this.pageIndex * this.pageSize + 1 > this.foundIntents.length) {
+            this.pageIndex = Math.floor((this.foundIntents.length - 1) / this.pageSize);
+          } else if (this.foundIntents.length === 0) {
+            this.pageIndex = 0;
+          }
           this.updateDisplayedIntents();
         }
       });
@@ -342,11 +347,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
           bothTokensValid: intent.bothTokensValid
         };
         this.takerOrderService.sendGetOrder(order);
-        this.notifierService.showMessage(
-          'Asking ' + intent.peer.alias + ' for an offer in ' +
-          intent.takerProps.symbol + ' for ' + makerAmount / intent.makerDecimals +
-          ' ' + intent.makerProps.symbol
-        );
       }
     });
   }
@@ -369,7 +369,6 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
 
   refreshIntents(): void {
     this.showIntents();
-    this.pageIndex = 0;
   }
 
   refreshTokens(): void {

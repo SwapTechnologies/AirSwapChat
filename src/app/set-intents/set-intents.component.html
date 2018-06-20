@@ -64,6 +64,7 @@
         matInput
         [(ngModel)]='makerTokenName'
         (ngModelChange)='enteredMakerTokenName()'
+        (keydown.enter)="addTokenPair()"
         [matAutocomplete]="autoMaker">
         <mat-autocomplete #autoMaker="matAutocomplete">
           <mat-option
@@ -89,6 +90,7 @@
         matInput
         [(ngModel)]='takerTokenName'
         (ngModelChange)='enteredTakerTokenName()'
+        (keydown.enter)="addTokenPair()"
         [matAutocomplete]="autoTaker">
         <mat-autocomplete #autoTaker="matAutocomplete">
           <mat-option

@@ -65,6 +65,10 @@ export class MakerOrderService {
     order['clickedOfferDeal'] = false;
     const helper_maker = this.tokenService.getTokenAndWhetherItsValid(order.makerToken);
     const helper_taker = this.tokenService.getTokenAndWhetherItsValid(order.takerToken);
+    if (!helper_maker.token || !helper_taker.token) { // order request token is not known
+      console.log('Got an request for a token AirSwapChat does not know.');
+      return;
+    }
     order['makerProps'] = helper_maker.token;
     order['takerProps'] = helper_taker.token;
     order['makerValid'] = helper_maker.isValid;
@@ -178,7 +182,7 @@ export class MakerOrderService {
           this.websocketSubscriptions[fullOrder.id].unsubscribe();
           if (fullOrder.txHash) {
             fullOrder['error'] = 'It seems order timed out before it was mined. ' +
-              'Check on https://rinkeby.etherscan.io/tx/' +fullOrder.txHash;
+              'Check on https://etherscan.io/tx/' +fullOrder.txHash;
             this.notifierService.showMessageAndRoute(
               'Your offer for ' + fullOrder.alias +
               ' timed out before it was mined.',  'trading'

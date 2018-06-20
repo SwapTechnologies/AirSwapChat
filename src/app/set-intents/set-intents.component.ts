@@ -167,7 +167,8 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
   addTokenPair(): void {
     if (this.makerToken
     && this.takerToken
-    && this.makerToken.address !== this.takerToken.address) {
+    && this.makerToken.address !== this.takerToken.address
+    && !this.balanceTooLow) {
       const intent = {
         'makerToken': this.makerToken.address.toLowerCase(),
         'takerToken': this.takerToken.address.toLowerCase(),
