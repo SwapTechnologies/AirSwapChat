@@ -14,8 +14,8 @@
         Suggested amount to ask for:<br>
         <strong>{{data.order['UsdPrices'].makerToken / data.order['UsdPrices'].takerToken * data.order.makerAmount / data.order.makerDecimals | number: '1.1-8'}} {{ data.order.takerProps.symbol }}</strong>
       </div>
-      <div *ngIf="this.deviation > .1"><strong style='color:red'>The suggested price is over 10% higher than what you are asking for.<br>Are you sure you want to sell low?</strong></div>
-      <div *ngIf="this.deviation < -.1"><strong style='color:red'>Your price is over 10% higher than the suggested price.<br>Are you sure you want to overprice?</strong></div>
+      <div *ngIf="this.deviation > .1"><strong style='color:red'>Your price is very low. The suggested price is over 10% higher.<br>Are you sure you want to sell low?</strong></div>
+      <div *ngIf="this.deviation < -.1"><strong style='color:orange'>Your price is very high. The suggested price is over 10% lower.<br>Are you sure you want to overprice?</strong></div>
     </div>
     <div>
       Once the signature is sent, you can not take it back. And your peer has the final decision to seal this deal.<br>

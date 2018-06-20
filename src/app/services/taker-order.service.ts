@@ -54,6 +54,11 @@ export class TakerOrderService {
     order.makerProps.symbol;
     order.id = uuid;
     this.sentOrders.push(order);
+    this.notifierService.showMessage(
+      'Asking ' + order.alias + ' for an offer in ' +
+      order.takerProps.symbol + ' for ' + order.makerAmount / order.makerDecimals +
+      ' ' + order.makerProps.symbol
+    );
 
     // look for an answer
     this.websocketSubscriptions[uuid] = this.wsService.websocketSubject

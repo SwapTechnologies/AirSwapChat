@@ -163,13 +163,16 @@
                 *ngIf="intent.peer.uid"
                 mat-button
                 color='primary'
-                (click)="message(intent)">
+                (click)="message(intent)"
+                [disabled]="intent.address === connectionService.loggedInUser.address">
                   MESSAGE
                 </button>
                 <button mat-button *ngIf="intent.approvedTakerToken > 0"
                 (click)="openDialogGetOrder(intent)"
                 color='primary'
-                [disabled]="(intent.peer.uid && !intent.peer.online) || !(intent.takerBalanceTakerToken > 0)">
+                [disabled]="(intent.peer.uid && !intent.peer.online)
+                            || !(intent.takerBalanceTakerToken > 0)
+                            || intent.address === connectionService.loggedInUser.address">
                   GET ORDER
                 </button>
                 <button mat-button *ngIf="!(intent.approvedTakerToken > 0)"
@@ -184,6 +187,7 @@
         </mat-grid-tile>
       </mat-grid-list>
       <mat-paginator [length]="foundIntents.length"
+              [pageIndex]="pageIndex"
               [pageSize]="pageSize"
               (page)="page($event)"
               hidePageSize="true">

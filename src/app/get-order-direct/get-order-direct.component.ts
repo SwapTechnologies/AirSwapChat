@@ -177,10 +177,6 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
       };
       this.takerOrderService.sendGetOrder(order);
       this.sentRequest = order['sentRequest'];
-      // this.responseMessage = 'Asking peer how much ' + this.takerToken.symbol +
-      //             ' he wants for ' + this.makerAmount + ' ' + this.makerToken.symbol;
-      // this.makerToken = undefined;
-      // this.takerToken = undefined;
       this.makerAmount = undefined;
     }
   }
