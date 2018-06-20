@@ -8,6 +8,8 @@ import { MatAutocompleteModule, MatBadgeModule, MatBottomSheetModule, MatButtonM
   MatSnackBarModule, MatTableModule, MatTabsModule, MatToolbarModule,
   MatTooltipModule
   } from '@angular/material';
+import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -33,6 +35,7 @@ import { MatAutocompleteModule, MatBadgeModule, MatBottomSheetModule, MatButtonM
     MatTabsModule,
     MatToolbarModule,
     MatTooltipModule,
+    TextareaAutosizeModule,
   ],
   exports: [
     MatAutocompleteModule,
@@ -57,6 +60,7 @@ import { MatAutocompleteModule, MatBadgeModule, MatBottomSheetModule, MatButtonM
     MatTabsModule,
     MatToolbarModule,
     MatTooltipModule,
+    TextareaAutosizeModule,
   ],
   declarations: [
   ]

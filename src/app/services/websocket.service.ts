@@ -18,6 +18,7 @@ export class WebsocketService {
   private url = environment.ethereumNetwork.websocketUrl;
   private indexerAddress = '0x0000000000000000000000000000000000000000';
   public performingHandshake = false;
+  public waitingForHandShakeAnswer = false;
   public infoMessage = '';
 
   constructor(
@@ -60,6 +61,8 @@ export class WebsocketService {
 
             this.connectionService.loggedInUser.wsAddress = this.web3service.connectedAccount.toLowerCase();
             this.connectionService.wsConnected = true;
+            this.performingHandshake = false;
+            this.waitingForHandShakeAnswer = false;
             this.idleListening();
             resolve(true);
 
@@ -87,12 +90,13 @@ export class WebsocketService {
       this.web3service.web3.eth.personal
       .sign(message, this.web3service.connectedAccount)
       .then((signedMessage) => {
+        this.waitingForHandShakeAnswer = true;
         this.send(signedMessage);
-        this.performingHandshake = false;
       })
       .catch(error => {
         this.infoMessage = 'Handshake failed.';
         this.performingHandshake = false;
+        this.waitingForHandShakeAnswer = false;
       })
     );
   }
