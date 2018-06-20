@@ -49,6 +49,7 @@
         <i>Your account holds {{astBalance}} AST and can set {{remainingIntents}} more intents</i>
       </div>
       <button
+      *ngIf="!connectionService.anonymousConnection"
       mat-icon-button
       color="primary"
       matTooltip="Refresh the custom token list"
@@ -139,8 +140,14 @@
         (ngModelChange)="changedList($event)">
           <mat-list-option *ngFor="let intent of myIntents"
           [value]="intent">
-            You want to sell {{tokenSymbol(intent.makerToken)}}
-            for {{tokenSymbol(intent.takerToken)}}
+            You want to sell
+            <ng-container *ngIf="intent.makerProps"> {{intent.makerProps.symbol}} </ng-container>
+            <ng-container *ngIf="!intent.makerProps"> ??? </ng-container>
+            for
+            <ng-container *ngIf="intent.takerProps"> {{intent.takerProps.symbol}} </ng-container>
+            <ng-container *ngIf="!intent.takerProps"> ??? </ng-container>
+            <mat-icon *ngIf="!intent.makerProps" matPrefix inline="true" matTooltip="Maker Token unknown to Database: {{intent.makerToken}}">help_outline</mat-icon>
+            <mat-icon *ngIf="!intent.takerProps" matPrefix inline="true" matTooltip="Taker Token unknown to Database: {{intent.takerToken}}">help_outline</mat-icon>
           </mat-list-option>
         </mat-selection-list>
       </div>

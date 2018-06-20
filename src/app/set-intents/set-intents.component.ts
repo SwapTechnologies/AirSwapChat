@@ -126,6 +126,12 @@ export class SetIntentsComponent implements OnInit, OnDestroy {
         if (id === uuid) {
           this.myIntents = parsedContent['result'];
           this.intentsMarkedForRemoval = [];
+          for (const intent of this.myIntents) {
+            const makerProps = this.tokenService.getToken(intent.makerToken.toLowerCase());
+            const takerProps = this.tokenService.getToken(intent.takerToken.toLowerCase());
+            intent.makerProps = makerProps;
+            intent.takerProps = takerProps;
+          }
           this.checkApproval();
           answerSubscription.unsubscribe();
           resolve();

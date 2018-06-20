@@ -99,6 +99,10 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
             } else {
               this.notifierService.showMessage('Entered address ' +
               result + ' is not registered with AirSwapChat');
+              this.messageService.getPeerAndAddByAddress(result)
+              .then(peer => {
+                this.messageService.selectedPeer = peer;
+              });
             }
           });
         }

@@ -30,7 +30,9 @@ export class WhosOnlineComponent implements OnInit {
   public filteredWhosOnline = [];
 
   ngOnInit() {
-    this.refresh();
+    if (!this.connectionService.anonymousConnection) {
+      this.refresh();
+    }
   }
 
   get columnNumber(): number {
