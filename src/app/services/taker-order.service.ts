@@ -113,7 +113,7 @@ export class TakerOrderService {
 
               // check if it is the order I asked for
               if (signedOrder.makerAddress !== order.makerAddress
-                  || signedOrder.makerAmount !== order.makerAmount
+                  || signedOrder.makerAmount.toString() !== order.makerAmount.toString()
                   || signedOrder.makerToken !== order.makerToken
                   || signedOrder.takerToken !== order.takerToken) {
                 signedOrder['error'] = 'Maker manipulated the order.';
