@@ -36,6 +36,10 @@ export class TakerOrderService {
     private notifierService: NotificationService,
   ) { }
 
+  toHex(num): string {
+    return this.web3Service.web3.utils.toHex(num);
+  }
+
   sendGetOrder(order: any): string {
     // send it away
     if (order.makerAddress === order.takerAddress) {
@@ -88,7 +92,7 @@ export class TakerOrderService {
           const signedOrder = parsedContent['result'];
 
           // check signature of signedOrder
-          const signature = signedOrder.r + signedOrder.s.slice(2) + signedOrder.v.slice(2);
+          const signature = signedOrder.r + signedOrder.s.slice(2) + this.toHex(signedOrder.v).slice(2);
 
           const hashV = this.web3Service.web3.utils.soliditySha3(
             signedOrder.makerAddress,
