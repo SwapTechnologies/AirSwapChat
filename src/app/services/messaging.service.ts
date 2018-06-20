@@ -68,18 +68,35 @@ export class MessagingService {
     if (this.isAddressInPeerList(addressLC)) {
       return Promise.resolve(false);
     } else {
-      return this.userOnlineService.addUserFromFirebaseByAddress(addressLC)
-      .then(peerDetails => {
+      if (this.connectionService.anonymousConnection) {
         this.connectedPeers.push({
-          peerDetails: peerDetails,
+          peerDetails: {
+            alias: addressLC.slice(2, 6),
+            address: addressLC,
+            uid: null,
+            inMyPeerList: false
+          },
           messageHistory: [],
           hasUnreadMessages: false,
         });
         if (this.connectedPeers.length === 1) {
           this.selectedPeer = this.connectedPeers[0];
         }
-        return true;
-      });
+        return Promise.resolve(true);
+      } else {
+        return this.userOnlineService.addUserFromFirebaseByAddress(addressLC)
+        .then(peerDetails => {
+          this.connectedPeers.push({
+            peerDetails: peerDetails,
+            messageHistory: [],
+            hasUnreadMessages: false,
+          });
+          if (this.connectedPeers.length === 1) {
+            this.selectedPeer = this.connectedPeers[0];
+          }
+          return true;
+        });
+      }
     }
   }
 
@@ -161,32 +178,36 @@ export class MessagingService {
 
     return Promise.all(promiseList)
     .then(() => {
-      console.log('Start listening for new messages.');
-      // start a listener that ears for messages
-      this.wsListenMessagesSubscription = this.wsService.websocketSubject
-      .subscribe(message => {
-        const receivedMessage = JSON.parse(message);
-        const content = JSON.parse(receivedMessage['message']);
-        const method = content['method'];
-        if (method === 'message') { // message received!
-          const sender = receivedMessage['sender'];
-          // answer the reception
-          this.wsService.sendMessageAnswer(sender, content['id']);
-          this.getPeerAndAddByAddress(sender)
-          .then(peer => {
-            this.addMessage(
-              peer,
-              peer.peerDetails.alias,
-              content['params']['message'],
-              parseInt(content['params']['timestamp'], 10)
-            );
-            peer.hasUnreadMessages = true;
-            if (!this.showMessenger) {
-              this.selectedPeer = peer;
-            }
-          });
-        }
-      });
+      this.startListeningForMessages();
+    });
+  }
+
+  startListeningForMessages() {
+    console.log('Start listening for new messages.');
+    // start a listener that ears for messages
+    this.wsListenMessagesSubscription = this.wsService.websocketSubject
+    .subscribe(message => {
+      const receivedMessage = JSON.parse(message);
+      const content = JSON.parse(receivedMessage['message']);
+      const method = content['method'];
+      if (method === 'message') { // message received!
+        const sender = receivedMessage['sender'];
+        // answer the reception
+        this.wsService.sendMessageAnswer(sender, content['id']);
+        this.getPeerAndAddByAddress(sender)
+        .then(peer => {
+          this.addMessage(
+            peer,
+            peer.peerDetails.alias,
+            content['params']['message'],
+            parseInt(content['params']['timestamp'], 10)
+          );
+          peer.hasUnreadMessages = true;
+          if (!this.showMessenger) {
+            this.selectedPeer = peer;
+          }
+        });
+      }
     });
   }
 
@@ -233,31 +254,33 @@ export class MessagingService {
         } else {
           this.addMessage(this.selectedPeer, 'System',
           'Peer is offline.', currentTime);
-          if (this.selectedPeer.peerDetails.uid) {
-            this.firebaseService.getUserAddress(this.selectedPeer.peerDetails.uid)
-            .then((userUid) => {
-              if (userUid) {
-                this.askToStore(message) // check if user wants to send message
-                .then(response => {
-                  if (response) {
-                    if (this.connectionService.connected) { // still connected?
-                      this.firebaseService.storeMessage(
-                        this.selectedPeer.peerDetails.uid, message
-                      ).then(fbResponse => {
-                        this.addMessage(this.selectedPeer,
-                          'You', 'Offline Message: ' + message, currentTime);
-                      });
+          if (!this.connectionService.anonymousConnection) {
+            if (this.selectedPeer.peerDetails.uid) {
+              this.firebaseService.getUserAddress(this.selectedPeer.peerDetails.uid)
+              .then((userUid) => {
+                if (userUid) {
+                  this.askToStore(message) // check if user wants to send message
+                  .then(response => {
+                    if (response) {
+                      if (this.connectionService.connected) { // still connected?
+                        this.firebaseService.storeMessage(
+                          this.selectedPeer.peerDetails.uid, message
+                        ).then(fbResponse => {
+                          this.addMessage(this.selectedPeer,
+                            'You', 'Offline Message: ' + message, currentTime);
+                        });
+                      }
                     }
-                  }
-                });
-              } else {
-                this.addMessage(this.selectedPeer, 'System',
-                'Peer no longer in database.', currentTime);
-              }
-            });
-          } else {
-            this.addMessage(this.selectedPeer, 'System',
-            'Peer unknown to database.', currentTime);
+                  });
+                } else {
+                  this.addMessage(this.selectedPeer, 'System',
+                  'Peer no longer in database.', currentTime);
+                }
+              });
+            } else {
+              this.addMessage(this.selectedPeer, 'System',
+              'Peer unknown to database.', currentTime);
+            }
           }
         }
       }

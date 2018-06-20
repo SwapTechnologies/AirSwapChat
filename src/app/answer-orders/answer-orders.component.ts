@@ -74,10 +74,10 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
       this.selectedTabIndex = 1;
     } else if (this.gotPendingOrders) {
       this.selectedTabIndex = 2;
-    } else if (this.gotAbortedDeals) {
-      this.selectedTabIndex = 3;
     } else if (this.gotDoneDeals) {
       this.selectedTabIndex = 4;
+    } else if (this.gotAbortedDeals) {
+      this.selectedTabIndex = 3;
     } else {
       this.selectedTabIndex = null;
     }
@@ -129,8 +129,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   get doneDeals(): string {
-    // tslint:disable-next-line:quotemark
-    let baseName = "TODAY'S TRADES";
+    let baseName = 'TODAY\'S TRADES';
     const sum = this.makerOrderService.doneDeals.length +
                 this.takerOrderService.finishedOrders.length;
     this.gotDoneDeals = sum > 0;
@@ -141,7 +140,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   askingPositiveNumber(order: any): boolean {
-    return (this.takerAmount[order.id] > 0);
+    return (this.takerAmount[order.id] >= 1 / order.takerDecimals);
   }
 
   takerHasEnough(order: any): boolean {
@@ -192,7 +191,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
           r = signedMessage.slice(0, 66);
           s = '0x' + signedMessage.slice(66, 130);
           v = '0x' + signedMessage.slice(130, 132);
-          // v = this.web3service.web3.utils.hexToNumber('0x' + signedMessage.slice(130, 132));
           order['v'] = v;
           order['r'] = r;
           order['s'] = s;
@@ -200,10 +198,6 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
         });
       }
     });
-  }
-
-  isValidNumber(num: string): boolean {
-      return Number(num) >= 0;
   }
 
   answerOrder(order: any): void {
@@ -240,8 +234,11 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(DialogYesNoComponent, {
       width: '700px',
       data: {
-        text: 'Are you sure you want to agree to this deal? ' +
-        'Once the transaction is sent it can not be reverted.',
+        text: 'Are you sure you want to trade your ' +
+        order.takerAmount / order.takerDecimals + ' ' + order.takerProps.symbol +
+        ' for peer\'s ' +
+        order.makerAmount / order.makerDecimals + ' ' + order.makerProps.symbol +
+        ' ? Once the transaction is sent it can not be reverted.',
         yes: 'DO IT',
         no: 'CANCEL'
       }

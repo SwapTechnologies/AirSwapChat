@@ -3,8 +3,8 @@ import { Subject } from 'rxjs/Subject';
 import { environment } from '../../environments/environment';
 
 import { ConnectWeb3Service } from './connectWeb3.service';
-// import { OrderRequestsService } from '../services/order-requests.service';
 import { ConnectionService } from './connection.service';
+import { FirebaseService } from './firebase.service';
 
 declare var require: any;
 const uuidv4 = require('uuid/v4');
@@ -21,6 +21,7 @@ export class WebsocketService {
   public infoMessage = '';
 
   constructor(
+    private firebaseService: FirebaseService,
     private web3service: ConnectWeb3Service,
     private connectionService: ConnectionService
   ) {}
@@ -37,6 +38,9 @@ export class WebsocketService {
     this.ws.onclose = (event) => {
       console.log('Websocket connection has closed.');
       this.connectionService.wsConnected = false;
+      if (this.connectionService.firebaseConnected) {
+        this.firebaseService.logOffUser();
+      }
       this.websocketSubject.complete();
     };
 

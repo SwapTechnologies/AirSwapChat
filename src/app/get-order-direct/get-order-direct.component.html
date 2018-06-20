@@ -91,18 +91,22 @@
         <div *ngIf="sentRequest">
           <i>{{sentRequest}}</i>
         </div>
+        <div *ngIf="takerToken && takerBalanceTakerToken && !takerOwnsSomething()" style='color: red; font-style: italic'>
+          <br>
+          You do not own any of this tokens that you are trying to sell.
+        </div>
       </mat-card-content>
       <mat-card-actions>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
         makerToken && takerToken && makerAmount && isPositive() && makerHasEnough() &&
-        takerTakerTokenApproval > 0"
+        takerTakerTokenApproval > 0 && takerOwnsSomething()"
         mat-button
         color='primary'
         (click)="getOrder()">
         ASK FOR OFFER
         </button>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
-        takerToken && takerTakerTokenApproval == 0"
+        takerToken && !(takerTakerTokenApproval > 0)"
         mat-button
         color='primary'
         (click)="approveTakerToken()">

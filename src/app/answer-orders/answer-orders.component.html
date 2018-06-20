@@ -84,7 +84,7 @@
               </div>
             </mat-card-content>
             <mat-card-actions>
-              <span *ngIf="isValidNumber(takerAmount[order.id]) && takerHasEnough(order)">
+              <span *ngIf="askingPositiveNumber(order) && takerHasEnough(order)">
                 <button mat-button
                 (click)="detailsForOrderOffer(order)"
                 color='primary'

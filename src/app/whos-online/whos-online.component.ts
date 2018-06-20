@@ -27,6 +27,7 @@ export class WhosOnlineComponent implements OnInit {
   public pageIndex = 0;
   public displayedPeople = [];
   public loadedInitially = false;
+  public filteredWhosOnline = [];
 
   ngOnInit() {
     this.refresh();
@@ -35,7 +36,7 @@ export class WhosOnlineComponent implements OnInit {
   get columnNumber(): number {
     const columnNum = this.columnSpaceObserver.columnNum;
     const numMessages = this.displayedPeople.filter(this.onlyOnline).length;
-    return numMessages < 3 ? Math.min(columnNum, numMessages) : columnNum;
+    return numMessages < 3 ? Math.max(1, Math.min(columnNum, numMessages)) : columnNum;
   }
 
   message(user: any) {
@@ -54,13 +55,16 @@ export class WhosOnlineComponent implements OnInit {
   refresh(): void {
     if (Date.now() - this.firebaseService.lastTimeLoadedWhosOnline > 10000) {
       const promiseList = [];
+      // get list from firebase who's online
       this.firebaseService.readWhosOnline()
       .then(whosOnline => {
         for (const uid in whosOnline) {
           if (whosOnline[uid]) {
+            // clean user out of this list
             if (uid === this.connectionService.loggedInUser.uid) {
               continue;
             }
+            // fill all those people into your list of peers you observe during your session
             promiseList.push(this.userOnlineService.addUserFromFirebase(uid));
           }
         }
@@ -68,21 +72,35 @@ export class WhosOnlineComponent implements OnInit {
         .then(() => {
           const whosOnlineUids = Object.keys(this.userOnlineService.users);
           this.firebaseService.whosOnlineList = [];
+          // get everybody who is in your list of active peers for his status
           for (const uid of whosOnlineUids) {
             if (uid === this.connectionService.loggedInUser.uid) {
               continue;
             }
             this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
+          for (const user of this.firebaseService.whosOnlineList) {
+            if (user.online) {
+              this.filteredWhosOnline.push(user);
+            }
+          }
           this.updateDisplayedPeople();
           this.loadedInitially = true;
         });
       });
+    } else {
+      for (const user of this.firebaseService.whosOnlineList) {
+        if (user.online) {
+          this.filteredWhosOnline.push(user);
+        }
+      }
+      this.updateDisplayedPeople();
+      this.loadedInitially = true;
     }
   }
 
   updateDisplayedPeople() {
-    this.displayedPeople = this.firebaseService.whosOnlineList.slice(
+    this.displayedPeople = this.filteredWhosOnline.slice(
       this.pageIndex * this.pageSize,
       (this.pageIndex + 1) * this.pageSize);
   }

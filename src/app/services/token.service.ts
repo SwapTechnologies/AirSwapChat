@@ -13,7 +13,7 @@ export const EtherAddress = '0x0000000000000000000000000000000000000000';
 export class TokenService {
 
   public validatedTokens: Token[];
-  public customTokens: Token[];
+  public customTokens: Token[] = [];
 
   public lastUpdateOfCustomTokens = 0;
 

@@ -8,7 +8,7 @@ export class FocusDirective implements OnChanges, OnInit {
   @Input() focus: boolean;
 
   constructor(
-    @Inject(ElementRef) private element: ElementRef, 
+    @Inject(ElementRef) private element: ElementRef,
     public renderer: Renderer
   ) {}
 
@@ -20,4 +20,4 @@ export class FocusDirective implements OnChanges, OnInit {
     this.element.nativeElement.focus();
   }
 
-} 
+}

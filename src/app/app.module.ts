@@ -66,6 +66,7 @@ import { environment } from '../environments/environment';
 // directives
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { FocusDirective } from './directives/focus.directive';
+import { DialogEnterWithoutRegisterComponent } from './dialogs/dialog-enter-without-register/dialog-enter-without-register.component';
 
 const appRoutes: Routes = [
   { path: '', component: FindIntentsComponent },
@@ -110,6 +111,7 @@ const appRoutes: Routes = [
     AboutComponent,
     DonateComponent,
     DialogAskMakerSignatureComponent,
+    DialogEnterWithoutRegisterComponent,
   ],
   imports: [
     BrowserModule,
@@ -146,6 +148,7 @@ const appRoutes: Routes = [
   entryComponents: [
     DialogAddPeerComponent,
     DialogAddTokenComponent,
+    DialogEnterWithoutRegisterComponent,
     DialogGetOrderComponent,
     DialogInfoDealSealComponent,
     DialogInfoOrderOfferComponent,

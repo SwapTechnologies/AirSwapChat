@@ -16,10 +16,13 @@ export class ConnectionService {
   public web3Connected = false;
   public wsConnected = false;
   public firebaseConnected = false;
-
+  public anonymousConnection = false;
   constructor() { }
 
   get connected(): boolean {
-    return this.web3Connected && this.wsConnected && this.firebaseConnected;
+    return this.web3Connected
+           && this.wsConnected
+           && (this.firebaseConnected || this.anonymousConnection);
   }
+
 }

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 // services
 import { AirswapdexService } from '../services/airswapdex.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
+import { ConnectionService } from '../services/connection.service';
 import { FirebaseService } from '../services/firebase.service';
 import { NotificationService} from '../services/notification.service';
 import { TokenService } from '../services/token.service';
@@ -26,6 +27,7 @@ export class TakerOrderService {
 
   constructor(
     private airswapDexService: AirswapdexService,
+    private connectionService: ConnectionService,
     private firebaseService: FirebaseService,
     private priceInfoService: PriceInfoService,
     private tokenService: TokenService,
@@ -154,9 +156,8 @@ export class TakerOrderService {
                   this.wsService.tellOrderTimedOut(signedOrder.makerAddress, signedOrder.id);
                 }
               });
-              this.firebaseService.getUserAliasFromAddress(signedOrder.makerAddress)
-              .then(alias => {
-                signedOrder['alias'] = alias;
+              if (this.connectionService.anonymousConnection) {
+                signedOrder['alias'] = signedOrder.makerAddress.slice(2, 6);
                 this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);
                 this.orderResponses.push(signedOrder);
                 this.notifierService.showMessageAndRoute(
@@ -164,7 +165,19 @@ export class TakerOrderService {
                   ' with valid signature.',
                   'trading'
                 );
-              });
+              } else {
+                this.firebaseService.getUserAliasFromAddress(signedOrder.makerAddress)
+                .then(alias => {
+                  signedOrder['alias'] = alias;
+                  this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);
+                  this.orderResponses.push(signedOrder);
+                  this.notifierService.showMessageAndRoute(
+                    'You received an answer from ' + order.peer.alias +
+                    ' with valid signature.',
+                    'trading'
+                  );
+                });
+              }
             } else {
               // invalid signature
               this.sentOrders  = this.sentOrders.filter(x => x.id !== signedOrder.id);

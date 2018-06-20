@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 // services
+import { ConnectionService } from '../services/connection.service';
 import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { FirebaseService } from '../services/firebase.service';
 import { MessagingService } from '../services/messaging.service';
@@ -26,6 +27,7 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
   public timer: any;
 
   constructor(
+    private connectionService: ConnectionService,
     private web3service: ConnectWeb3Service,
     public messageService: MessagingService,
     private firebaseService: FirebaseService,
@@ -76,23 +78,30 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
 
   openDialogAddPeer() {
     const dialogRef = this.dialog.open(DialogAddPeerComponent, {
-      width: '400px'
+      width: '500px'
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (this.web3service.web3.utils.isAddress(result)) {
-        this.firebaseService.getUserUid(result)
-        .then((uid) => {
-          if (uid) {
-            this.messageService.getPeerAndAdd(uid)
-            .then(peer => {
-              this.messageService.selectedPeer = peer;
-            });
-          } else {
-            this.notifierService.showMessage('Entered address ' +
-            result + ' is not registered with AirSwapChat');
-          }
-        });
+        if (this.connectionService.anonymousConnection) {
+          this.messageService.getPeerAndAddByAddress(result)
+          .then(peer => {
+            this.messageService.selectedPeer = peer;
+          });
+        } else {
+          this.firebaseService.getUserUid(result)
+          .then((uid) => {
+            if (uid) {
+              this.messageService.getPeerAndAdd(uid)
+              .then(peer => {
+                this.messageService.selectedPeer = peer;
+              });
+            } else {
+              this.notifierService.showMessage('Entered address ' +
+              result + ' is not registered with AirSwapChat');
+            }
+          });
+        }
       } else {
         this.notifierService.showMessage('Entered invalid address');
       }
