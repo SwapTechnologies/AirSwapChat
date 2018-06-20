@@ -110,6 +110,12 @@
             CLICK TO CONNECT WITH AIRSWAP
           </button>
         </div>
+        <div *ngIf="wsService.waitingForHandShakeAnswer || initializing" class='container'>
+          <mat-progress-spinner
+          color="primary"
+          mode="indeterminate">
+          </mat-progress-spinner>
+        </div>
 
         <div
         *ngIf="connectionService.web3Connected && connectionService.wsConnected

@@ -43,6 +43,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public registrationCompleted = false;
 
   public initializedPage = false;
+  public initializing = false;
 
   constructor(
     private afAuth: AngularFireAuth,
@@ -198,6 +199,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
     // triggered either when a firebase connection is established or a websocket connection
     // if both are available -> access page
     if (this.connectionService.connected && this.firebaseService.userIsVerified) {
+      this.initializing = true;
       this.firebaseService.checkMyUidAndAddressMatch()
       .then((match) => {
         if (match.newAddress) { // uid not in database? -> new user.
@@ -206,6 +208,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
             this.finalizeInitialization();
           })
           .catch((error) => {
+            this.initializing = false;
             this.firebaseService.logOffUser();
             this.notifierService.showMessage(
               'Ethereum address is already registered with another registered account. ' +
@@ -214,6 +217,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
           });
         } else { // uid in address found in database
           if (match.addressChanged) { // current public address different than before?
+            this.initializing = false;
             this.firebaseService.logOffUser();
             this.notifierService.showMessage(
               'Your e-mail is connected to the Ethereum account: ' +
@@ -233,13 +237,14 @@ export class MainframeComponent implements OnInit, OnDestroy {
     // read number of unread messages & deals
     this.timer = TimerObservable.create(0, 500)
     .subscribe( () => this.updateNumbers());
-
+    this.initializing = true;
     if (this.connectionService.anonymousConnection) {
       this.connectionService.loggedInUser.alias = this.web3service.connectedAccount.slice(2, 6);
       this.connectionService.loggedInUser.uid = null;
       this.makerOrderService.listenForOrders();
       this.messageService.startListeningForMessages();
       this.initializedPage = true;
+      this.initializing = false;
     } else {
       // check if I have unreceived messages
       // and start listening for messages from others
@@ -275,7 +280,12 @@ export class MainframeComponent implements OnInit, OnDestroy {
         this.messageService.startMessenger()
         .then(() => {
           this.initializedPage = true;
+          this.initializing = false;
         });
+      }).catch(err => {
+        console.log('Error during initizialization');
+        this.initializedPage = false;
+        this.initializing = false;
       });
     }
   }

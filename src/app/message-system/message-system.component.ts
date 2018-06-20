@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 // services
@@ -10,7 +10,7 @@ import { NotificationService} from '../services/notification.service';
 import { UserOnlineService } from '../services/user-online.service';
 import { WebsocketService } from '../services/websocket.service';
 
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatInput } from '@angular/material';
 import { DialogAddPeerComponent } from './dialog-add-peer/dialog-add-peer.component';
 
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
@@ -20,11 +20,13 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   templateUrl: './message-system.component.html',
   styleUrls: ['./message-system.component.scss']
 })
-export class MessageSystemComponent implements OnInit, OnDestroy {
+export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public message = ''; // text entered in message box
 
   public timer: any;
+
+  @ViewChild(MatInput) chatTextarea: MatInput;
 
   constructor(
     private connectionService: ConnectionService,
@@ -61,6 +63,12 @@ export class MessageSystemComponent implements OnInit, OnDestroy {
         }
         // well.. then no
       }
+  }
+
+  ngAfterViewInit() {
+    if (this.messageService.selectedPeer) {
+      this.chatTextarea.focus();
+    }
   }
 
   ngOnDestroy() {
