@@ -106,7 +106,7 @@
         ASK FOR OFFER
         </button>
         <button *ngIf="messagingService.selectedPeer.peerDetails.address &&
-        takerToken && takerTakerTokenApproval == 0"
+        takerToken && !(takerTakerTokenApproval > 0)"
         mat-button
         color='primary'
         (click)="approveTakerToken()">

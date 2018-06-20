@@ -50,7 +50,7 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   constructor(
     private airswapDexService: AirswapdexService,
     public columnSpaceObserver: ColumnSpaceObserverService,
-    private connectionService: ConnectionService,
+    public connectionService: ConnectionService,
     private erc20services: Erc20Service,
     private messageService: MessagingService,
     public takerOrderService: TakerOrderService,
