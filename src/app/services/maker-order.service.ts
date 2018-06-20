@@ -199,7 +199,7 @@ export class MakerOrderService {
           this.websocketSubscriptions[fullOrder.id].unsubscribe();
           if (fullOrder.txHash) {
             fullOrder['error'] = 'It seems order timed out before it was mined. ' +
-              'Check on https://etherscan.io/tx/' +fullOrder.txHash;
+              'Check on https://etherscan.io/tx/' + fullOrder.txHash;
             this.notifierService.showMessageAndRoute(
               'Your offer for ' + fullOrder.alias +
               ' timed out before it was mined.',  'trading'
