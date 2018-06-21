@@ -43,6 +43,12 @@
       "$uid": {
         ".write": "auth.uid === $uid"
       }
+    },
+    "rinkebyonline": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth.uid === $uid"
+      }
     }
   }
 }

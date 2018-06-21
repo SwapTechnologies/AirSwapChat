@@ -31,6 +31,8 @@ export class FirebaseService {
   public whosOnlineList = [];
   public lastTimeLoadedWhosOnline = 0;
 
+  public firestoreUserData: any;
+
   constructor(
     private db: AngularFireDatabase,
     private connectionService: ConnectionService,
@@ -76,6 +78,24 @@ export class FirebaseService {
     return this.getObjectFromFirestore('users', 'consentToSAndStorage');
   }
 
+  setWantsEmailNotification(wantsEmailNotification: boolean): Promise<any> {
+    return this.afs.collection('users')
+    .doc(this.connectionService.loggedInUser.uid).update({
+      'wantMessageNotification': wantsEmailNotification
+    }).then(() => {
+      this.firestoreUserData.wantMessageNotification = wantsEmailNotification;
+    });
+  }
+
+  getUserInfoFromFirestore(): Promise<any> {
+    return this.getObjectFromFirestore('users', this.connectionService.loggedInUser.uid)
+    .then(result => {
+      this.firestoreUserData = result;
+    }).catch(error => {
+      console.log(error, 'Could not query user.');
+    });
+  }
+
   setMyAliasAndAddress(): Promise<any> {
     return this.db.object('users/' + this.connectionService.loggedInUser.uid)
     .set({
@@ -112,6 +132,7 @@ export class FirebaseService {
       this.userIsVerified = false;
       this.connectionService.loggedInUser.uid = null;
       this.connectionService.firebaseConnected = false;
+      this.firestoreUserData = null;
     });
   }
 

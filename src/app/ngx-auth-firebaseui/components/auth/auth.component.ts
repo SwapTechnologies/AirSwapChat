@@ -168,11 +168,11 @@ export class AuthComponent implements OnInit, OnDestroy {
       data: { showConsent: true }
     });
     return dialogRef.afterClosed().toPromise()
-    .then((accepts) => {
-      if (!accepts) {
+    .then((checkMarks) => {
+      if (!checkMarks.consent) {
         throw new Error('Aborted registration.');
       }
-      this.authProcess.signUp(name, email, password);
+      this.authProcess.signUp(name, email, password, checkMarks.emailNotifications);
     }).catch(err => {
       this.notificationService.showMessage(err.message);
     });

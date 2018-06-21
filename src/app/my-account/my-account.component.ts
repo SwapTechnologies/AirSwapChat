@@ -20,6 +20,8 @@ export class MyAccountComponent implements OnInit {
 
   public errorMessage = '';
 
+  public setStateEmailNotifications: boolean;
+
   constructor(
     public connectionService: ConnectionService,
     public firebaseService: FirebaseService,
@@ -28,6 +30,14 @@ export class MyAccountComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    if (!this.firebaseService.firestoreUserData) {
+      this.firebaseService.getUserInfoFromFirestore()
+      .then(() => {
+        this.setStateEmailNotifications = this.firebaseService.firestoreUserData.wantMessageNotification;
+      });
+    } else {
+      this.setStateEmailNotifications = this.firebaseService.firestoreUserData.wantMessageNotification;
+    }
   }
 
   changeAlias(): void {
@@ -52,6 +62,10 @@ export class MyAccountComponent implements OnInit {
   logOut(): void {
     this.firebaseService.logOffUser();
     this.wsService.closeConnection();
+  }
+
+  updateSettings(): void {
+    this.firebaseService.setWantsEmailNotification(this.setStateEmailNotifications);
   }
 
   deleteMe(): void {

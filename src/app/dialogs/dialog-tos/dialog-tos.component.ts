@@ -10,6 +10,7 @@ export class DialogTosComponent implements OnInit {
 
   public checkStoreData = false;
   public checkToS = false;
+  public receiveEmailNotifications = false;
 
   constructor(
     public dialogRef: MatDialogRef<DialogTosComponent>,
@@ -24,7 +25,9 @@ export class DialogTosComponent implements OnInit {
   }
 
   onCloseConfirm() {
-    this.dialogRef.close(this.checkStoreData && this.checkToS);
+    this.dialogRef.close({
+      consent: this.checkStoreData && this.checkToS,
+      emailNotifications: this.receiveEmailNotifications});
   }
 
   onCloseCancel() {

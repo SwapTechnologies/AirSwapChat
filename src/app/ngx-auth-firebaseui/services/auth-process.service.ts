@@ -80,7 +80,7 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
    * @param dialogContent - String with HTML Code that can be included in the register
    * @returns
    */
-  public async signUp(name: string, email: string, password: string) {
+  public async signUp(name: string, email: string, password: string, emailNotifications: boolean) {
     try {
       this.isLoading = true;
 
@@ -92,7 +92,8 @@ export class AuthProcessService implements ISignInProcess, ISignUpProcess {
           uid: user.uid,
           displayName: name,
           email: user.email,
-        } as User);
+          wantMessageNotification: emailNotifications
+        });
 
       await user.sendEmailVerification();
       const updatedProfileResult = await this.updateProfile(name, user.photoURL);
