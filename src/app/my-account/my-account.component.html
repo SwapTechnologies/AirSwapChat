@@ -2,14 +2,14 @@
   <div class="peerCard">
     <mat-card>
       <mat-card-title>
-        You are logged in as 
+        You are logged in as
         <span *ngIf="!this.wantsToChangeAlias; else newAliasInput">
           <b>{{connectionService.loggedInUser.alias}}</b>
         </span>
         <ng-template #newAliasInput>
           <mat-form-field>
-            <input 
-            matInput 
+            <input
+            matInput
             (keydown.enter)="acceptAliasChange()"
             placeholder="Enter New Alias"
             [(ngModel)]="newAlias">
@@ -20,21 +20,41 @@
         Address {{connectionService.loggedInUser.address}}
       </mat-card-subtitle>
       <mat-card-actions>
-        <button 
+        <button
         mat-button
         color="primary"
         (click)="changeAlias()">{{buttonVerb}} ALIAS</button>
-        <button 
+        <button
         mat-button
         color="primary"
         (click)="logOut()">LOG OUT</button>
-        <button 
+        <button
         mat-button
         color='warn'
         (click)="deleteMe()">DELETE ME</button>
       </mat-card-actions>
     </mat-card>
   </div>
+  <div *ngIf="firebaseService.firestoreUserData">
+    <mat-card>
+      <mat-card-title>
+        Settings
+      </mat-card-title>
+      <mat-card-content>
+        <mat-checkbox [(ngModel)]="setStateEmailNotifications">
+          (Optional) I want to receive e-mail notifications, when somebody sends me an offline message.
+        </mat-checkbox>
+      </mat-card-content>
+      <mat-card-actions>
+        <button
+        *ngIf="firebaseService.firestoreUserData && setStateEmailNotifications !== firebaseService.firestoreUserData.wantMessageNotification"
+        mat-button
+        color='primary'
+        (click)="updateSettings()">UPDATE</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
   <div style='color:red;'>
     <strong>{{errorMessage}}</strong>
   </div>

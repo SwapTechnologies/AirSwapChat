@@ -1,28 +1,27 @@
 <div>
   <h2 mat-dialog-title>Peer is offline</h2>
   <mat-dialog-content>
-    Do you want to send following message to the database? 
-  </mat-dialog-content>   
+    Do you want to send following message to the database?
+  </mat-dialog-content>
   <mat-dialog-content>
     <strong>{{data}}</strong>
-  </mat-dialog-content>   
+  </mat-dialog-content>
   <mat-dialog-content>
     <p>The peer will be able to read it the next time he logs in.</p>
-    <p>The message will be burnt after reading by the receiver, but stored within our database until then. </p>
-    <p>Don't share secret information over this channel.</p>
+    <p>The message will be burnt after reading by the receiver and stored within our database until then.</p>
     <br/>
     <br/>
   </mat-dialog-content>
   <mat-dialog-actions>
-    <button 
-    mat-button 
-    color='primary'
+    <button
+    mat-button
+    color='warn'
     (click)="onCloseCancel()">
       CANCEL
     </button>
-    <button 
-    mat-button 
-    color='warn'
+    <button
+    mat-button
+    color='primary'
     (click)="onCloseConfirm()">
       SEND
     </button>
