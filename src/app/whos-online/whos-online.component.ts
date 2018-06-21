@@ -81,6 +81,7 @@ export class WhosOnlineComponent implements OnInit {
             }
             this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
           }
+          this.filteredWhosOnline = [];
           for (const user of this.firebaseService.whosOnlineList) {
             if (user.online) {
               this.filteredWhosOnline.push(user);
@@ -91,6 +92,7 @@ export class WhosOnlineComponent implements OnInit {
         });
       });
     } else {
+      this.filteredWhosOnline = [];
       for (const user of this.firebaseService.whosOnlineList) {
         if (user.online) {
           this.filteredWhosOnline.push(user);
