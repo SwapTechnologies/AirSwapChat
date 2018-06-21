@@ -114,7 +114,8 @@
         maxlength="200"
         matAutosizeMinRows=2
         (keydown.enter)="sendMessage()"
-        [(ngModel)]="message"></textarea>
+        [(ngModel)]="message"
+        [disabled] = "messageService.sendingMessage"></textarea>
         <button
           mat-button
           mat-icon-button
