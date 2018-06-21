@@ -34,6 +34,9 @@ export class WebsocketService {
     this.ws.onerror = (event) => {
       console.log('Websocket has thrown an error.');
       this.connectionService.wsConnected = false;
+      if (this.connectionService.firebaseConnected) {
+        this.firebaseService.logOffUser();
+      }
       this.websocketSubject.error(event);
     };
     this.ws.onclose = (event) => {
