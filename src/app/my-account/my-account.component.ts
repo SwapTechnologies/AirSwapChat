@@ -31,10 +31,12 @@ export class MyAccountComponent implements OnInit {
 
   ngOnInit() {
     if (!this.firebaseService.firestoreUserData) {
-      this.firebaseService.getUserInfoFromFirestore()
-      .then(() => {
-        this.setStateEmailNotifications = this.firebaseService.firestoreUserData.wantMessageNotification;
-      });
+      if (this.connectionService.loggedInUser.uid) {
+        this.firebaseService.getUserInfoFromFirestore()
+        .then(() => {
+          this.setStateEmailNotifications = this.firebaseService.firestoreUserData.wantMessageNotification;
+        });
+      }
     } else {
       this.setStateEmailNotifications = this.firebaseService.firestoreUserData.wantMessageNotification;
     }
