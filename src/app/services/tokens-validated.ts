@@ -101,6 +101,12 @@ export const validatedTokens: Token[] = [
     'decimals': 18,
   },
   {
+    'address': '0x107c4504cd79c5d2696ea0030a8dd4e92601b82e',
+    'name': 'Bloom Token',
+    'symbol': 'BLT',
+    'decimals': 18,
+  },
+  {
     'address': '0x5732046a883704404f284ce41ffadd5b007fd668',
     'name': 'Bluzelle Token',
     'decimals': 18,

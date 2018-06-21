@@ -46,7 +46,6 @@ export class MakerOrderService {
         const makerToken = content['params']['makerToken'];
         const takerToken = content['params']['takerToken'];
         const takerAddress = content['params']['takerAddress'];
-
         const newOrder = {
           makerAddress: makerAddress,
           makerAmount: makerAmount,
@@ -61,6 +60,13 @@ export class MakerOrderService {
   }
 
   addOrder(order: any): void {
+    if ( !order.makerAddress
+      || !order.makerAmount
+      || !order.makerToken
+      || !order.takerToken
+      || !order.takerAddress) {
+        return;
+      }
     // called whenever a getOrder is received
     order['clickedOfferDeal'] = false;
     const helper_maker = this.tokenService.getTokenAndWhetherItsValid(order.makerToken);
