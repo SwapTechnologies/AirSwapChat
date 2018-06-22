@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit, AfterViewChecked, OnDestroy } from '@angular/core';
+import { Component, ViewChild, QueryList, ViewChildren, ElementRef, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 // services
@@ -20,13 +20,13 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   templateUrl: './message-system.component.html',
   styleUrls: ['./message-system.component.scss']
 })
-export class MessageSystemComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public message = ''; // text entered in message box
   public timer: any;
   private enableScrollDown = false;
   @ViewChild('scrollMe') public myScrollContainer: ElementRef;
-  @ViewChild('chatTextarea') chatTextarea: MatInput;
+  @ViewChildren('messagesContainer') public myMessagesContainer: QueryList<any>;
 
   constructor(
     private connectionService: ConnectionService,
@@ -65,8 +65,10 @@ export class MessageSystemComponent implements OnInit, AfterViewChecked, OnDestr
       }
   }
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
+  ngAfterViewInit() {
+    if (this.myMessagesContainer) {
+      this.myMessagesContainer.changes.subscribe(this.scrollToBottom);
+    }
   }
 
   ngOnDestroy() {
@@ -143,20 +145,8 @@ export class MessageSystemComponent implements OnInit, AfterViewChecked, OnDestr
     this.router.navigate(['getOrder']);
   }
 
-  onScroll(): void {
-    if (this.myScrollContainer) {
-      const element = this.myScrollContainer.nativeElement;
-      const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
-      if (atBottom) {
-          this.enableScrollDown = false;
-      } else {
-          this.enableScrollDown = true;
-      }
-    }
-  }
-
-  scrollToBottom(): void {
-    if (!this.enableScrollDown || this.myScrollContainer === undefined) {
+  scrollToBottom = () => {
+    if (this.myScrollContainer === undefined) {
       return;
     }
     try {

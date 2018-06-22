@@ -23,7 +23,6 @@ export class MessagingService {
   public gotMessagesFromDatabase = false;
   public sendingMessage = false;
 
-
   constructor(
     private wsService: WebsocketService,
     private connectionService: ConnectionService,
