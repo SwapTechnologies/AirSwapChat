@@ -28,7 +28,7 @@
 .chat_card {
   width: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
+  // overflow-x: hidden;
 }
 
 .chat_message_card {
@@ -36,8 +36,9 @@
   margin-top: 5px;
   margin-bottom: 5px;
   border-radius: 5px;
-  overflow-x: hidden;
-  text-overflow: ellipsis;
+  // overflow-x: hidden;
+  overflow-wrap: break-word;
+  // text-overflow: ellipsis;
 }
 
 .myMessage {

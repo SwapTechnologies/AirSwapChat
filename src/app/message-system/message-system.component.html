@@ -67,8 +67,8 @@
   <div class="chat_card"
   *ngIf="messageService.connectedPeers.length > 0
   && messageService.selectedPeer.messageHistory.length > 0"
-  #scrollMe [scrollTop]="scrollMe.scrollHeight">
-    <ng-container *ngFor="let msg of messageService.selectedPeer.messageHistory">
+  #scrollMe>
+    <ng-container #messagesContainer *ngFor="let msg of messageService.selectedPeer.messageHistory">
       <mat-card *ngIf="msg.user == 'You'" class='chat_message_card myMessage'>
         <mat-card-content style="display: flex;">
           <div>

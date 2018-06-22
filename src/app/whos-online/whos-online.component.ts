@@ -56,6 +56,7 @@ export class WhosOnlineComponent implements OnInit {
 
   refresh(): void {
     if (Date.now() - this.firebaseService.lastTimeLoadedWhosOnline > 10000) {
+      console.log('refreshing list.');
       const promiseList = [];
       // get list from firebase who's online
       this.firebaseService.readWhosOnline()
@@ -70,26 +71,26 @@ export class WhosOnlineComponent implements OnInit {
             promiseList.push(this.userOnlineService.addUserFromFirebase(uid));
           }
         }
-        Promise.all(promiseList)
-        .then(() => {
-          const whosOnlineUids = Object.keys(this.userOnlineService.users);
-          this.firebaseService.whosOnlineList = [];
-          // get everybody who is in your list of active peers for his status
-          for (const uid of whosOnlineUids) {
-            if (uid === this.connectionService.loggedInUser.uid) {
-              continue;
-            }
-            this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
+        return Promise.all(promiseList);
+      })
+      .then(() => {
+        const whosOnlineUids = Object.keys(this.userOnlineService.users);
+        this.firebaseService.whosOnlineList = [];
+        // get everybody who is in your list of active peers for his status
+        for (const uid of whosOnlineUids) {
+          if (uid === this.connectionService.loggedInUser.uid) {
+            continue;
           }
-          this.filteredWhosOnline = [];
-          for (const user of this.firebaseService.whosOnlineList) {
-            if (user.online) {
-              this.filteredWhosOnline.push(user);
-            }
+          this.firebaseService.whosOnlineList.push(this.userOnlineService.users[uid]);
+        }
+        this.filteredWhosOnline = [];
+        for (const user of this.firebaseService.whosOnlineList) {
+          if (user.online) {
+            this.filteredWhosOnline.push(user);
           }
-          this.updateDisplayedPeople();
-          this.loadedInitially = true;
-        });
+        }
+        this.updateDisplayedPeople();
+        this.loadedInitially = true;
       });
     } else {
       this.filteredWhosOnline = [];

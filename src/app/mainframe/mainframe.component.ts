@@ -39,7 +39,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
   public showWhosOnlineBadge = false;
   public numWhosOnline = 0;
 
-  public timer: any;
+  public timerNumbersUpdater: any;
+  public timerWeb3ConnectionChecker: any;
   public registrationCompleted = false;
 
   public initializedPage = false;
@@ -67,6 +68,8 @@ export class MainframeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.authUser(); // check for log in of user to firebase
     this.tokenService.getValidatedTokens(); // load the validated token list
+    this.timerWeb3ConnectionChecker = TimerObservable.create(0, 3000)
+      .subscribe( () => this.web3service.checkConnection() );
     // this.web3service.getAccount()
     // .then(account => {
     //   this.checkTokens();
@@ -128,8 +131,11 @@ export class MainframeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.timer) {
-      this.timer.unsubscribe();
+    if (this.timerNumbersUpdater) {
+      this.timerNumbersUpdater.unsubscribe();
+    }
+    if (this.timerWeb3ConnectionChecker) {
+      this.timerWeb3ConnectionChecker.unsubscribe();
     }
   }
 
@@ -209,7 +215,7 @@ export class MainframeComponent implements OnInit, OnDestroy {
 
   finalizeInitialization(): void {
     // read number of unread messages & deals
-    this.timer = TimerObservable.create(0, 500)
+    this.timerNumbersUpdater = TimerObservable.create(0, 500)
     .subscribe( () => this.updateNumbers());
     this.initializing = true;
     if (this.connectionService.anonymousConnection) {

@@ -16,7 +16,7 @@ export class UserOnlineService {
     private firebaseService: FirebaseService,
   ) { }
 
-  addUser(uid: string, address: string, alias: string): void {
+  addUser(uid: string, address: string, alias: string): Promise<any> {
     if (!this.isUserListed(uid)) {
       const newUser = {
         alias: alias,
@@ -27,15 +27,20 @@ export class UserOnlineService {
       this.users[uid] = newUser;
       this.usersByAddress[address] = newUser;
 
-      const userOnlineSubscription =
-      this.firebaseService.getUserOnlineSubscription(uid, (online) => {
-        if (online) {
-          this.setUserProperty(uid, 'online', true);
-        } else {
-          this.setUserProperty(uid, 'online', false);
-        }
-      });
-      this.setUserProperty(uid, 'onlineSubscription', userOnlineSubscription);
+      return new Promise((resolve, reject) => {
+        const userOnlineSubscription =
+        this.firebaseService.getUserOnlineSubscription(uid, (online) => {
+          if (online) {
+            this.setUserProperty(uid, 'online', true);
+          } else {
+            this.setUserProperty(uid, 'online', false);
+          }
+          resolve(this.users[uid]);
+        });
+        this.setUserProperty(uid, 'onlineSubscription', userOnlineSubscription);
+      })
+    } else {
+      return Promise.resolve(this.users[uid]);
     }
   }
 
@@ -74,8 +79,8 @@ export class UserOnlineService {
       }).then(fbAlias => {
         alias = fbAlias;
         if (alias) {
-          this.addUser(uid, address, alias);
-          return this.users[uid];
+          return this.addUser(uid, address, alias);
+          //  this.users[uid];
         } else {
           console.log('Tried to add a non-existing uid: ', uid);
           return null;

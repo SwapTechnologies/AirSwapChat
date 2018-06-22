@@ -237,4 +237,14 @@ export class GetOrderDirectComponent implements OnInit, OnDestroy {
       console.log('Approve failed.');
     });
   }
+
+  clearMakerTokenName(): void {
+    this.makerTokenName = '';
+    this.enteredMakerTokenName();
+  }
+
+  clearTakerTokenName(): void {
+    this.takerTokenName = '';
+    this.enteredTakerTokenName();
+  }
 }
