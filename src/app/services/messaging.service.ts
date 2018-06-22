@@ -235,6 +235,10 @@ export class MessagingService {
       const answerId = content['id'];
       if (method === 'messageAnswer' && answerId === messageId) {
         gotReponse = true;
+        if (!this.connectionService.anonymousConnection && this.selectedPeer.peerDetails.uid && !this.selectedPeer.peerDetails.online) {
+          // peer is shown as offline even though he is online -> correct database
+          this.firebaseService.setUidOnline(this.selectedPeer.peerDetails.uid);
+        }
         this.sendingMessage = false;
         this.addMessage(
           this.selectedPeer,
@@ -256,6 +260,10 @@ export class MessagingService {
           'Peer is offline.', currentTime);
           if (!this.connectionService.anonymousConnection) {
             if (this.selectedPeer.peerDetails.uid) {
+              if (this.selectedPeer.peerDetails.online) {
+                // peer is shown as online even though he is offline -> correct database
+                this.firebaseService.setUidOffline(this.selectedPeer.peerDetails.uid);
+              }
               this.firebaseService.getUserAddress(this.selectedPeer.peerDetails.uid)
               .then((userUid) => {
                 if (userUid) {

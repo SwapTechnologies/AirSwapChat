@@ -36,6 +36,15 @@
               </mat-optgroup>
             </mat-autocomplete>
             <mat-hint *ngIf="makerToken">{{makerToken.address.slice(0,14)}}...</mat-hint>
+            <button
+            mat-icon-button
+            matSuffix
+            color="primary"
+            matTooltip="Clear Field"
+            [disabled]="!makerTokenName"
+            (click)="clearMakerTokenName()">
+            <mat-icon>clear</mat-icon>
+            </button>
           </mat-form-field>
           <mat-form-field>
             <input
@@ -61,6 +70,15 @@
               </mat-optgroup>
             </mat-autocomplete>
             <mat-hint *ngIf="takerToken">{{takerToken.address.slice(0,14)}}...</mat-hint>
+            <button
+            mat-icon-button
+            matSuffix
+            color="primary"
+            matTooltip="Clear Field"
+            [disabled]="!takerTokenName"
+            (click)="clearTakerTokenName()">
+            <mat-icon>clear</mat-icon>
+            </button>
           </mat-form-field>
         </div>
         <br>

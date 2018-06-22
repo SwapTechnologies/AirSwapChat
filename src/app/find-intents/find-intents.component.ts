@@ -374,4 +374,9 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   refreshTokens(): void {
     this.tokenService.getCustomTokenListFromDB();
   }
+
+  clearTokenName(): void {
+    this.selectedTokenName = '';
+    this.enteredTokenName();
+  }
 }

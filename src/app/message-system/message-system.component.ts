@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, AfterViewChecked, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 // services
@@ -20,12 +20,12 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   templateUrl: './message-system.component.html',
   styleUrls: ['./message-system.component.scss']
 })
-export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MessageSystemComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   public message = ''; // text entered in message box
-
   public timer: any;
-
+  private enableScrollDown = false;
+  @ViewChild('scrollMe') public myScrollContainer: ElementRef;
   @ViewChild('chatTextarea') chatTextarea: MatInput;
 
   constructor(
@@ -65,7 +65,8 @@ export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy 
       }
   }
 
-  ngAfterViewInit() {
+  ngAfterViewChecked() {
+    this.scrollToBottom();
   }
 
   ngOnDestroy() {
@@ -141,4 +142,27 @@ export class MessageSystemComponent implements OnInit, AfterViewInit, OnDestroy 
   initGetOrderWithSelectedPeer(): void {
     this.router.navigate(['getOrder']);
   }
+
+  onScroll(): void {
+    if (this.myScrollContainer) {
+      const element = this.myScrollContainer.nativeElement;
+      const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+      if (atBottom) {
+          this.enableScrollDown = false;
+      } else {
+          this.enableScrollDown = true;
+      }
+    }
+  }
+
+  scrollToBottom(): void {
+    if (!this.enableScrollDown || this.myScrollContainer === undefined) {
+      return;
+    }
+    try {
+      const element = this.myScrollContainer.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    } catch (err) { }
+  }
+
 }

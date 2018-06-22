@@ -114,6 +114,16 @@ export class FirebaseService {
     });
   }
 
+  setUidOnline(uid: string): Promise<any> {
+    return this.db.object('online/' + uid)
+    .set({ 'online': true });
+  }
+
+  setUidOffline(uid: string): Promise<any> {
+    return this.db.object('online/' + uid)
+    .remove();
+  }
+
   addPeerAsFriend(uid: string): Promise<any> {
     return this.db.object('users/' + this.connectionService.loggedInUser.uid + '/peers/')
     .update({[uid]: true});

@@ -10,21 +10,14 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
 })
 export class AccountComponent implements OnInit, OnDestroy {
 
-  public timer: any;
-
   constructor(
     public web3service: ConnectWeb3Service,
     public connectionService: ConnectionService ,
   ) { }
 
   ngOnInit() {
-    this.timer = TimerObservable.create(0, 3000);
-    this.timer.subscribe( () => this.web3service.checkConnection());
   }
 
   ngOnDestroy() {
-    if (this.timer) {
-      this.timer.unsubscribe();
-    }
   }
 }
