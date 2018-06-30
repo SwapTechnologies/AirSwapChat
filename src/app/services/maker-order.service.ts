@@ -7,6 +7,7 @@ import { FirebaseService } from './firebase.service';
 import { NotificationService} from '../services/notification.service';
 import { PriceInfoService } from './price-info.service';
 import { WebsocketService } from './websocket.service';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
@@ -205,7 +206,8 @@ export class MakerOrderService {
           this.websocketSubscriptions[fullOrder.id].unsubscribe();
           if (fullOrder.txHash) {
             fullOrder['error'] = 'It seems order timed out before it was mined. ' +
-              'Check on https://etherscan.io/tx/' + fullOrder.txHash;
+              'Check on https://' + environment.ethereumNetwork.etherscanPrefix +
+              'etherscan.io/tx/' + fullOrder.txHash;
             this.notifierService.showMessageAndRoute(
               'Your offer for ' + fullOrder.alias +
               ' timed out before it was mined.',  'trading'

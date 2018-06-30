@@ -14,6 +14,7 @@ import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Erc20Service } from '../services/erc20.service';
 import { MakerOrderService } from '../services/maker-order.service';
 import { TakerOrderService } from '../services/taker-order.service';
+import { environment } from '../../environments/environment';
 
 interface Order {
   makerAddress: string;
@@ -37,6 +38,7 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public openOrderIds: any = {};
   public expiration = 5;
   public timers: any = {};
+  public env = environment;
 
   public gotOrderRequests: boolean;
   public gotOrdersToTake: boolean;

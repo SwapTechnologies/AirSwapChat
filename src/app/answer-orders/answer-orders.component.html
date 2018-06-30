@@ -230,7 +230,8 @@
             {{order.takerProps.symbol}}
             </i>
             <div *ngIf="order.txHash">
-              Follow the transaction on Etherscan <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+              Follow the transaction on Etherscan
+              <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
             </div>
           </mat-card-content>
         </mat-card>
@@ -290,7 +291,7 @@
                  for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
               </div>
               <div>
-                Waiting for the transaction to get mined. Follow it on Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Waiting for the transaction to get mined. Follow it on Etherscan: <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
@@ -318,7 +319,7 @@
                   Waiting for the peer to accept and send the swap transaction to the blockchain.
                 </span>
                 <span *ngIf="order.txHash">
-                  The peer has send the swap to the blockchain. Follow it on Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                  The peer has send the swap to the blockchain. Follow it on Etherscan: <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
                 </span>
               </div>
             </mat-card-content>
@@ -425,7 +426,8 @@
                  for peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
               </div>
               <div>
-                Verify this transaction on the blockchain using Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Verify this transaction on the blockchain using Etherscan:
+                <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
@@ -449,7 +451,8 @@
                   for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>
               </div>
               <div>
-                Verify this transaction on the blockchain using Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Verify this transaction on the blockchain using Etherscan:
+                <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
