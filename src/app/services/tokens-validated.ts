@@ -3,7 +3,7 @@ import { Token } from '../types/types';
 export const validatedTokens: Token[] = [
   {
       'address': '0xcc1cbd4f67cceb7c001bd4adf98451237a193ff8',
-      'name': 'AirSwap',
+      'name': 'AirSwap Token',
       'symbol': 'AST',
       'decimals': 4,
   },

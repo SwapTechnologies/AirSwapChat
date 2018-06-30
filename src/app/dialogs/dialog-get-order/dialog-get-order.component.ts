@@ -14,7 +14,7 @@ import { WebsocketService } from '../../services/websocket.service';
   styleUrls: ['./dialog-get-order.component.scss']
 })
 export class DialogGetOrderComponent implements OnInit {
-  public makerAmount: number;
+  public amount: number;
 
   public foundIntents: any[] = [];
   public orderResponses: any[] = [];
@@ -33,7 +33,7 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   getTokenPrice() {
-    this.priceInfoService.getPricesOfPair(this.data.makerProps.symbol, this.data.takerProps.symbol)
+    this.priceInfoService.getPricesOfPair(this.data.intent.makerProps.symbol, this.data.intent.takerProps.symbol)
     .then(priceResult => {
       this.data['UsdPrices'] = priceResult;
     });
@@ -42,8 +42,8 @@ export class DialogGetOrderComponent implements OnInit {
     this.dialogRef.close(false);
   }
 
-  onCloseConfirm(makerAmount) {
-    this.dialogRef.close(makerAmount);
+  onCloseConfirm(amount) {
+    this.dialogRef.close(amount);
   }
 
   onCloseCancel() {
@@ -51,16 +51,30 @@ export class DialogGetOrderComponent implements OnInit {
   }
 
   makerHasEnough(): boolean {
-    return (this.erc20service.toFixed(this.makerAmount * this.data.makerDecimals) <= this.data.makerBalanceMakerToken);
+    return (this.erc20service.toFixed(this.amount * this.data.intent.makerDecimals) <= this.data.intent.makerBalanceMakerToken);
   }
 
-  isPositive(): boolean {
-    return (this.makerAmount >= 1 / this.data.makerDecimals);
+  takerHasEnough(): boolean {
+    return (this.erc20service.toFixed(this.amount * this.data.intent.takerDecimals) <= this.data.intent.takerBalanceTakerToken);
   }
 
-  getOrder(): void {
-    if (this.makerAmount && this.isPositive() && this.makerHasEnough()) {
-      this.onCloseConfirm(this.erc20service.toFixed(this.makerAmount * this.data.makerDecimals));
+  isPositiveMakerToken(): boolean {
+    return (this.amount >= 1 / this.data.intent.makerDecimals);
+  }
+
+  isPositiveTakerToken(): boolean {
+    return (this.amount >= 1 / this.data.intent.takerDecimals);
+  }
+
+  getOrderMaker(): void {
+    if (this.amount && this.isPositiveMakerToken() && this.makerHasEnough()) {
+      this.onCloseConfirm(this.erc20service.toFixed(this.amount * this.data.intent.makerDecimals));
+    }
+  }
+
+  getOrderTaker(): void {
+    if (this.amount && this.isPositiveTakerToken() && this.takerHasEnough()) {
+      this.onCloseConfirm(this.erc20service.toFixed(this.amount * this.data.intent.takerDecimals));
     }
   }
 }

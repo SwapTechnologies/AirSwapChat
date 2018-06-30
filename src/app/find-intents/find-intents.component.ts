@@ -323,30 +323,54 @@ export class FindIntentsComponent implements OnInit, OnDestroy {
   }
 
   openDialogGetOrder(intent: any): void {
+    const selectedRole = this.selectedRole;
     const dialogRef = this.dialog.open(DialogGetOrderComponent, {
       width: '500px',
-      data: intent
+      data: {
+        intent: intent,
+        selectedRole: selectedRole
+      }
     });
 
-    dialogRef.afterClosed().subscribe(makerAmount => {
-      if (makerAmount) {
-        const order = {
-          makerAddress: intent.address,
-          makerAmount: this.erc20services.toFixed(makerAmount),
-          makerToken: intent.makerToken,
-          takerToken: intent.takerToken,
-          takerAddress: this.connectionService.loggedInUser.address,
-          peer: intent.peer,
-          alias: intent.peer.alias,
-          makerProps: intent.makerProps,
-          takerProps: intent.takerProps,
-          makerDecimals: intent.makerDecimals,
-          takerDecimals: intent.takerDecimals,
-          makerValid: intent.makerValid,
-          takerValid: intent.takerValid,
-          bothTokensValid: intent.bothTokensValid
-        };
-        this.takerOrderService.sendGetOrder(order);
+    dialogRef.afterClosed().subscribe(amount => {
+      if (amount) {
+        if (selectedRole === 'maker') {
+          const order = {
+            makerAddress: intent.address,
+            makerAmount: this.erc20services.toFixed(amount),
+            makerToken: intent.makerToken,
+            takerToken: intent.takerToken,
+            takerAddress: this.connectionService.loggedInUser.address,
+            peer: intent.peer,
+            alias: intent.peer.alias,
+            makerProps: intent.makerProps,
+            takerProps: intent.takerProps,
+            makerDecimals: intent.makerDecimals,
+            takerDecimals: intent.takerDecimals,
+            makerValid: intent.makerValid,
+            takerValid: intent.takerValid,
+            bothTokensValid: intent.bothTokensValid
+          };
+          this.takerOrderService.sendGetOrder(order);
+        } else if (selectedRole === 'taker') {
+          const order = {
+            makerAddress: intent.address,
+            makerToken: intent.makerToken,
+            takerToken: intent.takerToken,
+            takerAddress: this.connectionService.loggedInUser.address,
+            takerAmount: this.erc20services.toFixed(amount),
+            peer: intent.peer,
+            alias: intent.peer.alias,
+            makerProps: intent.makerProps,
+            takerProps: intent.takerProps,
+            makerDecimals: intent.makerDecimals,
+            takerDecimals: intent.takerDecimals,
+            makerValid: intent.makerValid,
+            takerValid: intent.takerValid,
+            bothTokensValid: intent.bothTokensValid
+          };
+          this.takerOrderService.sendGetOrder(order);
+        }
       }
     });
   }

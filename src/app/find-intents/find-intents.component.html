@@ -180,7 +180,8 @@
                 (click)="openDialogGetOrder(intent)"
                 color='primary'
                 [disabled]="(intent.peer.uid && !intent.peer.online)
-                            || !(intent.takerBalanceTakerToken > 0)
+                            || (selectedRole === 'maker' && !(intent.takerBalanceTakerToken > 0))
+                            || (selectedRole === 'taker' && !(intent.makerBalanceMakerToken > 0))
                             || intent.address === connectionService.loggedInUser.address">
                   GET ORDER
                 </button>

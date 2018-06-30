@@ -44,12 +44,14 @@ export class MakerOrderService {
         const uuid = content['id'];
         const makerAddress = receivedMessage['receiver'];
         const makerAmount = content['params']['makerAmount'];
+        const takerAmount = content['params']['takerAmount'];
         const makerToken = content['params']['makerToken'];
         const takerToken = content['params']['takerToken'];
         const takerAddress = content['params']['takerAddress'];
         const newOrder = {
           makerAddress: makerAddress,
           makerAmount: makerAmount,
+          takerAmount: takerAmount,
           makerToken: makerToken,
           takerToken: takerToken,
           takerAddress: takerAddress,
@@ -61,8 +63,10 @@ export class MakerOrderService {
   }
 
   addOrder(order: any): void {
+    console.log(order);
+    console.log((!order.makerAmount || !order.takerAmount));
     if ( !order.makerAddress
-      || !order.makerAmount
+      || (!order.makerAmount && !order.takerAmount)
       || !order.makerToken
       || !order.takerToken
       || !order.takerAddress) {
