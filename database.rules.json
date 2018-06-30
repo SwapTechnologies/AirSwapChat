@@ -41,13 +41,13 @@
     "online": {
       ".read": true,
       "$uid": {
-        ".write": "auth.uid === $uid"
+        ".write": "auth.uid !== null"
       }
     },
     "rinkebyonline": {
       ".read": true,
       "$uid": {
-        ".write": "auth.uid === $uid"
+        ".write": "auth.uid !== null"
       }
     }
   }
