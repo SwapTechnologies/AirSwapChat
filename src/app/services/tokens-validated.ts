@@ -1,33 +1,32 @@
 import { Token } from '../types/types';
-
-// export const validatedTokens: Token[] = [
-//   {
-//       'address': '0xcc1cbd4f67cceb7c001bd4adf98451237a193ff8',
-//       'name': 'AirSwap',
-//       'symbol': 'AST',
-//       'decimals': 4,
-//   },
-//   {
-//       'address': '0x0000000000000000000000000000000000000000',
-//       'name': 'Ether',
-//       'symbol': 'ETH',
-//       'decimals': 18,
-//   },
-//   {
-//       'address': '0xbaEd6c1F8Cd4A443Cc372fd15D770e3764B4B2E7'.toLowerCase(),
-//       'name': '0x',
-//       'symbol': 'ZRX',
-//       'decimals': 18,
-//   },
-//   {
-//       'address': '0xf2a8C910676dB689BfD8a3735126B608BDc0D454'.toLowerCase(),
-//       'name': 'Kyber',
-//       'symbol': 'KNC',
-//       'decimals': 18,
-//   },
-// ];
-
-export const validatedTokens: Token[] = [
+import { environment } from '../../environments/environment';
+export const validatedTokens: Token[] = environment.ethereumNetwork.desiredNetwork === 'Rinkeby' ? [
+  {
+      'address': '0xcc1cbd4f67cceb7c001bd4adf98451237a193ff8',
+      'name': 'AirSwap Token',
+      'symbol': 'AST',
+      'decimals': 4,
+  },
+  {
+      'address': '0x0000000000000000000000000000000000000000',
+      'name': 'Ether',
+      'symbol': 'ETH',
+      'decimals': 18,
+  },
+  {
+      'address': '0xbaEd6c1F8Cd4A443Cc372fd15D770e3764B4B2E7'.toLowerCase(),
+      'name': '0x',
+      'symbol': 'ZRX',
+      'decimals': 18,
+  },
+  {
+      'address': '0xf2a8C910676dB689BfD8a3735126B608BDc0D454'.toLowerCase(),
+      'name': 'Kyber',
+      'symbol': 'KNC',
+      'decimals': 18,
+  },
+] :
+ [
   {
     'address': '0xe41d2489571d322189246dafa5ebde1f4699f498',
     'name': '0x Protocol Token',
@@ -75,6 +74,12 @@ export const validatedTokens: Token[] = [
     'name': 'Aragon Network Token',
     'decimals': 18,
     'symbol': 'ANT'
+  },
+  {
+    'address': '0xe94327d07fc17907b4db788e5adf2ed424addff6',
+    'name': 'Augur',
+    'symbol': 'REP',
+    'decimals': 18,
   },
   {
     'address': '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c',
@@ -233,6 +238,12 @@ export const validatedTokens: Token[] = [
     'decimals': 18,
   },
   {
+    'address': '0x0f4ca92660efad97a9a70cb0fe969c755439772c',
+    'name': 'Leverj',
+    'symbol': 'LEV',
+    'decimals': 9,
+  },
+  {
     'address': '0x957c30ab0426e0c93cd8241e2c60392d08c6ac8e',
     'name': 'Modum Token',
     'symbol': 'MOD',
@@ -273,12 +284,6 @@ export const validatedTokens: Token[] = [
     'name': 'RHOC',
     'symbol': 'RHOC',
     'decimals': 8,
-  },
-  {
-    'address': '0xe94327d07fc17907b4db788e5adf2ed424addff6',
-    'name': 'Reputation',
-    'symbol': 'REP',
-    'decimals': 18,
   },
   {
     'address': '0x8f8221afbb33998d8584a2b05749ba73c37a938a',
@@ -323,6 +328,12 @@ export const validatedTokens: Token[] = [
     'decimals': 18,
   },
   {
+    'address': '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607',
+    'name': 'Swarm City',
+    'symbol': 'SWT',
+    'decimals': 18,
+  },
+  {
     'address': '0x12480e24eb5bec1a9d4369cab6a80cad3c0a377a',
     'name': 'Substratum',
     'decimals': 2,
@@ -333,12 +344,6 @@ export const validatedTokens: Token[] = [
     'name': 'TenX Pay Token',
     'decimals': 18,
     'symbol': 'PAY'
-  },
-  {
-    'address': '0xd850942ef8811f2a866692a623011bde52a462c1',
-    'name': 'VeChain Token',
-    'symbol': 'VEN',
-    'decimals': 18,
   },
   {
     'address': '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74',
@@ -367,12 +372,6 @@ export const validatedTokens: Token[] = [
 ];
 
 // {
-//   'address': '0xb5a5f22694352c15b00323844ad545abb2b11028',
-//   'name': 'ICON',
-//   'symbol': 'ICX',
-//   'decimals': 18,
-// },
-// {
 //   'address': '0x0d88ed6e74bbfd96b831231638b66c05571e824f',
 //   'name': 'Aventus',
 //   'symbol': 'AVT',
@@ -389,10 +388,4 @@ export const validatedTokens: Token[] = [
 //   'name': 'DigixDAO',
 //   'symbol': 'DGD',
 //   'decimals': 9,
-// },
-// {
-//   'address': '0xa74476443119a942de498590fe1f2454d7d4ac0d',
-//   'name': 'Golem Network Token',
-//   'decimals': 18,
-//   'symbol': 'GNT'
 // },

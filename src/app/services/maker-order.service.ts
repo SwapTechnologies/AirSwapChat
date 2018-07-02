@@ -7,6 +7,7 @@ import { FirebaseService } from './firebase.service';
 import { NotificationService} from '../services/notification.service';
 import { PriceInfoService } from './price-info.service';
 import { WebsocketService } from './websocket.service';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
@@ -43,12 +44,14 @@ export class MakerOrderService {
         const uuid = content['id'];
         const makerAddress = receivedMessage['receiver'];
         const makerAmount = content['params']['makerAmount'];
+        const takerAmount = content['params']['takerAmount'];
         const makerToken = content['params']['makerToken'];
         const takerToken = content['params']['takerToken'];
         const takerAddress = content['params']['takerAddress'];
         const newOrder = {
           makerAddress: makerAddress,
           makerAmount: makerAmount,
+          takerAmount: takerAmount,
           makerToken: makerToken,
           takerToken: takerToken,
           takerAddress: takerAddress,
@@ -61,7 +64,7 @@ export class MakerOrderService {
 
   addOrder(order: any): void {
     if ( !order.makerAddress
-      || !order.makerAmount
+      || (!order.makerAmount && !order.takerAmount)
       || !order.makerToken
       || !order.takerToken
       || !order.takerAddress) {
@@ -100,10 +103,22 @@ export class MakerOrderService {
     Promise.all(promiseList)
     .then(() => {
       this.orderRequests.push(order);
-      this.notifierService.showMessageAndRoute(
-        'You have a new request for an order',
-        'trading'
-      );
+      if (order.makerAmount) {
+        this.notifierService.showMessageAndRoute(
+          order['alias'] + ' wants to buy ' +
+          order.makerAmount / order.makerDecimals + ' ' +
+          order.makerProps.symbol + ' paying with ' + order.takerProps.symbol,
+          'trading'
+        );
+      } else if (order.takerAmount) {
+        this.notifierService.showMessageAndRoute(
+          order['alias'] + ' wants to sell ' +
+          order.takerAmount / order.takerDecimals + ' ' +
+          order.takerProps.symbol + ' and wants ' + order.makerProps.symbol,
+          'trading'
+        );
+
+      }
     });
   }
 
@@ -205,7 +220,8 @@ export class MakerOrderService {
           this.websocketSubscriptions[fullOrder.id].unsubscribe();
           if (fullOrder.txHash) {
             fullOrder['error'] = 'It seems order timed out before it was mined. ' +
-              'Check on https://etherscan.io/tx/' + fullOrder.txHash;
+              'Check on https://' + environment.ethereumNetwork.etherscanPrefix +
+              'etherscan.io/tx/' + fullOrder.txHash;
             this.notifierService.showMessageAndRoute(
               'Your offer for ' + fullOrder.alias +
               ' timed out before it was mined.',  'trading'

@@ -14,6 +14,7 @@ import { ConnectWeb3Service } from '../services/connectWeb3.service';
 import { Erc20Service } from '../services/erc20.service';
 import { MakerOrderService } from '../services/maker-order.service';
 import { TakerOrderService } from '../services/taker-order.service';
+import { environment } from '../../environments/environment';
 
 interface Order {
   makerAddress: string;
@@ -33,10 +34,12 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   public isOpen = true;
   public orders: Order[] = [];
   public takerAmount: any = {};
+  public makerAmount: any = {};
   public websocketSubscription: Subscription;
   public openOrderIds: any = {};
   public expiration = 5;
   public timers: any = {};
+  public env = environment;
 
   public gotOrderRequests: boolean;
   public gotOrdersToTake: boolean;
@@ -141,12 +144,20 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
     return baseName;
   }
 
-  askingPositiveNumber(order: any): boolean {
+  askingPositiveNumberTakerToken(order: any): boolean {
     return (this.takerAmount[order.id] >= 1 / order.takerDecimals);
+  }
+
+  askingPositiveNumberMakerToken(order: any): boolean {
+    return (this.makerAmount[order.id] >= 1 / order.makerDecimals);
   }
 
   takerHasEnough(order: any): boolean {
     return (this.erc20Service.toFixed(this.takerAmount[order.id] * order.takerDecimals) <= order.takerBalanceTakerToken);
+  }
+
+  makerHasEnough(order: any): boolean {
+    return (this.erc20Service.toFixed(this.makerAmount[order.id] * order.makerDecimals) <= order.makerBalanceMakerToken);
   }
 
   columnNumber(array): number {
@@ -237,10 +248,16 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
   }
 
   answerOrder(order: any): void {
-    if (this.askingPositiveNumber(order) && this.takerHasEnough(order)) {
+    if (order.makerAmount && this.askingPositiveNumberTakerToken(order) && this.takerHasEnough(order)
+        || order.takerAmount && this.askingPositiveNumberMakerToken(order) && this.makerHasEnough(order)) {
       order['clickedOfferDeal'] = true;
-      order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order['takerDecimals']);
-      order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
+      if (order.makerAmount) {
+        order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order['takerDecimals']);
+        order['makerAmount'] = this.erc20Service.toFixed(order['makerAmount']);
+      } else if (order.takerAmount) {
+        order['makerAmount'] = this.erc20Service.toFixed(this.makerAmount[order.id] * order['makerDecimals']);
+        order['takerAmount'] = this.erc20Service.toFixed(order['takerAmount']);
+      }
       const uuid = order.id;
       // delete order.id;
 
@@ -321,16 +338,16 @@ export class AnswerOrdersComponent implements OnInit, OnDestroy {
 
   detailsForOrderOffer(order): void {
     order['expirationMinutes'] = this.expiration;
-    order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order.takerDecimals);
+    // order['takerAmount'] = this.erc20Service.toFixed(this.takerAmount[order.id] * order.takerDecimals);
 
     const dialogRef = this.dialog.open(DialogInfoOrderOfferComponent, {
       width: '700px',
       data: order
     });
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.answerOrder(order);
-      }
+      // if (result) {
+      //   this.answerOrder(order);
+      // }
     });
   }
 

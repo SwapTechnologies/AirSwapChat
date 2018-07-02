@@ -160,7 +160,7 @@ export class WebsocketService {
   }
 
 
-  getOrder(makerAddress: string, makerAmount: string, makerToken: string,
+  getOrderMakerToken(makerAddress: string, makerAmount: string, makerToken: string,
            takerToken: string, takerAddress: string): string {
     const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
     const jsonrpc = {
@@ -176,6 +176,24 @@ export class WebsocketService {
     };
     this.sendRPC(jsonrpc, makerAddress);
     return callId;
+  }
+
+  getOrderTakerToken(makerAddress: string, takerAmount: string, makerToken: string,
+      takerToken: string, takerAddress: string): string {
+  const callId = uuidv4().replace(/[^a-zA-Z 0-9]+/g, '');
+  const jsonrpc = {
+  'id': callId,
+  'jsonrpc': '2.0',
+  'method': 'getOrder',
+  'params': {
+  'takerAmount': takerAmount,
+  'makerToken': makerToken,
+  'takerToken': takerToken,
+  'takerAddress': takerAddress
+  },
+  };
+  this.sendRPC(jsonrpc, makerAddress);
+  return callId;
   }
 
   findIntents(makerTokens, takerTokens): string {

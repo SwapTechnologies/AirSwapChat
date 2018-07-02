@@ -46,23 +46,42 @@ export class TakerOrderService {
       this.notifierService.showMessage('The contract does not allow to trade with yourself.');
       return null;
     }
-    const uuid = this.wsService.getOrder(
-      order.makerAddress,
-      order.makerAmount,
-      order.makerToken,
-      order.takerToken,
-      order.takerAddress
-    );
+    let uuid = null;
+    if (order.makerAmount > 0) {
+      uuid = this.wsService.getOrderMakerToken(
+        order.makerAddress,
+        order.makerAmount,
+        order.makerToken,
+        order.takerToken,
+        order.takerAddress
+      );
+      this.notifierService.showMessage(
+        'Asking ' + order.alias + ' for an offer in ' +
+        order.takerProps.symbol + ' for ' + order.makerAmount / order.makerDecimals +
+        ' ' + order.makerProps.symbol
+      );
+    } else if (order.takerAmount > 0) {
+      uuid = this.wsService.getOrderTakerToken(
+        order.makerAddress,
+        order.takerAmount,
+        order.makerToken,
+        order.takerToken,
+        order.takerAddress
+      );
+      this.notifierService.showMessage(
+        'Asking ' + order.alias + ' for an offer for your ' +
+        order.takerAmount / order.takerDecimals +
+        ' ' + order.takerProps.symbol + ' in ' + order.makerProps.symbol
+      );
+    } else {
+      this.notifierService.showMessage('Tried to send getOrder without specifying makerAmount or takerAmount.');
+      return null;
+    }
     order['sentRequest'] = 'Sent request for an offer of ' +
     order.makerAmount / order.makerDecimals + ' ' +
     order.makerProps.symbol;
     order.id = uuid;
     this.sentOrders.push(order);
-    this.notifierService.showMessage(
-      'Asking ' + order.alias + ' for an offer in ' +
-      order.takerProps.symbol + ' for ' + order.makerAmount / order.makerDecimals +
-      ' ' + order.makerProps.symbol
-    );
 
     // look for an answer
     this.websocketSubscriptions[uuid] = this.wsService.websocketSubject
@@ -113,7 +132,8 @@ export class TakerOrderService {
 
               // check if it is the order I asked for
               if (signedOrder.makerAddress !== order.makerAddress
-                  || signedOrder.makerAmount.toString() !== order.makerAmount.toString()
+                  || ((order.makerAmount && signedOrder.makerAmount.toString() !== order.makerAmount.toString())
+                    || (order.takerAmount && signedOrder.takerAmount.toString() !== order.takerAmount.toString()))
                   || signedOrder.makerToken !== order.makerToken
                   || signedOrder.takerToken !== order.takerToken) {
                 signedOrder['error'] = 'Maker manipulated the order.';

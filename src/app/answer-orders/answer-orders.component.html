@@ -11,13 +11,18 @@
           <mat-card>
             <mat-card-title>
               {{order.alias}}
+              <span *ngIf="order.makerAmount"> - BUYS {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</span>
+              <span *ngIf="order.takerAmount"> - SELLS {{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</span>
             </mat-card-title>
             <mat-card-subtitle>
               Address: {{order.takerAddress}}
             </mat-card-subtitle>
             <mat-card-content>
-              <div>
-                Wants to <strong>trade {{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> of yours for peer's <strong>{{order.takerProps.symbol}}</strong>
+              <div *ngIf="order.makerAmount">
+                Peer wants to buy <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong> of yours and offers to pay with <strong>{{order.takerProps.symbol}}</strong>
+              </div>
+              <div *ngIf="order.takerAmount">
+                Peer wants to sell <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> and wants to be paid with <strong>{{order.makerProps.symbol}}</strong>
               </div>
               <div>
                 Peer has <b>{{order.takerBalanceTakerToken/order.takerDecimals}} {{order.takerProps.symbol}}</b> & {{order.takerBalanceMakerToken/order.makerDecimals}} {{order.makerProps.symbol}}.
@@ -45,8 +50,11 @@
                 </strong></span>
               </div>
               <div>
-                <p>
-                  <strong><i>How many {{order.takerProps.symbol}} do you want for this deal?</i></strong>
+                <p *ngIf="order.makerAmount">
+                  <strong><i>How much {{order.takerProps.symbol}} do you want?</i></strong>
+                </p>
+                <p *ngIf="order.takerAmount">
+                  <strong><i>How much {{order.makerProps.symbol}} will you pay?</i></strong>
                 </p>
                 <div *ngIf="order['UsdPrices']">
                   <div>
@@ -54,23 +62,43 @@
                     <strong>{{ order.makerProps.symbol }}: {{order['UsdPrices'].makerToken}} $,
                     {{ order.takerProps.symbol }}: {{order['UsdPrices'].takerToken}} $</strong>
                   </div>
-                  <div>
+                  <div *ngIf="order.makerAmount">
                     Suggested amount to ask for:<br>
                     <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken * order.makerAmount / order.makerDecimals | number: '1.1-8'}} {{ order.takerProps.symbol }}</strong>
                   </div>
+                  <div *ngIf="order.takerAmount">
+                    Suggested amount to pay:<br>
+                    <strong>{{order['UsdPrices'].takerToken / order['UsdPrices'].makerToken * order.takerAmount / order.takerDecimals | number: '1.1-8'}} {{ order.makerProps.symbol }}</strong>
+                  </div>
                 </div>
-                <mat-form-field style="width: 100%;">
-                  <input
-                  matInput
-                  number
-                  placeholder="Offer the deal for {{order.takerProps.symbol}}"
-                  (keydown.enter)="answerOrder(order)"
-                  [(ngModel)]="takerAmount[order.id]"
-                  [disabled]="order.clickedOfferDeal">
-                  <mat-hint *ngIf="!takerAmount[order.id]">Enter how much you want</mat-hint>
-                  <mat-hint *ngIf="takerAmount[order.id] && !askingPositiveNumber(order)"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
-                  <mat-hint *ngIf="takerAmount[order.id] && askingPositiveNumber(order) && !takerHasEnough(order)"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
-                </mat-form-field>
+                <div *ngIf="order.makerAmount">
+                  <mat-form-field style="width: 100%;">
+                    <input
+                    matInput
+                    number
+                    placeholder="Offer the deal for {{order.takerProps.symbol}}"
+                    (keydown.enter)="answerOrder(order)"
+                    [(ngModel)]="takerAmount[order.id]"
+                    [disabled]="order.clickedOfferDeal">
+                    <mat-hint *ngIf="!takerAmount[order.id]">Enter how much you want</mat-hint>
+                    <mat-hint *ngIf="takerAmount[order.id] && !askingPositiveNumberTakerToken(order)"><span style='color:red'>You have to ask for a positive amount.</span></mat-hint>
+                    <mat-hint *ngIf="takerAmount[order.id] && askingPositiveNumberTakerToken(order) && !takerHasEnough(order)"><span style='color:red'>You can not ask for more than what somebody has.</span></mat-hint>
+                  </mat-form-field>
+                </div>
+                <div *ngIf="order.takerAmount">
+                  <mat-form-field style="width: 100%;">
+                    <input
+                    matInput
+                    number
+                    placeholder="Pay the deal with {{order.makerProps.symbol}}"
+                    (keydown.enter)="answerOrder(order)"
+                    [(ngModel)]="makerAmount[order.id]"
+                    [disabled]="order.clickedOfferDeal">
+                    <mat-hint *ngIf="!makerAmount[order.id]">Enter how much you will pay</mat-hint>
+                    <mat-hint *ngIf="makerAmount[order.id] && !askingPositiveNumberMakerToken(order)"><span style='color:red'>You have to offer a positive amount.</span></mat-hint>
+                    <mat-hint *ngIf="makerAmount[order.id] && askingPositiveNumberMakerToken(order) && !makerHasEnough(order)"><span style='color:red'>You can not offer what you don't have.</span></mat-hint>
+                  </mat-form-field>
+                </div>
               </div>
               <div>
                 <p>
@@ -109,8 +137,12 @@
                   DETAILS
                 </button>
                 <button
-                *ngIf="askingPositiveNumber(order)
-                       && takerHasEnough(order)
+                *ngIf="(order.makerAmount
+                        && askingPositiveNumberTakerToken(order)
+                        && takerHasEnough(order))
+                       || (order.takerAmount
+                       && askingPositiveNumberMakerToken(order)
+                       && makerHasEnough(order))
                        && order.makerMakerTokenApproval > 0"
                 mat-button
                 (click)="answerOrder(order)"
@@ -182,11 +214,8 @@
                 <strong>{{order['UsdPrices'].makerToken / order['UsdPrices'].takerToken | number: '1.1-8'}}
                 {{order.takerProps.symbol}} / {{order.makerProps.symbol}}</strong>
               </div>
-              <div *ngIf="calcDeviation(order) > 0.1">
-                <strong style='color:orange'>The suggested price is over 10% higher than what is being asked for.<br>This might be unfair to the other party. Are you sure?</strong>
-              </div>
-              <div *ngIf="calcDeviation(order) < -0.1">
-                <strong style='color:red'>The suggested price is over 10% higher than the suggested price.<br>Are you sure you want to pay too much?</strong>
+              <div *ngIf="calcDeviation(order) > 0.1 || calcDeviation(order) < -0.1">
+                <strong style='color:red'>The suggested price deviates more than 10% from the estimated market price.<br>Are you really sure you want to accept this deal?</strong>
               </div>
             </div>
             <div>
@@ -230,7 +259,8 @@
             {{order.takerProps.symbol}}
             </i>
             <div *ngIf="order.txHash">
-              Follow the transaction on Etherscan <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+              Follow the transaction on Etherscan
+              <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
             </div>
           </mat-card-content>
         </mat-card>
@@ -265,9 +295,12 @@
               Address: {{order.makerAddress}}
             </mat-card-subtitle>
             <mat-card-content>
-              <div>
-                You are asking the peer to make an offer in <strong>{{order.takerProps.symbol}}</strong> for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
-              </div>
+                <div *ngIf="order.makerAmount">
+                  You are asking the peer to tell you how much <strong>{{order.takerProps.symbol}}</strong> you have to pay for <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
+                </div>
+                <div *ngIf="order.takerAmount">
+                  You are asking the peer how much <strong>{{order.makerProps.symbol}}</strong> the peer offers for your <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>
+                </div>
             </mat-card-content>
           </mat-card>
         </mat-grid-tile>
@@ -290,7 +323,7 @@
                  for <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong> of yours.
               </div>
               <div>
-                Waiting for the transaction to get mined. Follow it on Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Waiting for the transaction to get mined. Follow it on Etherscan: <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
@@ -318,7 +351,7 @@
                   Waiting for the peer to accept and send the swap transaction to the blockchain.
                 </span>
                 <span *ngIf="order.txHash">
-                  The peer has send the swap to the blockchain. Follow it on Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                  The peer has send the swap to the blockchain. Follow it on Etherscan: <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
                 </span>
               </div>
             </mat-card-content>
@@ -425,7 +458,8 @@
                  for peer's <strong>{{order.makerAmount / order.makerDecimals}} {{order.makerProps.symbol}}</strong>
               </div>
               <div>
-                Verify this transaction on the blockchain using Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Verify this transaction on the blockchain using Etherscan:
+                <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
@@ -449,7 +483,8 @@
                   for peer's <strong>{{order.takerAmount / order.takerDecimals}} {{order.takerProps.symbol}}</strong>
               </div>
               <div>
-                Verify this transaction on the blockchain using Etherscan: <a href='https://etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
+                Verify this transaction on the blockchain using Etherscan:
+                <a href='https://{{env.ethereumNetwork.etherscanPrefix}}etherscan.io/tx/{{order.txHash}}' target='_blank'><mat-icon>exit_to_app</mat-icon></a>
               </div>
             </mat-card-content>
           </mat-card>
