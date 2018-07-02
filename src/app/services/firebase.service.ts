@@ -12,12 +12,11 @@ import { UserInfo } from 'firebase/app';
 // services
 import { Erc20Service } from './erc20.service';
 import { ConnectionService } from './connection.service';
-import { WebsocketService } from './websocket.service';
 import { NotificationService} from '../services/notification.service';
 
 // types
-import { StoredMessage, OtherUser, Token } from '../types/types';
-
+import { StoredMessage, Token } from '../types/types';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -354,7 +353,7 @@ export class FirebaseService {
 
   getTokenListFromDatabase(): Promise<Token[]> {
     return new Promise((resolve, reject) => {
-      const obsToken = this.afs.collection('tokens').valueChanges()
+      const obsToken = this.afs.collection(environment.ethereumNetwork.tokenDB).valueChanges()
       .subscribe(entry => {
         obsToken.unsubscribe();
         const tokenList: Token[] = [];
@@ -381,7 +380,7 @@ export class FirebaseService {
    * @param tokenAddress Token you want to check
    */
   getTokenFromDatabase(tokenAddress): Promise<Token> {
-    return this.getObjectFromFirestore('tokens', tokenAddress.toLowerCase());
+    return this.getObjectFromFirestore(environment.ethereumNetwork.tokenDB, tokenAddress.toLowerCase());
   }
 
   addToken(tokenAddress, tokenName, tokenSymbol, tokenDecimals): Promise<boolean> {
@@ -412,9 +411,7 @@ export class FirebaseService {
     return Promise.all(promiseList)
     .then(() => {
       if (validToken) {
-        // this.db.object('tokens/' + tokenAddress.toLowerCase())
-        // .update({
-        this.afs.collection('tokens').doc(tokenAddress.toLowerCase())
+        this.afs.collection(environment.ethereumNetwork.tokenDB).doc(tokenAddress.toLowerCase())
         .set({
           'address': tokenAddress.toLowerCase(),
           'name': tokenName,

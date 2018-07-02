@@ -63,8 +63,6 @@ export class MakerOrderService {
   }
 
   addOrder(order: any): void {
-    console.log(order);
-    console.log((!order.makerAmount || !order.takerAmount));
     if ( !order.makerAddress
       || (!order.makerAmount && !order.takerAmount)
       || !order.makerToken
@@ -105,10 +103,22 @@ export class MakerOrderService {
     Promise.all(promiseList)
     .then(() => {
       this.orderRequests.push(order);
-      this.notifierService.showMessageAndRoute(
-        'You have a new request for an order',
-        'trading'
-      );
+      if (order.makerAmount) {
+        this.notifierService.showMessageAndRoute(
+          order['alias'] + ' wants to buy ' +
+          order.makerAmount / order.makerDecimals + ' ' +
+          order.makerProps.symbol + ' paying with ' + order.takerProps.symbol,
+          'trading'
+        );
+      } else if (order.takerAmount) {
+        this.notifierService.showMessageAndRoute(
+          order['alias'] + ' wants to sell ' +
+          order.takerAmount / order.takerDecimals + ' ' +
+          order.takerProps.symbol + ' and wants ' + order.makerProps.symbol,
+          'trading'
+        );
+
+      }
     });
   }
 

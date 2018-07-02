@@ -135,6 +135,7 @@ export class Erc20Service {
   }
 
   toFixed(x) {
+    x = Math.floor(x);
     if (Math.abs(x) < 1.0) {
       const e = parseInt(x.toString().split('e-')[1], 10);
       if (e) {
